@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/data/reporting_mock_data.dart';
 import '../../../../shared/models/pet.dart';
+import '../../../../shared/models/report_models.dart';
 import '../../../../theme/app_colors.dart';
 import 'qr_scan_preview_screen.dart';
+import 'qr_traceability_screen.dart';
 
 class PetDetailScreen extends StatelessWidget {
   const PetDetailScreen({super.key, required this.pet});
@@ -41,7 +44,7 @@ class PetDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _SectionCard(
-              title: 'Documentacion',
+              title: 'Documentación',
               subtitle:
                   'Preparada para vacunas, certificados e historial base.',
               icon: Icons.description_outlined,
@@ -64,7 +67,7 @@ class PetDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _SectionCard(
-              title: 'Acciones rapidas',
+              title: 'Acciones rápidas',
               subtitle: 'Atajos listos para futuras operaciones del producto.',
               icon: Icons.flash_on_outlined,
               accentColor: AppColors.primarySoft,
@@ -206,7 +209,7 @@ class _AboutPetCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _SocialStatTile(
-                    label: 'Ubicacion',
+                    label: 'Ubicación',
                     value: pet.location,
                     color: AppColors.surfaceAlt,
                   ),
@@ -324,10 +327,10 @@ class _MatchingProfileCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Preferencias de matching', style: textTheme.titleLarge),
+            Text('Matching más expresivo', style: textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
-              'Una capa mock para expresar que busca ${pet.name} dentro del ecosistema social.',
+              'Una capa mock para expresar qué busca ${pet.name} dentro del ecosistema social.',
               style: textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -375,6 +378,31 @@ class _MatchingProfileCard extends StatelessWidget {
                       height: 1.45,
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  Text(
+                    preferences.matchSummary,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textPrimary,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _MatchingPill(
+                        label: 'Ritmo ${preferences.rhythmLabel}',
+                        backgroundColor: Colors.white.withValues(alpha: 0.78),
+                      ),
+                      _MatchingPill(
+                        label: preferences.acceptsGradualMeet
+                            ? 'Acepta acercamiento gradual'
+                            : 'Prefiere vínculo más directo',
+                        backgroundColor: Colors.white.withValues(alpha: 0.78),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -383,7 +411,7 @@ class _MatchingProfileCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: _MatchingKeyTile(
-                    label: 'Radio aceptado',
+                    label: 'Radio ideal',
                     value: preferences.locationRadiusLabel,
                     color: AppColors.surfaceAlt,
                   ),
@@ -391,8 +419,8 @@ class _MatchingProfileCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _MatchingKeyTile(
-                    label: 'Encuentro gradual',
-                    value: preferences.acceptsGradualMeet ? 'Si' : 'No',
+                    label: 'Ritmo sugerido',
+                    value: preferences.rhythmLabel,
                     color: AppColors.primarySoft,
                   ),
                 ),
@@ -400,13 +428,31 @@ class _MatchingProfileCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             _MatchingKeyTile(
-              label: 'Interes reproductivo',
+              label: 'Afinidad principal',
+              value: pet.socialInterest,
+              color: AppColors.accentSoft,
+            ),
+            const SizedBox(height: 10),
+            _MatchingKeyTile(
+              label: 'Interés reproductivo',
               value: pet.seekingBreeding
                   ? 'Disponible a evaluar con responsabilidad'
-                  : 'No busca cria por ahora',
+                  : 'No busca cría por ahora',
               color: AppColors.supportSoft,
             ),
             const SizedBox(height: 18),
+            Text(
+              'Señales que ayudan a decidir mejor',
+              style: textTheme.titleMedium,
+            ),
+            const SizedBox(height: 12),
+            ...preferences.compatibilitySignals.map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _MatchingSignalTile(text: item),
+              ),
+            ),
+            const SizedBox(height: 8),
             Text('Compatibilidades deseadas', style: textTheme.titleMedium),
             const SizedBox(height: 12),
             Wrap(
@@ -414,6 +460,16 @@ class _MatchingProfileCard extends StatelessWidget {
               runSpacing: 10,
               children: preferences.desiredCompatibilities
                   .map((item) => _PreferenceChip(label: item))
+                  .toList(),
+            ),
+            const SizedBox(height: 18),
+            Text('Límites o alertas suaves', style: textTheme.titleMedium),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: preferences.softLimits
+                  .map((item) => _SoftLimitChip(label: item))
                   .toList(),
             ),
             const SizedBox(height: 18),
@@ -425,7 +481,14 @@ class _MatchingProfileCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _PreferenceNoteCard(
-              title: 'Limites y notas importantes',
+              title: 'Primer paso sugerido',
+              icon: Icons.alt_route_rounded,
+              color: AppColors.primarySoft,
+              text: preferences.suggestedApproach,
+            ),
+            const SizedBox(height: 12),
+            _PreferenceNoteCard(
+              title: 'Límites y notas importantes',
               icon: Icons.shield_outlined,
               color: AppColors.supportSoft,
               text: preferences.importantNotes,
@@ -439,7 +502,7 @@ class _MatchingProfileCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                'Esta estructura mock permite que la ficha no solo identifique a ${pet.name}, sino que tambien cuente con mas claridad como le gustaria vincularse y bajo que condiciones se sentiria comodo dentro de Mascotify.',
+                'Esta estructura mock permite que la ficha no solo identifique a ${pet.name}, sino que también cuente con más claridad cómo le gustaría vincularse y bajo qué condiciones se sentiría cómodo dentro de Mascotify.',
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textPrimary,
                   height: 1.5,
@@ -461,6 +524,8 @@ class _QrExperienceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final snapshot = buildQrStatusSnapshotForPet(pet);
+    final activity = buildQrActivityEntriesForPet(pet);
 
     return Card(
       child: Padding(
@@ -567,6 +632,42 @@ class _QrExperienceCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _TrackingMetricTile(
+                    label: 'Estado actual',
+                    value: snapshot.currentStatus,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _TrackingMetricTile(
+                    label: 'Escaneos',
+                    value: snapshot.totalScansLabel,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: _TrackingMetricTile(
+                    label: 'Última señal',
+                    value: snapshot.lastSignalLabel,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _TrackingMetricTile(
+                    label: 'Contacto protegido',
+                    value: snapshot.protectedContactState,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -575,7 +676,7 @@ class _QrExperienceCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                'Este QR sera la base para rastreo, avistamientos, contacto seguro e historial de escaneos dentro del ecosistema Mascotify.',
+                'Este QR será la base para rastreo, avistamientos, contacto seguro e historial de escaneos dentro del ecosistema Mascotify.',
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textPrimary,
                   height: 1.5,
@@ -583,12 +684,46 @@ class _QrExperienceCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primarySoft,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                snapshot.lastSignalDetail,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textPrimary,
+                  height: 1.5,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Actividad QR reciente',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 12),
+            ...activity
+                .take(2)
+                .map(
+                  (entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _QrTimelinePreviewTile(entry: entry),
+                  ),
+                ),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text(pet.qrPrimaryAction),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => QrTraceabilityScreen(pet: pet),
+                      ),
+                    ),
+                    child: const Text('Ver historial QR'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -599,7 +734,7 @@ class _QrExperienceCard extends StatelessWidget {
                         builder: (_) => QrScanPreviewScreen(pet: pet),
                       ),
                     ),
-                    child: Text(pet.qrSecondaryAction),
+                    child: const Text('Probar escaneo'),
                   ),
                 ),
               ],
@@ -613,7 +748,7 @@ class _QrExperienceCard extends StatelessWidget {
                     builder: (_) => QrScanPreviewScreen(pet: pet),
                   ),
                 ),
-                child: const Text('Probar experiencia publica de escaneo'),
+                child: const Text('Probar experiencia pública de escaneo'),
               ),
             ),
           ],
@@ -750,6 +885,102 @@ class _PreferenceChip extends StatelessWidget {
   }
 }
 
+class _MatchingPill extends StatelessWidget {
+  const _MatchingPill({required this.label, required this.backgroundColor});
+
+  final String label;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _MatchingSignalTile extends StatelessWidget {
+  const _MatchingSignalTile({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppColors.primarySoft,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.favorite_border_rounded,
+              color: AppColors.textPrimary,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textPrimary,
+                height: 1.45,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SoftLimitChip extends StatelessWidget {
+  const _SoftLimitChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.supportSoft,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
 class _MatchingKeyTile extends StatelessWidget {
   const _MatchingKeyTile({
     required this.label,
@@ -846,6 +1077,115 @@ class _PreferenceNoteCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _TrackingMetricTile extends StatelessWidget {
+  const _TrackingMetricTile({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QrTimelinePreviewTile extends StatelessWidget {
+  const _QrTimelinePreviewTile({required this.entry});
+
+  final QrActivityEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Color(entry.accentColorHex),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(_iconFor(entry.iconKey), color: AppColors.textPrimary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${entry.title} • ${entry.timeLabel}',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  entry.detail,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _iconFor(String iconKey) {
+    switch (iconKey) {
+      case 'shield':
+        return Icons.shield_outlined;
+      case 'location':
+        return Icons.location_on_outlined;
+      case 'pending':
+        return Icons.schedule_rounded;
+      case 'badge':
+        return Icons.badge_outlined;
+      case 'history':
+        return Icons.history_rounded;
+      case 'qr':
+      default:
+        return Icons.qr_code_2_rounded;
+    }
   }
 }
 

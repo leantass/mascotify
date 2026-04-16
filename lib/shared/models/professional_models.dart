@@ -8,6 +8,14 @@ class ProfessionalProfile {
     required this.valueProposition,
     required this.approachStyle,
     required this.helpSummary,
+    required this.profileModeLabel,
+    required this.presenceStatusLabel,
+    required this.serviceAvailabilityLabel,
+    required this.serviceSummary,
+    required this.services,
+    required this.trustSignals,
+    required this.primaryActionLabel,
+    required this.secondaryActionLabel,
     required this.topics,
     required this.featuredContent,
     required this.accentColorHex,
@@ -21,6 +29,14 @@ class ProfessionalProfile {
   final String valueProposition;
   final String approachStyle;
   final String helpSummary;
+  final String profileModeLabel;
+  final String presenceStatusLabel;
+  final String serviceAvailabilityLabel;
+  final String serviceSummary;
+  final List<String> services;
+  final List<String> trustSignals;
+  final String primaryActionLabel;
+  final String secondaryActionLabel;
   final List<String> topics;
   final List<ProfessionalContentPreview> featuredContent;
   final int accentColorHex;
@@ -67,5 +83,19 @@ class ProfessionalRecommendation {
 
   final String title;
   final String subtitle;
+  final int accentColorHex;
+}
+
+class ProfessionalServiceSpotlight {
+  const ProfessionalServiceSpotlight({
+    required this.title,
+    required this.subtitle,
+    required this.availabilityLabel,
+    required this.accentColorHex,
+  });
+
+  final String title;
+  final String subtitle;
+  final String availabilityLabel;
   final int accentColorHex;
 }

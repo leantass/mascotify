@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../features/auth/presentation/screens/auth_placeholder_screen.dart';
 import '../theme/app_theme.dart';
-import 'navigation/main_navigation_screen.dart';
 
 class MascotifyApp extends StatelessWidget {
   const MascotifyApp({super.key});
@@ -12,7 +12,7 @@ class MascotifyApp extends StatelessWidget {
       title: 'Mascotify',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
-      home: const MainNavigationScreen(),
+      home: const AuthPlaceholderScreen(),
     );
   }
 }

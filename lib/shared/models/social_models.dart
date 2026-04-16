@@ -11,6 +11,13 @@ class MessageThread {
     required this.lastActivity,
     required this.summary,
     required this.accentColorHex,
+    required this.connectionType,
+    required this.stageLabel,
+    required this.entryPointLabel,
+    required this.nextStepLabel,
+    required this.contextTags,
+    required this.unreadCount,
+    required this.isAwaitingMyReply,
     required this.autoReplies,
     required this.messages,
   });
@@ -24,6 +31,13 @@ class MessageThread {
   final String lastActivity;
   final String summary;
   final int accentColorHex;
+  final String connectionType;
+  final String stageLabel;
+  final String entryPointLabel;
+  final String nextStepLabel;
+  final List<String> contextTags;
+  final int unreadCount;
+  final bool isAwaitingMyReply;
   final List<String> autoReplies;
   final List<MessageEntry> messages;
 }

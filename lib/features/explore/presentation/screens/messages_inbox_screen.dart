@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../features/pets/presentation/screens/pet_public_profile_screen.dart';
-import '../../../../shared/data/social_mock_data.dart';
+import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/social_models.dart';
 import '../../../../theme/app_colors.dart';
 import 'conversation_screen.dart';
@@ -11,22 +11,23 @@ class MessagesInboxScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final threads = buildMockMessageThreads();
-    final newCount = threads.where((thread) => thread.status == 'Nuevo').length;
-    final pendingCount = threads
-        .where((thread) => thread.status == 'Pendiente')
+    final threads = AppData.messageThreads;
+    final unreadThreads = threads.where((thread) => thread.unreadCount > 0);
+    final unreadCount = unreadThreads.length;
+    final awaitingMyReplyCount = threads
+        .where((thread) => thread.isAwaitingMyReply)
         .length;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mensajeria')),
+      appBar: AppBar(title: const Text('Mensajería')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: [
             _MessagesHero(
               totalThreads: threads.length,
-              newCount: newCount,
-              pendingCount: pendingCount,
+              unreadCount: unreadCount,
+              awaitingMyReplyCount: awaitingMyReplyCount,
             ),
             const SizedBox(height: 16),
             Card(
@@ -41,7 +42,7 @@ class MessagesInboxScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Una base mock de chats entre familias, pensada para sostener afinidad, seguimiento y conversaciones cuidadas dentro de Mascotify.',
+                      'Una bandeja mock con mejor lectura de contexto, estado del vínculo y próximos pasos para que la mensajería se sienta más conectada con Mascotify.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
@@ -65,13 +66,13 @@ class MessagesInboxScreen extends StatelessWidget {
 class _MessagesHero extends StatelessWidget {
   const _MessagesHero({
     required this.totalThreads,
-    required this.newCount,
-    required this.pendingCount,
+    required this.unreadCount,
+    required this.awaitingMyReplyCount,
   });
 
   final int totalThreads;
-  final int newCount;
-  final int pendingCount;
+  final int unreadCount;
+  final int awaitingMyReplyCount;
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +101,7 @@ class _MessagesHero extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              'Mensajeria social',
+              'Mensajería social',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
@@ -114,7 +115,7 @@ class _MessagesHero extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Esta bandeja representa mensajes entre familias vinculados a perfiles y mascotas, con tono claro, seguimiento social y contacto protegido dentro de Mascotify.',
+            'La bandeja reúne chats nacidos desde intereses, afinidades y seguimientos, con señales claras sobre qué está pasando y qué conviene hacer después.',
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
@@ -131,15 +132,15 @@ class _MessagesHero extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _HeroMetric(
-                  label: 'Nuevos',
-                  value: '$newCount por abrir',
+                  label: 'Sin leer',
+                  value: '$unreadCount por abrir',
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _HeroMetric(
-                  label: 'Pendientes',
-                  value: '$pendingCount en seguimiento',
+                  label: 'Tu turno',
+                  value: '$awaitingMyReplyCount en seguimiento',
                 ),
               ),
             ],
@@ -157,11 +158,15 @@ class _ThreadCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final unreadLabel = thread.unreadCount > 0
+        ? '${thread.unreadCount} nuevo${thread.unreadCount == 1 ? '' : 's'}'
+        : 'Al día';
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: thread.unreadCount > 0 ? Colors.white : AppColors.surfaceAlt,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: AppColors.border),
       ),
@@ -189,6 +194,7 @@ class _ThreadCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           child: Text(
@@ -196,6 +202,7 @@ class _ThreadCard extends StatelessWidget {
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                         ),
+                        const SizedBox(width: 8),
                         _StatusPill(
                           label: thread.status,
                           backgroundColor: Colors.white,
@@ -205,7 +212,7 @@ class _ThreadCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${thread.relatedLabel} - ${thread.lastActivity}',
+                      '${thread.relatedLabel} • ${thread.lastActivity}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -216,19 +223,53 @@ class _ThreadCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _MetaPill(
+                label: thread.connectionType,
+                backgroundColor: Color(thread.accentColorHex),
+              ),
+              _MetaPill(
+                label: thread.stageLabel,
+                backgroundColor: AppColors.surfaceAlt,
+              ),
+              _MetaPill(
+                label: unreadLabel,
+                backgroundColor: thread.unreadCount > 0
+                    ? AppColors.supportSoft
+                    : AppColors.primarySoft,
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surfaceAlt,
               borderRadius: BorderRadius.circular(18),
             ),
-            child: Text(
-              thread.lastMessage,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textPrimary,
-                height: 1.45,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  thread.entryPointLabel,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  thread.lastMessage,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    height: 1.45,
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 12),
@@ -238,6 +279,24 @@ class _ThreadCard extends StatelessWidget {
               color: AppColors.textPrimary,
               height: 1.45,
             ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _MiniDetailTile(
+                  label: 'Siguiente paso',
+                  value: thread.nextStepLabel,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _MiniDetailTile(
+                  label: 'Contexto',
+                  value: thread.contextTags.join(' • '),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 14),
           Row(
@@ -327,6 +386,69 @@ class _StatusPill extends StatelessWidget {
           color: textColor,
           fontWeight: FontWeight.w700,
         ),
+      ),
+    );
+  }
+}
+
+class _MetaPill extends StatelessWidget {
+  const _MetaPill({required this.label, required this.backgroundColor});
+
+  final String label;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _MiniDetailTile extends StatelessWidget {
+  const _MiniDetailTile({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+              height: 1.4,
+            ),
+          ),
+        ],
       ),
     );
   }

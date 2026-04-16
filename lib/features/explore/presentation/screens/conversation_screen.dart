@@ -37,7 +37,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
     final thread = widget.thread;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Conversacion')),
+      appBar: AppBar(title: const Text('Conversación')),
       body: SafeArea(
         child: Column(
           children: [
@@ -103,6 +103,25 @@ class _ConversationScreenState extends State<ConversationScreen> {
                       ],
                     ),
                     const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _InfoPill(
+                          label: thread.connectionType,
+                          backgroundColor: Colors.white,
+                        ),
+                        _InfoPill(
+                          label: thread.stageLabel,
+                          backgroundColor: AppColors.surfaceAlt,
+                        ),
+                        _InfoPill(
+                          label: thread.entryPointLabel,
+                          backgroundColor: Colors.white.withValues(alpha: 0.72),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
                     Text(
                       thread.summary,
                       style: textTheme.bodyMedium?.copyWith(
@@ -118,15 +137,46 @@ class _ConversationScreenState extends State<ConversationScreen> {
                         color: Colors.white.withValues(alpha: 0.72),
                         borderRadius: BorderRadius.circular(18),
                       ),
-                      child: Text(
-                        'Esta mensajeria es mock y representa conversaciones cuidadas entre familias, sin exponer contacto privado fuera del ecosistema.',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textPrimary,
-                          height: 1.45,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Próximo paso sugerido',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            thread.nextStepLabel,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: AppColors.textPrimary,
+                              height: 1.45,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: thread.contextTags
+                      .map(
+                        (tag) => _ContextChip(
+                          label: tag,
+                          backgroundColor: AppColors.surfaceAlt,
+                        ),
+                      )
+                      .toList(),
                 ),
               ),
             ),
@@ -150,7 +200,43 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 border: Border(top: BorderSide(color: AppColors.border)),
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    'Respuestas rápidas mock',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: widget.thread.autoReplies
+                          .take(3)
+                          .map(
+                            (reply) => Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ActionChip(
+                                backgroundColor: AppColors.surfaceAlt,
+                                label: Text(reply),
+                                onPressed: () {
+                                  setState(() {
+                                    _messageController.text = reply;
+                                    _messageController.selection =
+                                        TextSelection.collapsed(
+                                          offset: reply.length,
+                                        );
+                                  });
+                                },
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   if (_isSimulatingReply)
                     Container(
                       width: double.infinity,
@@ -161,12 +247,28 @@ class _ConversationScreenState extends State<ConversationScreen> {
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: Text(
-                        '${thread.ownerName} esta escribiendo una respuesta mock...',
+                        '${thread.ownerName} está escribiendo una respuesta mock...',
                         style: textTheme.bodyMedium?.copyWith(
                           color: AppColors.textSecondary,
                         ),
                       ),
                     ),
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceAlt,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Text(
+                      'Esta mensajería mantiene el contexto del interés original y simula un intercambio seguro entre familias dentro de Mascotify.',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textPrimary,
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
                   Row(
                     children: [
                       Expanded(
@@ -295,6 +397,56 @@ class _StatusPill extends StatelessWidget {
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           color: textColor,
           fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoPill extends StatelessWidget {
+  const _InfoPill({required this.label, required this.backgroundColor});
+
+  final String label;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _ContextChip extends StatelessWidget {
+  const _ContextChip({required this.label, required this.backgroundColor});
+
+  final String label;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

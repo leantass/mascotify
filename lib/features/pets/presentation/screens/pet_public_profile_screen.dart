@@ -14,7 +14,7 @@ class PetPublicProfileScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Perfil publico')),
+      appBar: AppBar(title: const Text('Perfil público')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
@@ -100,13 +100,97 @@ class PetPublicProfileScreen extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _PublicStat(
-                          label: 'Busca cria',
-                          value: pet.seekingBreeding ? 'Si' : 'No',
+                          label: 'Busca cría',
+                          value: pet.seekingBreeding ? 'Sí' : 'No',
                         ),
                       ),
                     ],
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cómo podría encajar mejor',
+                      style: textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      pet.matchingPreferences.matchSummary,
+                      style: textTheme.bodyMedium?.copyWith(height: 1.45),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _PublicStat(
+                            label: 'Ritmo',
+                            value: pet.matchingPreferences.rhythmLabel,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _PublicStat(
+                            label: 'Radio',
+                            value: pet.matchingPreferences.locationRadiusLabel,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Text('Señales de afinidad', style: textTheme.titleMedium),
+                    const SizedBox(height: 10),
+                    ...pet.matchingPreferences.compatibilitySignals.map(
+                      (signal) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _PublicMatchingSignal(text: signal),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Compatibilidades clave',
+                      style: textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: pet.matchingPreferences.desiredCompatibilities
+                          .map((item) => _SocialChip(label: item))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceAlt,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        pet.matchingPreferences.suggestedApproach,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textPrimary,
+                          height: 1.45,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: pet.matchingPreferences.softLimits
+                          .map((item) => _SoftLimitBadge(label: item))
+                          .toList(),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -182,7 +266,7 @@ class PetPublicProfileScreen extends StatelessWidget {
                     Text('Afinidad social', style: textTheme.titleLarge),
                     const SizedBox(height: 8),
                     Text(
-                      'Este perfil esta pensado para descubrimiento, afinidad y futuras conexiones seguras dentro de Mascotify.',
+                      'Este perfil está pensado para descubrimiento, afinidad y futuras conexiones seguras dentro de Mascotify.',
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
@@ -255,7 +339,7 @@ class PetPublicProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Guardaste a ${pet.name} para volver a este perfil mas adelante dentro del modulo social de Mascotify.',
+                  'Guardaste a ${pet.name} para volver a este perfil más adelante dentro del módulo social de Mascotify.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 18),
@@ -329,7 +413,7 @@ class PetPublicProfileScreen extends StatelessWidget {
                   icon: Icons.link_rounded,
                   title: 'Copiar enlace del perfil',
                   subtitle:
-                      'Representa un link publico para volver a este perfil cuando quieras.',
+                      'Representa un link público para volver a este perfil cuando quieras.',
                 ),
                 const SizedBox(height: 10),
                 _ShareOptionTile(
@@ -350,7 +434,7 @@ class PetPublicProfileScreen extends StatelessWidget {
                   icon: Icons.qr_code_2_rounded,
                   title: 'Compartir QR o perfil',
                   subtitle:
-                      'Una version preparada para circular como identidad digital visible.',
+                      'Una versión preparada para circular como identidad digital visible.',
                 ),
                 const SizedBox(height: 18),
                 Container(
@@ -361,7 +445,7 @@ class PetPublicProfileScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
-                    'Este flujo es mock y representa como Mascotify podria distribuir perfiles de mascotas de forma clara, social y confiable.',
+                    'Este flujo es mock y representa cómo Mascotify podría distribuir perfiles de mascotas de forma clara, social y confiable.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       height: 1.5,
@@ -478,6 +562,77 @@ class _FeaturedMomentTile extends StatelessWidget {
             child: Text(label, style: Theme.of(context).textTheme.titleMedium),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PublicMatchingSignal extends StatelessWidget {
+  const _PublicMatchingSignal({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppColors.primarySoft,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.favorite_border_rounded,
+              color: AppColors.textPrimary,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textPrimary,
+                height: 1.45,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SoftLimitBadge extends StatelessWidget {
+  const _SoftLimitBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.supportSoft,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

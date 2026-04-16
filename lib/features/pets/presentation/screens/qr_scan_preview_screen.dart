@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/data/reporting_mock_data.dart';
 import '../../../../shared/models/pet.dart';
+import '../../../../shared/models/report_models.dart';
 import '../../../../theme/app_colors.dart';
+import 'qr_traceability_screen.dart';
 import 'report_sighting_screen.dart';
 
 class QrScanPreviewScreen extends StatelessWidget {
@@ -12,6 +15,8 @@ class QrScanPreviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final snapshot = buildQrStatusSnapshotForPet(pet);
+    final activity = buildQrActivityEntriesForPet(pet);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Escaneo público')),
@@ -174,6 +179,24 @@ class QrScanPreviewScreen extends StatelessWidget {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _PublicInfoTile(
+                            label: 'Última señal',
+                            value: snapshot.lastSignalLabel,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _PublicInfoTile(
+                            label: 'Contacto protegido',
+                            value: snapshot.protectedContactState,
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 18),
                     Container(
                       width: double.infinity,
@@ -197,7 +220,7 @@ class QrScanPreviewScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Podés informar un avistamiento de forma simple. El sistema está preparado para enviar la información al responsable sin mostrar contacto privado directo.',
+                            'Podés informar un avistamiento de forma simple. El sistema está preparado para registrar la señal, mantener trazabilidad y derivar la información al responsable sin mostrar contacto privado directo.',
                             style: textTheme.bodyMedium?.copyWith(
                               color: Colors.white.withValues(alpha: 0.82),
                               height: 1.5,
@@ -220,7 +243,12 @@ class QrScanPreviewScreen extends StatelessWidget {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: OutlinedButton(
-                                  onPressed: () {},
+                                  onPressed: () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          QrTraceabilityScreen(pet: pet),
+                                    ),
+                                  ),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: Colors.white,
                                     side: BorderSide(
@@ -232,7 +260,7 @@ class QrScanPreviewScreen extends StatelessWidget {
                                       alpha: 0.06,
                                     ),
                                   ),
-                                  child: const Text('Ver datos útiles'),
+                                  child: const Text('Ver historial'),
                                 ),
                               ),
                             ],
@@ -252,21 +280,50 @@ class QrScanPreviewScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
+                      'Actividad reciente del QR',
+                      style: textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Señales mock que ayudan a entender que este código no es solo visual, sino una pieza útil de seguimiento.',
+                      style: textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    ...activity
+                        .take(3)
+                        .map(
+                          (entry) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _ActivityTile(entry: entry),
+                          ),
+                        ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                       'Cómo funciona este flujo',
                       style: textTheme.titleLarge,
                     ),
                     const SizedBox(height: 10),
                     const _InfoBullet(
                       text:
-                          'No se expone contacto privado directo del dueño en esta pantalla pública.',
+                          'No se expone contacto privado directo del responsable en esta pantalla pública.',
                     ),
                     const _InfoBullet(
                       text:
-                          'El objetivo es facilitar un avistamiento útil, con urgencia tranquila y datos claros.',
+                          'Cada escaneo o reporte puede transformarse en una señal útil dentro del historial QR.',
                     ),
                     const _InfoBullet(
                       text:
-                          'El responsable podrá recibir la información del reporte para actuar más rápido.',
+                          'El objetivo es dar contexto claro, seguimiento y una vía segura para actuar más rápido.',
                     ),
                   ],
                 ),
@@ -303,10 +360,93 @@ class _PublicInfoTile extends StatelessWidget {
             ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
           ),
           const SizedBox(height: 6),
-          Text(value, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(height: 1.35),
+          ),
         ],
       ),
     );
+  }
+}
+
+class _ActivityTile extends StatelessWidget {
+  const _ActivityTile({required this.entry});
+
+  final QrActivityEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: Color(entry.accentColorHex),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(_iconFor(entry.iconKey), color: AppColors.textPrimary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  entry.title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${entry.statusLabel} • ${entry.timeLabel}',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  entry.detail,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _iconFor(String iconKey) {
+    switch (iconKey) {
+      case 'shield':
+        return Icons.shield_outlined;
+      case 'location':
+        return Icons.location_on_outlined;
+      case 'pending':
+        return Icons.schedule_rounded;
+      case 'badge':
+        return Icons.badge_outlined;
+      case 'history':
+        return Icons.history_rounded;
+      case 'qr':
+      default:
+        return Icons.qr_code_2_rounded;
+    }
   }
 }
 

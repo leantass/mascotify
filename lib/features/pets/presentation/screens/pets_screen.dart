@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/data/mock_data.dart';
+import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/widgets/pet_card.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
@@ -11,7 +11,7 @@ class PetsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pets = MockData.pets;
+    final pets = AppData.pets;
 
     return Scaffold(
       body: SafeArea(
@@ -33,7 +33,7 @@ class PetsScreen extends StatelessWidget {
                     subtitle:
                         'Gestioná perfiles confiables y preparados para futuras integraciones.',
                     trailing: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () => _showAddPetDialog(context),
                       icon: const Icon(Icons.add_rounded),
                       label: const Text('Agregar'),
                     ),
@@ -76,4 +76,70 @@ class PetsScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _showAddPetDialog(BuildContext context) async {
+  await showDialog<void>(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Icon(
+                  Icons.pets_rounded,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Alta de mascota',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Este botón todavía es mock, pero ya deja claro que Mascotify puede crecer a un flujo real de alta sin romper la experiencia actual.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 18),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceAlt,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Text(
+                  'Cuando exista persistencia real, este punto puede abrir un formulario de identidad, salud y QR sin tocar la navegación principal.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Entendido'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }

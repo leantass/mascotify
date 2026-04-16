@@ -17,7 +17,6 @@ class ProfessionalContentDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final contentPoints = _buildContentPoints();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Contenido profesional')),
@@ -57,6 +56,11 @@ class ProfessionalContentDetailScreen extends StatelessWidget {
                         backgroundColor: AppColors.accentSoft,
                         textColor: AppColors.accentDeep,
                       ),
+                      _Badge(
+                        label: professional.profileModeLabel,
+                        backgroundColor: AppColors.primarySoft,
+                        textColor: AppColors.textPrimary,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -80,128 +84,41 @@ class ProfessionalContentDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.dark,
-                borderRadius: BorderRadius.circular(28),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 46,
-                        height: 46,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.10),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(
-                          Icons.play_circle_fill_rounded,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Vista mock de reel o charla',
-                          style: textTheme.titleLarge?.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  Container(
-                    width: double.infinity,
-                    height: 220,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.white.withValues(alpha: 0.12),
-                          Colors.white.withValues(alpha: 0.04),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.10),
-                      ),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Este contenido vive dentro de una ficha profesional',
+                      style: textTheme.titleLarge,
                     ),
-                    child: Stack(
+                    const SizedBox(height: 8),
+                    Text(
+                      professional.serviceSummary,
+                      style: textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
                       children: [
-                        Center(
-                          child: Container(
-                            width: 82,
-                            height: 82,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.14),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.play_arrow_rounded,
-                              color: Colors.white,
-                              size: 40,
-                            ),
+                        Expanded(
+                          child: _InfoTile(
+                            label: 'Estado',
+                            value: professional.presenceStatusLabel,
                           ),
                         ),
-                        Positioned(
-                          left: 16,
-                          right: 16,
-                          bottom: 16,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.18),
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                  child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: FractionallySizedBox(
-                                      widthFactor: 0.42,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(
-                                            999,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                content.duration,
-                                style: textTheme.bodyMedium?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _InfoTile(
+                            label: 'Servicios',
+                            value: professional.serviceAvailabilityLabel,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Pensado para piezas breves, claras y faciles de consumir dentro del ecosistema Mascotify.',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.82),
-                      height: 1.45,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -211,13 +128,41 @@ class ProfessionalContentDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Puntos clave', style: textTheme.titleLarge),
+                    Text('Señales de confianza', style: textTheme.titleLarge),
                     const SizedBox(height: 12),
-                    ...contentPoints.map(
-                      (point) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _PointRow(text: point),
+                    ...professional.trustSignals.map(
+                      (signal) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _PointRow(text: signal),
                       ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cómo conecta con servicios',
+                      style: textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'La idea no es separar “contenido” y “servicio” como dos mundos distintos, sino usarlos como capas complementarias de una misma presencia profesional.',
+                      style: textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: professional.services
+                          .map((service) => _ServiceChip(label: service))
+                          .toList(),
                     ),
                   ],
                 ),
@@ -233,7 +178,7 @@ class ProfessionalContentDetailScreen extends StatelessWidget {
                     Text('Acciones', style: textTheme.titleLarge),
                     const SizedBox(height: 8),
                     Text(
-                      'Interacciones mock para guardar, compartir o seguir explorando contenido experto.',
+                      'Interacciones mock para seguir explorando contenido, confianza y posibles servicios dentro de Mascotify.',
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
@@ -243,34 +188,14 @@ class ProfessionalContentDetailScreen extends StatelessWidget {
                           child: OutlinedButton(
                             onPressed: () => _showActionDialog(
                               context,
-                              title: 'Guardar contenido',
+                              title: professional.primaryActionLabel,
                               message:
-                                  'Este contenido quedaria guardado para volver a verlo despues dentro de Mascotify.',
-                              icon: Icons.bookmark_rounded,
-                              iconBackground: AppColors.supportSoft,
+                                  'Este contenido podría ser la puerta de entrada a una relación profesional más útil dentro del ecosistema.',
                             ),
-                            child: const Text('Guardar contenido'),
+                            child: Text(professional.primaryActionLabel),
                           ),
                         ),
                         const SizedBox(width: 10),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => _showActionDialog(
-                              context,
-                              title: 'Compartir contenido',
-                              message:
-                                  'Podrias compartir esta pieza con otra persona o dentro del ecosistema como recomendacion experta.',
-                              icon: Icons.share_rounded,
-                              iconBackground: AppColors.accentSoft,
-                            ),
-                            child: const Text('Compartir'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () => Navigator.of(context).push(
@@ -280,7 +205,7 @@ class ProfessionalContentDetailScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            child: const Text('Ver perfil del profesional'),
+                            child: const Text('Ver perfil profesional'),
                           ),
                         ),
                       ],
@@ -303,20 +228,10 @@ class ProfessionalContentDetailScreen extends StatelessWidget {
     );
   }
 
-  List<String> _buildContentPoints() {
-    return [
-      'Una introduccion clara para entender por que este tema importa dentro del cuidado y la vida social de las mascotas.',
-      'Consejos breves y accionables pensados para consumirse rapido sin perder profundidad.',
-      'Una mirada profesional que conecta bienestar, identidad digital y decisiones mas informadas.',
-    ];
-  }
-
   Future<void> _showActionDialog(
     BuildContext context, {
     required String title,
     required String message,
-    required IconData icon,
-    required Color iconBackground,
   }) async {
     await showDialog<void>(
       context: context,
@@ -333,10 +248,13 @@ class ProfessionalContentDetailScreen extends StatelessWidget {
                   width: 54,
                   height: 54,
                   decoration: BoxDecoration(
-                    color: iconBackground,
+                    color: AppColors.supportSoft,
                     borderRadius: BorderRadius.circular(18),
                   ),
-                  child: Icon(icon, color: AppColors.textPrimary),
+                  child: const Icon(
+                    Icons.storefront_rounded,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Text(title, style: Theme.of(context).textTheme.headlineMedium),
@@ -351,7 +269,7 @@ class ProfessionalContentDetailScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
-                    'Este flujo es mock y representa una futura experiencia de consumo, guardado y distribucion de contenido profesional dentro de Mascotify.',
+                    'Este flujo es mock y representa una futura relación entre contenido, confianza y servicios profesionales dentro de Mascotify.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       height: 1.5,
@@ -405,6 +323,44 @@ class _Badge extends StatelessWidget {
   }
 }
 
+class _InfoTile extends StatelessWidget {
+  const _InfoTile({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _PointRow extends StatelessWidget {
   const _PointRow({required this.text});
 
@@ -435,6 +391,30 @@ class _PointRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ServiceChip extends StatelessWidget {
+  const _ServiceChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.accentSoft,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.accentDeep,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }

@@ -57,7 +57,7 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                       ),
                       const Spacer(),
                       Container(
-                        constraints: const BoxConstraints(maxWidth: 170),
+                        constraints: const BoxConstraints(maxWidth: 190),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 8,
@@ -67,7 +67,7 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
-                          professional.contentType,
+                          professional.profileModeLabel,
                           textAlign: TextAlign.center,
                           style: textTheme.bodyMedium?.copyWith(
                             color: AppColors.textPrimary,
@@ -98,16 +98,16 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: _HeroMetric(
-                          label: 'Enfoque',
-                          value: professional.approachStyle,
+                        child: _MetricTile(
+                          label: 'Estado',
+                          value: professional.presenceStatusLabel,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _HeroMetric(
-                          label: 'Comparte',
-                          value: professional.contentType,
+                        child: _MetricTile(
+                          label: 'Servicios',
+                          value: professional.serviceAvailabilityLabel,
                         ),
                       ),
                     ],
@@ -117,7 +117,7 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _SectionCard(
-              title: 'Sobre este profesional',
+              title: 'Presencia dentro del ecosistema',
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -131,7 +131,7 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      professional.valueProposition,
+                      professional.serviceSummary,
                       style: textTheme.bodyMedium?.copyWith(
                         color: AppColors.textPrimary,
                         height: 1.5,
@@ -143,48 +143,24 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _SectionCard(
-              title: 'Especialidades',
+              title: 'Señales de confianza',
               child: Wrap(
                 spacing: 10,
                 runSpacing: 10,
-                children: professional.topics
-                    .map((topic) => _TopicChip(label: topic))
+                children: professional.trustSignals
+                    .map((item) => _TrustChip(label: item))
                     .toList(),
               ),
             ),
             const SizedBox(height: 16),
             _SectionCard(
-              title: 'Que comparte',
+              title: 'Servicios posibles',
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _InfoRow(
-                    label: 'Tipo de contenido',
-                    value: professional.contentType,
-                  ),
-                  _InfoRow(
-                    label: 'Estilo de acompanamiento',
-                    value: professional.approachStyle,
-                  ),
-                  _InfoRow(
-                    label: 'Temas dominados',
-                    value: professional.topics.join(', '),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            _SectionCard(
-              title: 'Contenido destacado',
-              child: Column(
-                children: professional.featuredContent
+                children: professional.services
                     .map(
-                      (content) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _FeaturedContentCard(
-                          professional: professional,
-                          content: content,
-                        ),
+                      (service) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _ServiceTile(label: service),
                       ),
                     )
                     .toList(),
@@ -192,25 +168,28 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _SectionCard(
-              title: 'Como puede ayudarte',
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.surfaceAlt, AppColors.primarySoft],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              title: 'Temas y contenido',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: professional.topics
+                        .map((topic) => _TopicChip(label: topic))
+                        .toList(),
                   ),
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: Text(
-                  professional.helpSummary,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textPrimary,
-                    height: 1.5,
+                  const SizedBox(height: 16),
+                  ...professional.featuredContent.map(
+                    (content) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _ContentCard(
+                        professional: professional,
+                        content: content,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
             const SizedBox(height: 16),
@@ -223,7 +202,7 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                     Text('Acciones', style: textTheme.titleLarge),
                     const SizedBox(height: 8),
                     Text(
-                      'Interacciones mock para una futura comunidad experta dentro de Mascotify.',
+                      'Interacciones mock para una comunidad experta que puede crecer a relaciones, orientación o servicios.',
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
@@ -231,15 +210,8 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => ProfessionalContentDetailScreen(
-                                  professional: professional,
-                                  content: professional.featuredContent.first,
-                                ),
-                              ),
-                            ),
-                            child: const Text('Ver charla'),
+                            onPressed: () => _openContent(context),
+                            child: Text(professional.secondaryActionLabel),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -247,13 +219,11 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                           child: OutlinedButton(
                             onPressed: () => _showActionDialog(
                               context,
-                              title: 'Profesional seguido',
+                              title: professional.primaryActionLabel,
                               message:
-                                  'Ahora seguirias a ${professional.name} para volver mas facil a sus charlas, opiniones y nuevas piezas breves dentro de Mascotify.',
-                              icon: Icons.person_add_alt_1_rounded,
-                              iconBackground: AppColors.accentSoft,
+                                  'Esta interacción mock representa cómo ${professional.name} podría pasar de voz experta a relación profesional más útil dentro de Mascotify.',
                             ),
-                            child: const Text('Seguir'),
+                            child: Text(professional.primaryActionLabel),
                           ),
                         ),
                       ],
@@ -265,13 +235,11 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                           child: OutlinedButton(
                             onPressed: () => _showActionDialog(
                               context,
-                              title: 'Guardar profesional',
+                              title: 'Seguir profesional',
                               message:
-                                  'El perfil quedaria guardado para volver despues y seguir profundizando temas relevantes.',
-                              icon: Icons.bookmark_rounded,
-                              iconBackground: AppColors.supportSoft,
+                                  'Seguirías a ${professional.name} para volver a su contenido, confianza y futuros servicios desde una misma ficha.',
                             ),
-                            child: const Text('Guardar'),
+                            child: const Text('Seguir'),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -279,13 +247,11 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                           child: OutlinedButton(
                             onPressed: () => _showActionDialog(
                               context,
-                              title: 'Compartir profesional',
+                              title: 'Guardar perfil',
                               message:
-                                  'Podrias compartir este perfil experto dentro o fuera del ecosistema Mascotify como recomendacion.',
-                              icon: Icons.share_rounded,
-                              iconBackground: AppColors.primarySoft,
+                                  'Este perfil quedaría guardado para volver a su contenido o explorar servicios más adelante.',
                             ),
-                            child: const Text('Compartir'),
+                            child: const Text('Guardar'),
                           ),
                         ),
                       ],
@@ -300,12 +266,21 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
     );
   }
 
+  void _openContent(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ProfessionalContentDetailScreen(
+          professional: professional,
+          content: professional.featuredContent.first,
+        ),
+      ),
+    );
+  }
+
   Future<void> _showActionDialog(
     BuildContext context, {
     required String title,
     required String message,
-    required IconData icon,
-    required Color iconBackground,
   }) async {
     await showDialog<void>(
       context: context,
@@ -322,10 +297,13 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                   width: 54,
                   height: 54,
                   decoration: BoxDecoration(
-                    color: iconBackground,
+                    color: AppColors.accentSoft,
                     borderRadius: BorderRadius.circular(18),
                   ),
-                  child: Icon(icon, color: AppColors.textPrimary),
+                  child: const Icon(
+                    Icons.storefront_rounded,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Text(title, style: Theme.of(context).textTheme.headlineMedium),
@@ -340,7 +318,7 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
-                    'Este flujo es mock y representa como Mascotify puede acercar voces expertas, seguimiento de contenidos y descubrimiento confiable dentro del producto.',
+                    'Este flujo es mock y representa cómo Mascotify puede acercar voces expertas, seguimiento de contenidos y futuras relaciones de servicio dentro del mismo ecosistema.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       height: 1.5,
@@ -388,8 +366,8 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({required this.label, required this.value});
+class _MetricTile extends StatelessWidget {
+  const _MetricTile({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -419,33 +397,51 @@ class _HeroMetric extends StatelessWidget {
   }
 }
 
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
+class _TrustChip extends StatelessWidget {
+  const _TrustChip({required this.label});
 
   final String label;
-  final String value;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(height: 1.35),
-          ),
-        ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _ServiceTile extends StatelessWidget {
+  const _ServiceTile({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -475,11 +471,8 @@ class _TopicChip extends StatelessWidget {
   }
 }
 
-class _FeaturedContentCard extends StatelessWidget {
-  const _FeaturedContentCard({
-    required this.professional,
-    required this.content,
-  });
+class _ContentCard extends StatelessWidget {
+  const _ContentCard({required this.professional, required this.content});
 
   final ProfessionalProfile professional;
   final ProfessionalContentPreview content;
@@ -511,14 +504,8 @@ class _FeaturedContentCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _SmallBadge(
-                  label: content.category,
-                  backgroundColor: AppColors.accentSoft,
-                ),
-                _SmallBadge(
-                  label: content.duration,
-                  backgroundColor: AppColors.primarySoft,
-                ),
+                _TopicChip(label: content.category),
+                _TrustChip(label: content.duration),
               ],
             ),
             const SizedBox(height: 12),
@@ -531,43 +518,7 @@ class _FeaturedContentCard extends StatelessWidget {
                 height: 1.45,
               ),
             ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Ver contenido',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.accentDeep,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SmallBadge extends StatelessWidget {
-  const _SmallBadge({required this.label, required this.backgroundColor});
-
-  final String label;
-  final Color backgroundColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w700,
         ),
       ),
     );

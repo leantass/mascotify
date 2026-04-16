@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/data/professional_mock_data.dart';
+import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/professional_models.dart';
 import '../../../../theme/app_colors.dart';
 import 'professional_content_detail_screen.dart';
@@ -11,10 +11,8 @@ class ProfessionalsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final specialists = professionalProfiles;
-    final followedProfessionals = professionalProfiles.take(3).toList();
-    final contents = professionalLibraryContents;
-    final recommendations = professionalRecommendations;
+    final profiles = AppData.professionalProfiles;
+    final contents = AppData.professionalLibraryContents;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profesionales y contenido')),
@@ -22,78 +20,56 @@ class ProfessionalsScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: [
-            const _ProfessionalsHero(),
-            const SizedBox(height: 20),
-            const _SpecialtiesSection(),
+            _Hero(
+              profileCount: profiles.length,
+              serviceCount: AppData.professionalServiceSpotlights.length,
+              contentCount: contents.length,
+            ),
+            const SizedBox(height: 16),
+            const _DifferenceCard(),
+            const SizedBox(height: 16),
+            const _CategoriesCard(),
             const SizedBox(height: 16),
             _SectionCard(
-              title: 'Profesionales seguidos',
+              title: 'Servicios posibles dentro de Mascotify',
               subtitle:
-                  'Voces expertas que ya formas parte de tu ecosistema para volver a sus contenidos y acompanamiento cuando quieras.',
-              child: Column(
-                children: followedProfessionals
-                    .map(
-                      (professional) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _FollowedProfessionalCard(
-                          professional: professional,
-                        ),
-                      ),
-                    )
-                    .toList(),
-              ),
+                  'Una base mock para leer esta vertical también como red de servicios, no solo como feed de contenido.',
+              children: AppData.professionalServiceSpotlights
+                  .map((item) => _ServiceSpotlightCard(item: item))
+                  .toList(),
             ),
             const SizedBox(height: 16),
             _SectionCard(
-              title: 'Profesionales destacados',
+              title: 'Perfiles activos',
               subtitle:
-                  'Referentes que suman mirada experta, acompanamiento y contenido util dentro de Mascotify.',
-              child: Column(
-                children: specialists
-                    .map(
-                      (specialist) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _ProfessionalCard(specialist: specialist),
-                      ),
-                    )
-                    .toList(),
-              ),
+                  'Voces expertas, perfiles híbridos y prestadores con señales de confianza y valor más claro.',
+              children: profiles
+                  .map((profile) => _ProfileCard(profile: profile))
+                  .toList(),
             ),
             const SizedBox(height: 16),
             _SectionCard(
-              title: 'Charlas y contenidos',
+              title: 'Contenido profesional',
               subtitle:
-                  'Piezas breves, charlas y opiniones para ayudar a tomar mejores decisiones.',
-              child: Column(
-                children: contents
-                    .map(
-                      (content) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _ContentCard(content: content),
-                      ),
-                    )
-                    .toList(),
-              ),
+                  'Piezas breves que nacen desde perfiles que también podrían ofrecer orientación o servicios.',
+              children: contents
+                  .map((content) => _ContentCard(content: content))
+                  .toList(),
             ),
             const SizedBox(height: 16),
             _SectionCard(
               title: 'Recomendado para vos',
               subtitle:
-                  'Una mezcla mock de voces expertas y temas relevantes para el cuidado, el matching y la vida social de las mascotas.',
-              child: Column(
-                children: recommendations
-                    .map(
-                      (recommendation) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _RecommendationTile(
-                          title: recommendation.title,
-                          subtitle: recommendation.subtitle,
-                          accentColor: Color(recommendation.accentColorHex),
-                        ),
-                      ),
-                    )
-                    .toList(),
-              ),
+                  'Señales mock que mezclan contenido, criterio profesional y futuras capas de servicio.',
+              children: AppData.professionalRecommendations
+                  .map(
+                    (item) => _RecommendationTile(
+                      title: item.title,
+                      subtitle: item.subtitle,
+                      accentColor: Color(item.accentColorHex),
+                    ),
+                  )
+                  .toList(),
             ),
           ],
         ),
@@ -102,72 +78,16 @@ class ProfessionalsScreen extends StatelessWidget {
   }
 }
 
-Future<void> _showProfessionalActionDialog(
-  BuildContext context, {
-  required String title,
-  required String message,
-  required IconData icon,
-  required Color iconBackground,
-  required String supportingText,
-}) async {
-  await showDialog<void>(
-    context: context,
-    builder: (context) {
-      return Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  color: iconBackground,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Icon(icon, color: AppColors.textPrimary),
-              ),
-              const SizedBox(height: 16),
-              Text(title, style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 8),
-              Text(message, style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: 18),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceAlt,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Text(
-                  supportingText,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textPrimary,
-                    height: 1.5,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Entendido'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
-}
+class _Hero extends StatelessWidget {
+  const _Hero({
+    required this.profileCount,
+    required this.serviceCount,
+    required this.contentCount,
+  });
 
-class _ProfessionalsHero extends StatelessWidget {
-  const _ProfessionalsHero();
+  final int profileCount;
+  final int serviceCount;
+  final int contentCount;
 
   @override
   Widget build(BuildContext context) {
@@ -196,7 +116,7 @@ class _ProfessionalsHero extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              'Comunidad experta',
+              'Vertical profesional',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
@@ -205,15 +125,40 @@ class _ProfessionalsHero extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Descubri profesionales, charlas y piezas breves dentro de Mascotify.',
+            'La comunidad experta ya puede sentirse como red y no solo como contenido.',
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 10),
           Text(
-            'Esta vertical conecta a los usuarios con especialistas, opiniones y contenido util para que el ecosistema no solo sirva para encontrar mascotas, sino tambien para entenderlas mejor.',
+            'Esta capa conecta voces expertas, servicios posibles, presencia comercial y señales de confianza para que Mascotify pueda crecer a una vertical profesional real.',
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Expanded(
+                child: _Metric(
+                  label: 'Perfiles',
+                  value: '$profileCount activos',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _Metric(
+                  label: 'Servicios',
+                  value: '$serviceCount bases',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _Metric(
+                  label: 'Contenido',
+                  value: '$contentCount piezas',
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -221,8 +166,50 @@ class _ProfessionalsHero extends StatelessWidget {
   }
 }
 
-class _SpecialtiesSection extends StatelessWidget {
-  const _SpecialtiesSection();
+class _DifferenceCard extends StatelessWidget {
+  const _DifferenceCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              'Dos formas de leer esta comunidad',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Mascotify empieza a distinguir entre presencia experta basada en contenido y presencia profesional orientada a servicios o negocio.',
+            ),
+            SizedBox(height: 16),
+            _ModeTile(
+              title: 'Experto en contenido',
+              subtitle:
+                  'Comparte criterio, piezas breves y acompañamiento para entender mejor decisiones de cuidado.',
+              color: AppColors.primarySoft,
+              icon: Icons.play_circle_outline_rounded,
+            ),
+            SizedBox(height: 10),
+            _ModeTile(
+              title: 'Profesional o prestador de servicios',
+              subtitle:
+                  'Suma presencia comercial, posibles servicios y señales de confianza para una futura capa operativa.',
+              color: AppColors.accentSoft,
+              icon: Icons.storefront_outlined,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoriesCard extends StatelessWidget {
+  const _CategoriesCard();
 
   @override
   Widget build(BuildContext context) {
@@ -233,20 +220,22 @@ class _SpecialtiesSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Especialidades',
+              'Categorías de entrada',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             Text(
-              'Categorias iniciales para navegar voces expertas y contenidos utiles.',
+              'Etiquetas iniciales para navegar voces expertas, áreas de criterio y futuras capas de servicio.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
             Wrap(
               spacing: 10,
               runSpacing: 10,
-              children: professionalSpecialties
-                  .map((specialty) => _SpecialtyChip(label: specialty))
+              children: AppData.professionalSpecialties
+                  .map(
+                    (item) => _Pill(label: item, color: AppColors.surfaceAlt),
+                  )
                   .toList(),
             ),
           ],
@@ -260,12 +249,12 @@ class _SectionCard extends StatelessWidget {
   const _SectionCard({
     required this.title,
     required this.subtitle,
-    required this.child,
+    required this.children,
   });
 
   final String title;
   final String subtitle;
-  final Widget child;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
@@ -279,7 +268,12 @@ class _SectionCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 16),
-            child,
+            ...children.map(
+              (child) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: child,
+              ),
+            ),
           ],
         ),
       ),
@@ -287,110 +281,51 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-class _FollowedProfessionalCard extends StatelessWidget {
-  const _FollowedProfessionalCard({required this.professional});
+class _ServiceSpotlightCard extends StatelessWidget {
+  const _ServiceSpotlightCard({required this.item});
 
-  final ProfessionalProfile professional;
+  final ProfessionalServiceSpotlight item;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surfaceAlt,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 60,
-            height: 60,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
-              color: Color(professional.accentColorHex),
-              borderRadius: BorderRadius.circular(20),
+              color: Color(item.accentColorHex),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.verified_rounded, color: AppColors.dark),
+            child: const Icon(Icons.storefront_rounded, color: AppColors.dark),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        professional.name,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.supportSoft,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        'Siguiendo',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
+                _Pill(label: item.availabilityLabel, color: Colors.white),
+                const SizedBox(height: 10),
+                Text(
+                  item.title,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  professional.specialty,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Lo seguis para volver a sus charlas, recibir nuevas ideas y sostener una relacion continua con su mirada experta.',
+                  item.subtitle,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textPrimary,
                     height: 1.45,
                   ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ProfessionalPublicProfileScreen(
-                              professional: professional,
-                            ),
-                          ),
-                        ),
-                        child: const Text('Ver perfil'),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ProfessionalContentDetailScreen(
-                              professional: professional,
-                              content: professional.featuredContent.first,
-                            ),
-                          ),
-                        ),
-                        child: const Text('Ver contenido'),
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),
@@ -401,10 +336,10 @@ class _FollowedProfessionalCard extends StatelessWidget {
   }
 }
 
-class _ProfessionalCard extends StatelessWidget {
-  const _ProfessionalCard({required this.specialist});
+class _ProfileCard extends StatelessWidget {
+  const _ProfileCard({required this.profile});
 
-  final ProfessionalProfile specialist;
+  final ProfessionalProfile profile;
 
   @override
   Widget build(BuildContext context) {
@@ -422,13 +357,16 @@ class _ProfessionalCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 60,
-                height: 60,
+                width: 58,
+                height: 58,
                 decoration: BoxDecoration(
-                  color: Color(specialist.accentColorHex),
+                  color: Color(profile.accentColorHex),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(Icons.person_rounded, color: AppColors.dark),
+                child: const Icon(
+                  Icons.verified_rounded,
+                  color: AppColors.dark,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -436,32 +374,14 @@ class _ProfessionalCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      specialist.name,
+                      profile.name,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      specialist.specialty,
+                      profile.specialty,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        specialist.contentType,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                        ),
                       ),
                     ),
                   ],
@@ -470,12 +390,44 @@ class _ProfessionalCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _Pill(label: profile.profileModeLabel, color: Colors.white),
+              _Pill(
+                label: profile.presenceStatusLabel,
+                color: AppColors.primarySoft,
+              ),
+              _Pill(
+                label: profile.serviceAvailabilityLabel,
+                color: Color(profile.accentColorHex),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
           Text(
-            specialist.description,
+            profile.description,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppColors.textPrimary,
               height: 1.45,
             ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            profile.serviceSummary,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: profile.trustSignals
+                .map((item) => _Pill(label: item, color: AppColors.surface))
+                .toList(),
           ),
           const SizedBox(height: 14),
           Row(
@@ -485,7 +437,7 @@ class _ProfessionalCard extends StatelessWidget {
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => ProfessionalPublicProfileScreen(
-                        professional: specialist,
+                        professional: profile,
                       ),
                     ),
                   ),
@@ -498,28 +450,24 @@ class _ProfessionalCard extends StatelessWidget {
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => ProfessionalContentDetailScreen(
-                        professional: specialist,
-                        content: specialist.featuredContent.first,
+                        professional: profile,
+                        content: profile.featuredContent.first,
                       ),
                     ),
                   ),
-                  child: const Text('Ver charla'),
+                  child: Text(profile.secondaryActionLabel),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => _showProfessionalActionDialog(
+                  onPressed: () => _showMockDialog(
                     context,
-                    title: 'Profesional seguido',
+                    title: profile.primaryActionLabel,
                     message:
-                        'Ahora seguirias a ${specialist.name} para volver mas facil a sus charlas, opiniones y nuevas piezas breves dentro de Mascotify.',
-                    icon: Icons.person_add_alt_1_rounded,
-                    iconBackground: AppColors.accentSoft,
-                    supportingText:
-                        'Este seguimiento es mock y representa una relacion continua con voces expertas para descubrir nuevas ideas, recomendaciones y contenido util dentro del ecosistema.',
+                        'Esta interacción mock representa cómo ${profile.name} podría evolucionar a una relación más útil dentro de Mascotify.',
                   ),
-                  child: const Text('Seguir'),
+                  child: Text(profile.primaryActionLabel),
                 ),
               ),
             ],
@@ -537,7 +485,7 @@ class _ContentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final professional = findProfessionalByName(content.professional);
+    final professional = AppData.findProfessionalByName(content.professional)!;
 
     return Container(
       width: double.infinity,
@@ -554,39 +502,16 @@ class _ContentCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
-              Expanded(
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _Badge(
-                      label: content.category,
-                      backgroundColor: AppColors.accentSoft,
-                    ),
-                    _Badge(
-                      label: content.duration,
-                      backgroundColor: AppColors.primarySoft,
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: Color(content.accentColorHex),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.play_circle_outline_rounded,
-                  color: AppColors.dark,
-                ),
-              ),
+              _Pill(label: content.category, color: AppColors.accentSoft),
+              _Pill(label: content.duration, color: AppColors.primarySoft),
+              _Pill(label: professional.profileModeLabel, color: Colors.white),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Text(content.title, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 6),
           Text(
@@ -600,6 +525,14 @@ class _ContentCard extends StatelessWidget {
             content.summary,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppColors.textPrimary,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            professional.serviceSummary,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
               height: 1.45,
             ),
           ),
@@ -627,17 +560,14 @@ class _ContentCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => _showProfessionalActionDialog(
-                    context,
-                    title: 'Guardar contenido',
-                    message:
-                        'Este contenido quedaria guardado para volver a verlo despues dentro de Mascotify.',
-                    icon: Icons.bookmark_rounded,
-                    iconBackground: AppColors.supportSoft,
-                    supportingText:
-                        'Este guardado es mock y representa una biblioteca personal para retomar charlas, recomendaciones y piezas breves cuando quieras.',
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ProfessionalPublicProfileScreen(
+                        professional: professional,
+                      ),
+                    ),
                   ),
-                  child: const Text('Guardar'),
+                  child: const Text('Ver perfil'),
                 ),
               ),
             ],
@@ -707,43 +637,171 @@ class _RecommendationTile extends StatelessWidget {
   }
 }
 
-class _SpecialtyChip extends StatelessWidget {
-  const _SpecialtyChip({required this.label});
+Future<void> _showMockDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+}) async {
+  await showDialog<void>(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: AppColors.accentSoft,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Icon(
+                  Icons.storefront_rounded,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(title, style: Theme.of(context).textTheme.headlineMedium),
+              const SizedBox(height: 8),
+              Text(message, style: Theme.of(context).textTheme.bodyMedium),
+              const SizedBox(height: 18),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceAlt,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Text(
+                  'Este flujo es mock y representa cómo la comunidad experta puede crecer a relaciones más útiles, orientación y servicios dentro de Mascotify.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Entendido'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
 
-  final String label;
+class _ModeTile extends StatelessWidget {
+  const _ModeTile({
+    required this.title,
+    required this.subtitle,
+    required this.color,
+    required this.icon,
+  });
+
+  final String title;
+  final String subtitle;
+  final Color color;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surfaceAlt,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border),
       ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w600,
-        ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: AppColors.textPrimary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _Badge extends StatelessWidget {
-  const _Badge({required this.label, required this.backgroundColor});
+class _Metric extends StatelessWidget {
+  const _Metric({required this.label, required this.value});
 
   final String label;
-  final Color backgroundColor;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+          ),
+          const SizedBox(height: 6),
+          Text(value, style: Theme.of(context).textTheme.titleMedium),
+        ],
+      ),
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  const _Pill({required this.label, required this.color});
+
+  final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: color,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(

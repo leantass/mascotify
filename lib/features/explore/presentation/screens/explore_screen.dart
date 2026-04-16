@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../features/pets/presentation/screens/express_interest_screen.dart';
 import '../../../../features/pets/presentation/screens/pet_public_profile_screen.dart';
-import '../../../../shared/data/mock_data.dart';
+import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
+import '../../../../shared/models/social_models.dart';
 import '../../../../theme/app_colors.dart';
 import 'connections_inbox_screen.dart';
 import 'professionals_screen.dart';
@@ -13,8 +14,8 @@ class ExploreScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pets = MockData.pets;
-    final savedPets = pets.take(3).toList();
+    final pets = AppData.pets;
+    final savedProfiles = AppData.savedProfiles;
 
     return Scaffold(
       body: SafeArea(
@@ -45,7 +46,7 @@ class ExploreScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Perfiles con potencial de conexion, afinidad social y futuras oportunidades de matching.',
+              'Perfiles con potencial de conexión, afinidad social y futuras oportunidades de matching.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -62,7 +63,7 @@ class ExploreScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Una base mock para volver a perfiles que te interesaron y seguir descubriendo con mas calma.',
+              'Una base mock para volver a perfiles que te interesaron y seguir descubriendo con más calma.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -87,7 +88,7 @@ class ExploreScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Mascotify tambien puede acompanar un descubrimiento mas pausado: guardar, revisar despues y retomar conexiones cuando el momento sea el indicado.',
+                    'Mascotify también puede acompañar un descubrimiento más pausado: guardar, revisar después y retomar conexiones cuando el momento sea el indicado.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       height: 1.5,
@@ -97,10 +98,10 @@ class ExploreScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            ...savedPets.map(
-              (pet) => Padding(
+            ...savedProfiles.map(
+              (entry) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: _SavedProfileCard(pet: pet),
+                child: _SavedProfileCard(entry: entry),
               ),
             ),
           ],
@@ -140,7 +141,7 @@ class _ExploreHero extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              'Modulo social',
+              'Ecosistema social',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
@@ -149,7 +150,7 @@ class _ExploreHero extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Descubri mascotas compatibles dentro del ecosistema Mascotify.',
+            'Descubrí mascotas compatibles dentro del ecosistema Mascotify.',
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 10),
@@ -287,7 +288,7 @@ class _ProfessionalsEntryCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Accede a especialistas, charlas y piezas breves que amplian el ecosistema Mascotify.',
+                        'Accede a especialistas, charlas y piezas breves que amplían el ecosistema Mascotify.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
@@ -352,8 +353,8 @@ class _ExploreFilters extends StatelessWidget {
               children: const [
                 _FilterChip(label: 'Especie: Todas'),
                 _FilterChip(label: 'Sexo: Cualquiera'),
-                _FilterChip(label: 'Ubicacion: Buenos Aires'),
-                _FilterChip(label: 'Busca cria: Indistinto'),
+                _FilterChip(label: 'Ubicación: Buenos Aires'),
+                _FilterChip(label: 'Busca cría: Indistinto'),
               ],
             ),
           ],
@@ -461,6 +462,22 @@ class _ExplorePetCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.primarySoft,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                pet.matchingPreferences.matchSummary,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textPrimary,
+                  height: 1.45,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -469,22 +486,47 @@ class _ExplorePetCard extends StatelessWidget {
                   .toList(),
             ),
             const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: pet.matchingPreferences.compatibilitySignals
+                  .take(3)
+                  .map((item) => _AffinityChip(label: item))
+                  .toList(),
+            ),
+            const SizedBox(height: 14),
             Row(
               children: [
                 Expanded(
                   child: _MetaTile(
-                    label: 'Busca cria',
-                    value: pet.seekingBreeding ? 'Si' : 'No',
+                    label: 'Ritmo',
+                    value: pet.matchingPreferences.rhythmLabel,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: _MetaTile(
-                    label: 'Estado social',
-                    value: pet.socialProfileStatus,
+                    label: 'Afinidad',
+                    value: pet.matchingPreferences.preferredBondType,
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.supportSoft,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                pet.matchingPreferences.suggestedApproach,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textPrimary,
+                  height: 1.45,
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             Row(
@@ -513,7 +555,7 @@ class _ExplorePetCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () {},
+                    onPressed: () => _showSavedProfileDialog(context, pet),
                     child: const Text('Guardar'),
                   ),
                 ),
@@ -527,12 +569,14 @@ class _ExplorePetCard extends StatelessWidget {
 }
 
 class _SavedProfileCard extends StatelessWidget {
-  const _SavedProfileCard({required this.pet});
+  const _SavedProfileCard({required this.entry});
 
-  final Pet pet;
+  final SavedProfileEntry entry;
 
   @override
   Widget build(BuildContext context) {
+    final pet = entry.pet;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -598,10 +642,26 @@ class _SavedProfileCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Lo guardaste para revisarlo despues, comparar afinidades y volver cuando quieras.',
+                    '${entry.reason} ${entry.savedAtLabel}.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceAlt,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      pet.matchingPreferences.matchSummary,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textPrimary,
+                        height: 1.4,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -750,6 +810,31 @@ class _TagChip extends StatelessWidget {
   }
 }
 
+class _AffinityChip extends StatelessWidget {
+  const _AffinityChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
 class _SavedTag extends StatelessWidget {
   const _SavedTag({required this.label});
 
@@ -813,4 +898,70 @@ class _MetaTile extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _showSavedProfileDialog(BuildContext context, Pet pet) async {
+  await showDialog<void>(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: AppColors.supportSoft,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Icon(
+                  Icons.bookmark_added_rounded,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Perfil guardado',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Guardaste a ${pet.name} para volver más tarde, comparar afinidades y retomar esta conexión cuando tenga sentido.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 18),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceAlt,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Text(
+                  'Esta acción sigue siendo mock, pero ya evita un CTA muerto y refuerza la lógica de discovery progresivo dentro de Mascotify.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Entendido'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }

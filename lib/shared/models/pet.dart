@@ -61,17 +61,27 @@ class Pet {
 class PetMatchingPreferences {
   const PetMatchingPreferences({
     required this.preferredBondType,
+    required this.matchSummary,
+    required this.rhythmLabel,
     required this.locationRadiusLabel,
     required this.acceptsGradualMeet,
+    required this.compatibilitySignals,
     required this.desiredCompatibilities,
+    required this.softLimits,
     required this.idealContext,
     required this.importantNotes,
+    required this.suggestedApproach,
   });
 
   final String preferredBondType;
+  final String matchSummary;
+  final String rhythmLabel;
   final String locationRadiusLabel;
   final bool acceptsGradualMeet;
+  final List<String> compatibilitySignals;
   final List<String> desiredCompatibilities;
+  final List<String> softLimits;
   final String idealContext;
   final String importantNotes;
+  final String suggestedApproach;
 }

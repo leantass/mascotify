@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../features/pets/presentation/screens/pet_public_profile_screen.dart';
-import '../../../../shared/data/social_mock_data.dart';
+import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/social_models.dart';
 import '../../../../theme/app_colors.dart';
 import 'conversation_screen.dart';
@@ -12,7 +12,7 @@ class ConnectionsInboxScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final inboxItems = buildMockSocialInboxEntries();
+    final inboxItems = AppData.socialInboxEntries;
     final sentItems = inboxItems
         .where((item) => item.direction == 'Enviado')
         .toList();
@@ -31,7 +31,7 @@ class ConnectionsInboxScreen extends StatelessWidget {
             _InboxSection(
               title: 'Intereses recibidos',
               subtitle:
-                  'Senales que llegaron a tu ecosistema social para revisar con calma.',
+                  'Señales que llegaron a tu ecosistema social para revisar con calma.',
               items: receivedItems,
             ),
             const SizedBox(height: 16),
@@ -53,7 +53,7 @@ class _InboxHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalItems = buildMockMessageThreads().length;
+    final totalItems = AppData.messageThreads.length;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -89,12 +89,12 @@ class _InboxHero extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Segui el movimiento social de tus conexiones.',
+            'Seguí el movimiento social de tus conexiones.',
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 10),
           Text(
-            'Esta bandeja mock representa intereses enviados y recibidos, con estados, respuestas y una capa de mensajeria pensada para una red social de mascotas seria y segura.',
+            'Esta bandeja mock conecta intereses, afinidades y mensajería para que la transición hacia una conversación se sienta natural y ordenada.',
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
@@ -124,7 +124,7 @@ class _InboxHero extends StatelessWidget {
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const MessagesInboxScreen()),
               ),
-              child: const Text('Abrir mensajeria'),
+              child: const Text('Abrir mensajería'),
             ),
           ),
         ],
@@ -176,7 +176,8 @@ class _InboxCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thread = findMockThreadForPet(item.pet);
+    final thread = AppData.findMessageThreadForPet(item.pet);
+    final hasThread = thread != null;
 
     return Container(
       width: double.infinity,
@@ -207,6 +208,7 @@ class _InboxCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           child: Text(
@@ -214,6 +216,7 @@ class _InboxCard extends StatelessWidget {
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                         ),
+                        const SizedBox(width: 8),
                         _InboxPill(
                           label: item.direction,
                           backgroundColor: Color(item.accentColorHex),
@@ -223,7 +226,7 @@ class _InboxCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${item.pet.species} - ${item.pet.breed}',
+                      '${item.pet.species} • ${item.pet.breed}',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 6),
@@ -243,7 +246,7 @@ class _InboxCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _MiniInfoTile(
-                  label: 'Interes',
+                  label: 'Interés',
                   value: item.interestType,
                 ),
               ),
@@ -253,12 +256,69 @@ class _InboxCard extends StatelessWidget {
               ),
             ],
           ),
+          if (hasThread) ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Chat ya disponible',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${thread.connectionType} • ${thread.stageLabel}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    thread.lastMessage,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textPrimary,
+                      height: 1.45,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           Text(
             item.message,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppColors.textPrimary,
               height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.primarySoft,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Text(
+              hasThread
+                  ? 'Esta afinidad ya dio paso a una conversación mock. Si entrás al chat, el contexto del interés se mantiene visible.'
+                  : 'Todavía no hay chat abierto, pero la transición natural sería llevar esta afinidad a la mensajería cuando tenga sentido.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textPrimary,
+                height: 1.45,
+              ),
             ),
           ),
           const SizedBox(height: 14),
@@ -278,7 +338,7 @@ class _InboxCard extends StatelessWidget {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    if (thread == null) {
+                    if (!hasThread) {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => const MessagesInboxScreen(),
@@ -293,7 +353,7 @@ class _InboxCard extends StatelessWidget {
                       ),
                     );
                   },
-                  child: const Text('Responder'),
+                  child: Text(hasThread ? 'Abrir chat' : 'Ir a mensajes'),
                 ),
               ),
               const SizedBox(width: 10),
@@ -345,7 +405,7 @@ Future<void> _showReviewLaterDialog(
               ),
               const SizedBox(height: 8),
               Text(
-                'Esta interaccion con ${item.pet.name} quedaria marcada para revisar despues dentro del flujo social de Mascotify.',
+                'Esta interacción con ${item.pet.name} quedaría marcada para revisar después dentro del flujo social de Mascotify.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 18),
@@ -357,7 +417,7 @@ Future<void> _showReviewLaterDialog(
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Text(
-                  'La idea es sostener conversaciones y afinidades sin presion, con espacio para volver cuando el contexto sea mejor.',
+                  'La idea es sostener conversaciones y afinidades sin presión, con espacio para volver cuando el contexto sea mejor.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textPrimary,
                     height: 1.5,

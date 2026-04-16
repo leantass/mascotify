@@ -41,6 +41,8 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
   Widget build(BuildContext context) {
     final pet = widget.pet;
     final textTheme = Theme.of(context).textTheme;
+    final snapshot = buildQrStatusSnapshotForPet(pet);
+    final activity = buildQrActivityEntriesForPet(pet);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Reportar avistamiento')),
@@ -63,12 +65,12 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Tu reporte puede ayudar a ubicar a ${pet.name} mas rapido.',
+                    'Tu reporte puede ayudar a ubicar a ${pet.name} más rápido.',
                     style: textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Compartis una referencia simple, visible y segura. El responsable podria recibir una ubicacion aproximada util sin exponer contacto privado directo.',
+                    'Compartís una referencia simple, visible y segura. El responsable podría recibir una ubicación aproximada útil sin exponer contacto privado directo.',
                     style: textTheme.bodyMedium,
                   ),
                 ],
@@ -135,13 +137,57 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text('Trazabilidad QR activa', style: textTheme.titleLarge),
+                    const SizedBox(height: 8),
                     Text(
-                      'Ubicacion aproximada detectada',
+                      'Este reporte se sumaría a la actividad reciente del QR y reforzaría la lectura de seguimiento del perfil.',
+                      style: textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _StatusMetric(
+                            label: 'Estado',
+                            value: snapshot.currentStatus,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _StatusMetric(
+                            label: 'Última señal',
+                            value: snapshot.lastSignalLabel,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ...activity
+                        .take(2)
+                        .map(
+                          (entry) => Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: _TraceabilityPreview(entry: entry),
+                          ),
+                        ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Ubicación aproximada detectada',
                       style: textTheme.titleLarge,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Representacion mock de la referencia que podria capturarse al escanear el QR y preparar el aviso para el responsable.',
+                      'Representación mock de la referencia que podría capturarse al escanear el QR y preparar el aviso para el responsable.',
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
@@ -194,12 +240,12 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Ubicacion lista para enviar',
+                                  'Ubicación lista para enviar',
                                   style: textTheme.titleMedium,
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  '${_suggestedLocation.zoneReference}. El sistema podria enviar este punto como referencia aproximada de avistamiento.',
+                                  '${_suggestedLocation.zoneReference}. El sistema podría enviar este punto como referencia aproximada de avistamiento.',
                                   style: textTheme.bodyMedium?.copyWith(
                                     color: AppColors.textPrimary,
                                     height: 1.45,
@@ -230,13 +276,13 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                     TextField(
                       controller: _locationController,
                       decoration: const InputDecoration(
-                        labelText: 'Ubicacion aproximada',
+                        labelText: 'Ubicación aproximada',
                         hintText: 'Ej. Plaza Irlanda, Caballito',
                       ),
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Podes ajustar la referencia si queres sumar mas precision sin necesidad de compartir datos privados.',
+                      'Podés ajustar la referencia si querés sumar más precisión sin necesidad de compartir datos privados.',
                       style: textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -248,7 +294,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Observaciones',
                         hintText:
-                            'Conta que viste, hacia donde iba o cualquier dato util.',
+                            'Contá qué viste, hacia dónde iba o cualquier dato útil.',
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -266,7 +312,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                         children: [
                           ...[
                             'La vi en movimiento',
-                            'Esta quieta',
+                            'Está quieta',
                             'Parece lastimada',
                           ].map(
                             (option) => RadioListTile<String>(
@@ -292,7 +338,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                       contentPadding: EdgeInsets.zero,
                       title: const Text('Permitir contacto posterior'),
                       subtitle: const Text(
-                        'Si hace falta ampliar el reporte, Mascotify podria usar este permiso dentro del flujo seguro.',
+                        'Si hace falta ampliar el reporte, Mascotify podría usar este permiso dentro del flujo seguro.',
                       ),
                     ),
                   ],
@@ -346,7 +392,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'La referencia sobre ${pet.name} quedo registrada en este flujo mock y podria enviarse al responsable como una ubicacion aproximada util desde Mascotify.',
+                  'La referencia sobre ${pet.name} quedó registrada en este flujo mock y podría enviarse al responsable como una ubicación aproximada útil desde Mascotify.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 18),
@@ -367,7 +413,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                       const SizedBox(height: 10),
                       _SummaryRow(label: 'Estado', value: _selectedCondition),
                       _SummaryRow(
-                        label: 'Ubicacion aproximada',
+                        label: 'Ubicación aproximada',
                         value: locationLabel,
                       ),
                       _SummaryRow(
@@ -390,7 +436,23 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
-                    'El responsable recibiria una senal clara de zona y punto aproximado, sin necesidad de exponer tu contacto privado de forma directa.',
+                    'El responsable recibiría una señal clara de zona y punto aproximado, sin necesidad de exponer tu contacto privado de forma directa.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textPrimary,
+                      height: 1.45,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceAlt,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Text(
+                    'Dentro del historial QR, este evento aparecería como una nueva señal de trazabilidad vinculada a ${pet.qrCodeLabel}.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       height: 1.45,
@@ -414,6 +476,84 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
         );
       },
     );
+  }
+}
+
+class _TraceabilityPreview extends StatelessWidget {
+  const _TraceabilityPreview({required this.entry});
+
+  final QrActivityEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Color(entry.accentColorHex),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(_iconFor(entry.iconKey), color: AppColors.textPrimary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  entry.title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${entry.statusLabel} • ${entry.timeLabel}',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  entry.detail,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _iconFor(String iconKey) {
+    switch (iconKey) {
+      case 'shield':
+        return Icons.shield_outlined;
+      case 'location':
+        return Icons.location_on_outlined;
+      case 'pending':
+        return Icons.schedule_rounded;
+      case 'badge':
+        return Icons.badge_outlined;
+      case 'history':
+        return Icons.history_rounded;
+      case 'qr':
+      default:
+        return Icons.qr_code_2_rounded;
+    }
   }
 }
 
@@ -520,7 +660,7 @@ class _MockLocationMap extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      '${location.timeReference}. Punto listo para enviar como referencia util al responsable.',
+                      '${location.timeReference}. Punto listo para enviar como referencia útil al responsable.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textPrimary,
                         height: 1.4,

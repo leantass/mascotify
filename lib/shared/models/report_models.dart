@@ -35,3 +35,39 @@ class SightingReportDraft {
   final String condition;
   final bool allowContact;
 }
+
+class QrStatusSnapshot {
+  const QrStatusSnapshot({
+    required this.currentStatus,
+    required this.protectedContactState,
+    required this.lastSignalLabel,
+    required this.lastSignalDetail,
+    required this.totalScansLabel,
+    required this.activeWindowLabel,
+  });
+
+  final String currentStatus;
+  final String protectedContactState;
+  final String lastSignalLabel;
+  final String lastSignalDetail;
+  final String totalScansLabel;
+  final String activeWindowLabel;
+}
+
+class QrActivityEntry {
+  const QrActivityEntry({
+    required this.title,
+    required this.detail,
+    required this.timeLabel,
+    required this.statusLabel,
+    required this.iconKey,
+    required this.accentColorHex,
+  });
+
+  final String title;
+  final String detail;
+  final String timeLabel;
+  final String statusLabel;
+  final String iconKey;
+  final int accentColorHex;
+}

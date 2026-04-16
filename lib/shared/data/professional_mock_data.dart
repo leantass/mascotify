@@ -5,54 +5,90 @@ const List<ProfessionalProfile> professionalProfiles = [
     name: 'Dra. Paula Mendes',
     specialty: 'Veterinaria preventiva',
     biography:
-        'Trabaja sobre prevencion, lectura temprana de senales clinicas y acompanamiento cotidiano para familias que buscan decisiones mas claras y seguras.',
+        'Trabaja sobre prevención, lectura temprana de señales clínicas y acompañamiento cotidiano para familias que buscan decisiones más claras y seguras.',
     description:
-        'Comparte recomendaciones breves sobre chequeos, prevencion y lectura temprana de senales importantes.',
+        'Comparte criterio clínico breve, pero también puede representar una presencia profesional con servicios y acompañamiento dentro de Mascotify.',
     contentType: 'Charlas breves',
     valueProposition:
-        'Convierte informacion veterinaria en piezas simples, utiles y faciles de aplicar dentro del dia a dia.',
+        'Convierte información veterinaria en piezas simples, útiles y fáciles de aplicar en el día a día.',
     approachStyle: 'Claro, cercano y preventivo',
     helpSummary:
-        'Puede ayudarte a ordenar prioridades de cuidado, entender alertas tempranas y aprovechar mejor la identidad digital de tu mascota para prevencion y seguimiento.',
+        'Puede ayudarte a ordenar prioridades de cuidado, entender alertas tempranas y aprovechar mejor la identidad digital de tu mascota para prevención y seguimiento.',
+    profileModeLabel: 'Profesional + servicio',
+    presenceStatusLabel: 'Perfil validado y visible',
+    serviceAvailabilityLabel: 'Recibe consultas y seguimiento breve',
+    serviceSummary:
+        'Su presencia combina contenido útil con una futura capa de orientación, chequeos preventivos y seguimiento clínico liviano dentro de la app.',
+    services: [
+      'Veterinaria preventiva',
+      'Chequeos y orientación',
+      'Seguimiento post consulta',
+      'Lectura inicial de señales',
+    ],
+    trustSignals: [
+      'Perfil profesional validado',
+      'Contenido frecuente y claro',
+      'Presencia apta para servicios futuros',
+    ],
+    primaryActionLabel: 'Explorar servicios',
+    secondaryActionLabel: 'Ver contenido',
     topics: [
-      'Prevencion',
+      'Prevención',
       'Chequeos',
-      'Senales tempranas',
+      'Señales tempranas',
       'Rutinas saludables',
     ],
     featuredContent: [
       ProfessionalContentPreview(
-        title: 'Que deberia tener un perfil QR realmente util',
+        title: 'Qué debería tener un perfil QR realmente útil',
         category: 'Identidad digital',
         duration: '1 min 30 s',
         summary:
-            'Opinion corta sobre informacion esencial, contacto seguro y claridad para reportes.',
+            'Opinión corta sobre información esencial, contacto seguro y claridad para reportes.',
       ),
       ProfessionalContentPreview(
         title: 'Chequeos que conviene no postergar',
         category: 'Veterinaria',
         duration: '2 min',
         summary:
-            'Una guia breve para detectar prioridades y ordenar controles preventivos.',
+            'Una guía breve para detectar prioridades y ordenar controles preventivos.',
       ),
     ],
     accentColorHex: 0xFFDDF6F6,
   ),
   ProfessionalProfile(
-    name: 'Lic. Tomas Ibarra',
+    name: 'Lic. Tomás Ibarra',
     specialty: 'Comportamiento animal',
     biography:
-        'Acompana procesos de socializacion y lectura de conducta con foco en encuentros graduales, bienestar emocional y compatibilidad entre mascotas.',
+        'Acompaña procesos de socialización y lectura de conducta con foco en encuentros graduales, bienestar emocional y compatibilidad entre mascotas.',
     description:
-        'Publica opiniones y micro contenidos sobre socializacion, encuentros cuidados y compatibilidades.',
+        'Publica opiniones y microcontenidos sobre socialización, encuentros cuidados y compatibilidades, con una presencia que también puede evolucionar a orientación profesional.',
     contentType: 'Opiniones y reels',
     valueProposition:
-        'Traducir el comportamiento en decisiones mas seguras para familias, encuentros y vinculos sociales.',
-    approachStyle: 'Observacional, didactico y gradual',
+        'Traducir el comportamiento en decisiones más seguras para familias, encuentros y vínculos sociales.',
+    approachStyle: 'Observacional, didáctico y gradual',
     helpSummary:
-        'Puede orientarte para leer energia, preparar presentaciones entre mascotas y detectar si una afinidad merece avanzar o tomarse con mas calma.',
+        'Puede orientarte para leer energía, preparar presentaciones entre mascotas y detectar si una afinidad merece avanzar o tomarse con más calma.',
+    profileModeLabel: 'Experto en contenido + orientación',
+    presenceStatusLabel: 'Comunidad activa',
+    serviceAvailabilityLabel: 'Orientación y evaluación futura',
+    serviceSummary:
+        'Hoy se siente fuerte como voz experta en contenidos, pero su ficha también deja espacio para futuras evaluaciones o acompañamientos por comportamiento.',
+    services: [
+      'Orientación conductual',
+      'Lectura de compatibilidad',
+      'Presentaciones cuidadas',
+      'Acompañamiento gradual',
+    ],
+    trustSignals: [
+      'Voz experta seguida por la comunidad',
+      'Enfoque gradual y didáctico',
+      'Temas alineados con matching y bienestar',
+    ],
+    primaryActionLabel: 'Pedir orientación',
+    secondaryActionLabel: 'Ver contenido',
     topics: [
-      'Socializacion',
+      'Socialización',
       'Compatibilidad',
       'Encuentros cuidados',
       'Lectura de conducta',
@@ -63,48 +99,66 @@ const List<ProfessionalProfile> professionalProfiles = [
         category: 'Comportamiento',
         duration: '2 min',
         summary:
-            'Pieza breve para entender energia, distancia y senales antes de un primer encuentro.',
+            'Pieza breve para entender energía, distancia y señales antes de un primer encuentro.',
       ),
       ProfessionalContentPreview(
         title: 'Cuando una afinidad parece prometedora',
         category: 'Matching',
         duration: '1 min 40 s',
         summary:
-            'Reflexion breve para no apurar vinculos y cuidar mejor la experiencia.',
+            'Reflexión breve para no apurar vínculos y cuidar mejor la experiencia.',
       ),
     ],
     accentColorHex: 0xFFFFE1EA,
   ),
   ProfessionalProfile(
     name: 'Dra. Valentina Sucre',
-    specialty: 'Cria responsable',
+    specialty: 'Cría responsable',
     biography:
-        'Trabaja sobre decisiones reproductivas responsables, evaluacion previa y bienestar integral antes de considerar una cria.',
+        'Trabaja sobre decisiones reproductivas responsables, evaluación previa y bienestar integral antes de considerar una cría.',
     description:
-        'Aporta criterio profesional para perfiles que exploran vinculos reproductivos con enfoque responsable.',
-    contentType: 'Guias y recomendaciones',
+        'Aporta criterio profesional para perfiles que exploran vínculos reproductivos con enfoque responsable y una posible capa de asesoría futura.',
+    contentType: 'Guías y recomendaciones',
     valueProposition:
-        'Ofrecer contexto experto para que la cria no sea una decision impulsiva sino un proceso informado y responsable.',
+        'Ofrecer contexto experto para que la cría no sea una decisión impulsiva, sino un proceso informado y responsable.',
     approachStyle: 'Responsable, criterioso y orientado al bienestar',
     helpSummary:
-        'Puede ayudarte a entender cuando conviene avanzar, que evaluar antes y como conectar matching con responsabilidad real.',
+        'Puede ayudarte a entender cuándo conviene avanzar, qué evaluar antes y cómo conectar matching con responsabilidad real.',
+    profileModeLabel: 'Especialista con criterio y servicio',
+    presenceStatusLabel: 'Perfil curado por temática',
+    serviceAvailabilityLabel: 'Asesoría futura en evaluación reproductiva',
+    serviceSummary:
+        'Su presencia mezcla guías expertas con una futura capa de consulta para casos donde la decisión requiere más criterio profesional.',
+    services: [
+      'Evaluación previa',
+      'Criterio para cría responsable',
+      'Compatibilidad reproductiva',
+      'Orientación de bienestar',
+    ],
+    trustSignals: [
+      'Tema sensible tratado con criterio',
+      'Enfoque de bienestar antes que impulso',
+      'Perfil apto para decisiones complejas',
+    ],
+    primaryActionLabel: 'Explorar criterio profesional',
+    secondaryActionLabel: 'Ver contenido',
     topics: [
-      'Cria responsable',
+      'Cría responsable',
       'Compatibilidad',
       'Bienestar',
-      'Evaluacion previa',
+      'Evaluación previa',
     ],
     featuredContent: [
       ProfessionalContentPreview(
-        title: 'Cuando hablar de cria y cuando no apurarse',
-        category: 'Cria responsable',
+        title: 'Cuando hablar de cría y cuando no apurarse',
+        category: 'Cría responsable',
         duration: '3 min',
         summary:
             'Contenido orientado a decisiones informadas, bienestar y compatibilidad antes de avanzar.',
       ),
       ProfessionalContentPreview(
-        title: 'Preguntas clave antes de considerar una cria',
-        category: 'Orientacion',
+        title: 'Preguntas clave antes de considerar una cría',
+        category: 'Orientación',
         duration: '2 min 20 s',
         summary:
             'Checklist conceptual para ordenar expectativas y cuidar mejor a las mascotas.',
@@ -118,26 +172,26 @@ const List<ProfessionalLibraryContent> professionalLibraryContents = [
   ProfessionalLibraryContent(
     title:
         'Presentaciones seguras entre mascotas: lo que conviene mirar primero',
-    professional: 'Lic. Tomas Ibarra',
+    professional: 'Lic. Tomás Ibarra',
     category: 'Comportamiento',
     duration: '2 min',
     summary:
-        'Pieza breve para entender energia, distancia y senales antes de un primer encuentro.',
+        'Pieza breve para entender energía, distancia y señales antes de un primer encuentro.',
     accentColorHex: 0xFFFFE1EA,
   ),
   ProfessionalLibraryContent(
-    title: 'Que deberia tener un perfil QR realmente util',
+    title: 'Qué debería tener un perfil QR realmente útil',
     professional: 'Dra. Paula Mendes',
     category: 'Identidad digital',
     duration: '1 min 30 s',
     summary:
-        'Opinion corta sobre informacion esencial, contacto seguro y claridad para reportes.',
+        'Opinión corta sobre información esencial, contacto seguro y claridad para reportes.',
     accentColorHex: 0xFFDDF6F6,
   ),
   ProfessionalLibraryContent(
-    title: 'Cuando hablar de cria y cuando no apurarse',
+    title: 'Cuando hablar de cría y cuando no apurarse',
     professional: 'Dra. Valentina Sucre',
-    category: 'Cria responsable',
+    category: 'Cría responsable',
     duration: '3 min',
     summary:
         'Contenido orientado a decisiones informadas, bienestar y compatibilidad antes de avanzar.',
@@ -147,28 +201,66 @@ const List<ProfessionalLibraryContent> professionalLibraryContents = [
 
 const List<ProfessionalRecommendation> professionalRecommendations = [
   ProfessionalRecommendation(
-    title: 'Como leer compatibilidades antes de un encuentro',
-    subtitle: 'Micro charla guiada por comportamiento y presentacion segura.',
+    title: 'Cómo leer compatibilidades antes de un encuentro',
+    subtitle: 'Microcharla guiada por comportamiento y presentación segura.',
     accentColorHex: 0xFFDDF6F6,
   ),
   ProfessionalRecommendation(
-    title: 'Placas QR y contacto seguro: que deberia tener un buen perfil',
-    subtitle: 'Opinion breve enfocada en identidad digital y prevencion.',
+    title: 'Placas QR y contacto seguro: qué debería tener un buen perfil',
+    subtitle: 'Opinión breve enfocada en identidad digital y prevención.',
     accentColorHex: 0xFFFFE1EA,
   ),
   ProfessionalRecommendation(
-    title: 'Cuando conviene consultar a un profesional antes de criar',
+    title: 'Cuándo conviene consultar a un profesional antes de criar',
     subtitle:
         'Contenido orientado a decisiones responsables dentro del ecosistema.',
     accentColorHex: 0xFFFFF2C6,
   ),
 ];
 
+const List<ProfessionalServiceSpotlight> professionalServiceSpotlights = [
+  ProfessionalServiceSpotlight(
+    title: 'Veterinaria y chequeos',
+    subtitle:
+        'Perfiles pensados para prevención, orientación clínica y seguimiento básico.',
+    availabilityLabel: 'Servicios futuros dentro de la red',
+    accentColorHex: 0xFFDDF6F6,
+  ),
+  ProfessionalServiceSpotlight(
+    title: 'Comportamiento y compatibilidad',
+    subtitle:
+        'Lectura conductual, presentaciones cuidadas y acompañamiento gradual.',
+    availabilityLabel: 'Orientación y evaluación',
+    accentColorHex: 0xFFFFE1EA,
+  ),
+  ProfessionalServiceSpotlight(
+    title: 'Nutrición y alimentos',
+    subtitle:
+        'Recomendaciones, tiendas futuras y decisiones mejor explicadas para cada mascota.',
+    availabilityLabel: 'Servicios y comercio futuro',
+    accentColorHex: 0xFFFFF2C6,
+  ),
+  ProfessionalServiceSpotlight(
+    title: 'Guardería, paseo y peluquería',
+    subtitle:
+        'Capas de servicio pensadas para operación, confianza y presencia comercial.',
+    availabilityLabel: 'Prestadores y negocios',
+    accentColorHex: 0xFFDDF6F6,
+  ),
+  ProfessionalServiceSpotlight(
+    title: 'Crematorio y cementerio',
+    subtitle:
+        'Servicios sensibles que exigen confianza, claridad y presencia profesional cuidada.',
+    availabilityLabel: 'Servicios especializados',
+    accentColorHex: 0xFFFFE1EA,
+  ),
+];
+
 const List<String> professionalSpecialties = [
   'Comportamiento',
   'Veterinaria',
-  'Nutricion',
-  'Cria responsable',
+  'Nutrición',
+  'Cría responsable',
   'Bienestar',
 ];
 

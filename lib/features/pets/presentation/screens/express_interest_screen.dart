@@ -15,7 +15,7 @@ class ExpressInterestScreen extends StatefulWidget {
 
 class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
   final _messageController = TextEditingController();
-  String _interestType = 'Vinculo social';
+  String _interestType = 'Vínculo social';
 
   @override
   void dispose() {
@@ -29,7 +29,7 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Expresar interes')),
+      appBar: AppBar(title: const Text('Expresar interés')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
@@ -49,12 +49,12 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Estas iniciando una intencion de conexion con ${pet.name}.',
+                    'Estás iniciando una intención de conexión con ${pet.name}.',
                     style: textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Este flujo mock representa el primer paso para futuras conexiones seguras dentro del modulo social de Mascotify.',
+                    'Este flujo mock representa el primer paso para futuras conexiones seguras dentro del módulo social de Mascotify.',
                     style: textTheme.bodyMedium,
                   ),
                 ],
@@ -111,7 +111,61 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Tipo de interes', style: textTheme.titleLarge),
+                    Text(
+                      'Lo que este perfil expresa mejor',
+                      style: textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      pet.matchingPreferences.matchSummary,
+                      style: textTheme.bodyMedium?.copyWith(height: 1.45),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _QuickMatchingTile(
+                            label: 'Afinidad',
+                            value: pet.matchingPreferences.preferredBondType,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _QuickMatchingTile(
+                            label: 'Ritmo',
+                            value: pet.matchingPreferences.rhythmLabel,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceAlt,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Text(
+                        pet.matchingPreferences.suggestedApproach,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textPrimary,
+                          height: 1.45,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Tipo de interés', style: textTheme.titleLarge),
                     const SizedBox(height: 12),
                     RadioGroup<String>(
                       groupValue: _interestType,
@@ -124,8 +178,8 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
                       child: Column(
                         children: [
                           ...[
-                            'Vinculo social',
-                            'Posible cria',
+                            'Vínculo social',
+                            'Posible cría',
                             'Encuentro supervisado',
                           ].map(
                             (option) => RadioListTile<String>(
@@ -145,7 +199,7 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Mensaje breve',
                         hintText:
-                            'Conta por que te interesa este perfil o que tipo de conexion imaginas.',
+                            'Contá por qué te interesa este perfil o qué tipo de conexión imaginás.',
                       ),
                     ),
                   ],
@@ -155,7 +209,7 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
             const SizedBox(height: 18),
             ElevatedButton(
               onPressed: _sendInterest,
-              child: const Text('Enviar intencion'),
+              child: const Text('Enviar intención'),
             ),
           ],
         ),
@@ -190,12 +244,12 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Intencion registrada',
+                  'Intención registrada',
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'La intencion de conexion con ${pet.name} quedo registrada en este flujo mock y seria procesada por Mascotify como una interaccion segura.',
+                  'La intención de conexión con ${pet.name} quedó registrada en este flujo mock y sería procesada por Mascotify como una interacción segura.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 18),
@@ -224,7 +278,7 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
-                    'Si la conexion avanza, Mascotify podria abrir una conversacion cuidada entre familias dentro de su propia mensajeria.',
+                    'Si la conexión avanza, esta intención pasaría primero por la bandeja social con el contexto de matching visible y después podría abrir una conversación cuidada entre familias dentro de la mensajería.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       height: 1.45,
@@ -264,6 +318,44 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class _QuickMatchingTile extends StatelessWidget {
+  const _QuickMatchingTile({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.primarySoft,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
