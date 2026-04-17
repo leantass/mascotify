@@ -314,7 +314,12 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     final rawValue = _preferences.getString('$_userStatePrefix$userId');
     if (rawValue != null && rawValue.isNotEmpty) {
       final decoded = jsonDecode(rawValue) as Map<String, dynamic>;
-      _userStates[userId] = PersistedLocalUserState.fromJson(decoded);
+      final restoredState = PersistedLocalUserState.fromJson(decoded);
+      final normalizedState = _normalizeUserState(userId, restoredState);
+      _userStates[userId] = normalizedState;
+      if (normalizedState.pets.length != restoredState.pets.length) {
+        unawaited(_persistUserState(userId));
+      }
       return;
     }
 
@@ -341,11 +346,21 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       if (rawValue == null || rawValue.isEmpty) continue;
       final userId = key.substring(_userStatePrefix.length);
       final decoded = jsonDecode(rawValue) as Map<String, dynamic>;
-      _userStates[userId] = PersistedLocalUserState.fromJson(decoded);
+      final restoredState = PersistedLocalUserState.fromJson(decoded);
+      final normalizedState = _normalizeUserState(userId, restoredState);
+      _userStates[userId] = normalizedState;
+      if (normalizedState.pets.length != restoredState.pets.length) {
+        unawaited(_persistUserState(userId));
+      }
     }
   }
 
   List<Pet> _seedPetsForCurrentAccount() {
+    final currentAccount = _sessionController.currentAccount;
+    if (currentAccount != null && _isLocalUserId(currentAccount.id)) {
+      return const <Pet>[];
+    }
+
     return MockData.pets
         .map(
           (pet) => Pet.fromJson(
@@ -353,6 +368,33 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           ),
         )
         .toList();
+  }
+
+  PersistedLocalUserState _normalizeUserState(
+    String userId,
+    PersistedLocalUserState state,
+  ) {
+    if (!_isLocalUserId(userId) || !_looksLikeLegacyMockSeed(state.pets)) {
+      return state;
+    }
+
+    return state.copyWith(pets: const <Pet>[]);
+  }
+
+  bool _isLocalUserId(String userId) {
+    return userId.startsWith('local-');
+  }
+
+  bool _looksLikeLegacyMockSeed(List<Pet> pets) {
+    if (pets.length != MockData.pets.length) return false;
+
+    for (var index = 0; index < pets.length; index++) {
+      if (pets[index].id != MockData.pets[index].id) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   String _buildPetsSummaryLabel(int count) {

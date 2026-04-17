@@ -26,23 +26,23 @@ class HomeScreen extends StatelessWidget {
     final familyProfile = account.familyProfile!;
     final pets = AppData.pets;
     final notifications = AppData.notifications;
-    final notificationCount = notifications
-        .where((item) => item.isUnread)
-        .length;
+    final notificationCount = notifications.where((item) => item.isUnread).length;
     final prioritizedNotifications = [...notifications]
       ..sort(_compareNotificationsForHome);
-    final latestNotification = prioritizedNotifications.first;
+    final latestNotification = prioritizedNotifications.isNotEmpty
+        ? prioritizedNotifications.first
+        : null;
     final threads = AppData.messageThreads;
-    final unreadMessageCount = threads.where(
-      (thread) => thread.unreadCount > 0,
-    );
+    final unreadMessageCount = threads.where((thread) => thread.unreadCount > 0);
     final awaitingReplyCount = threads
         .where((thread) => thread.isAwaitingMyReply)
         .length;
-    final replyThread = threads.firstWhere(
-      (thread) => thread.isAwaitingMyReply,
-      orElse: () => threads.first,
-    );
+    final replyThread = threads.isEmpty
+        ? null
+        : threads.firstWhere(
+            (thread) => thread.isAwaitingMyReply,
+            orElse: () => threads.first,
+          );
     final socialInboxItems = AppData.socialInboxEntries;
     final socialPendingCount = socialInboxItems
         .where((item) => item.status != 'En seguimiento')
@@ -50,14 +50,22 @@ class HomeScreen extends StatelessWidget {
     final savedProfiles = AppData.savedProfiles;
     final activeQrCount = pets.where((pet) => pet.qrEnabled).length;
     final pendingQrCount = pets.where((pet) => !pet.qrEnabled).length;
-    final qrFocusPet = pets[2];
-    final qrFocusSnapshot = AppData.qrStatusSnapshotForPet(qrFocusPet);
+    final primaryPet = pets.isNotEmpty ? pets.first : null;
+    final qrFocusPet = pets.length >= 3
+        ? pets[2]
+        : (pets.isNotEmpty ? pets.first : null);
+    final qrFocusSnapshot = qrFocusPet == null
+        ? null
+        : AppData.qrStatusSnapshotForPet(qrFocusPet);
     final featuredContent = AppData.professionalLibraryContents.first;
-    final activeAttentionCount =
-        notificationCount +
+    final activeAttentionCount = notificationCount +
         awaitingReplyCount +
         socialPendingCount +
         pendingQrCount;
+    final hasPriorityContent = latestNotification != null ||
+        replyThread != null ||
+        qrFocusPet != null ||
+        socialPendingCount > 0;
 
     return Scaffold(
       body: SafeArea(
@@ -81,29 +89,42 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            _PriorityCard(
-              latestNotification: latestNotification,
-              replyThread: replyThread,
-              qrFocusPet: qrFocusPet,
-              qrFocusSnapshot: qrFocusSnapshot,
-              socialPendingCount: socialPendingCount,
-              onOpenNotifications: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-              ),
-              onOpenMessages: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MessagesInboxScreen()),
-              ),
-              onOpenSocial: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const ConnectionsInboxScreen(),
+            if (hasPriorityContent)
+              _PriorityCard(
+                latestNotification: latestNotification,
+                replyThread: replyThread,
+                qrFocusPet: qrFocusPet,
+                qrFocusSnapshot: qrFocusSnapshot,
+                socialPendingCount: socialPendingCount,
+                onOpenNotifications: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationsScreen(),
+                  ),
                 ),
-              ),
-              onOpenQr: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => QrTraceabilityScreen(pet: qrFocusPet),
+                onOpenMessages: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const MessagesInboxScreen(),
+                  ),
                 ),
+                onOpenSocial: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const ConnectionsInboxScreen(),
+                  ),
+                ),
+                onOpenQr: qrFocusPet == null
+                    ? null
+                    : () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => QrTraceabilityScreen(pet: qrFocusPet),
+                          ),
+                        ),
+              )
+            else
+              const _HomeEmptyStateCard(
+                title: 'Tu cuenta está lista para empezar',
+                description:
+                    'Todavía no hay actividad real en esta cuenta. Cuando sumes una mascota y empieces a usar el ecosistema, acá vas a ver prioridades, QR, mensajes y señales sociales.',
               ),
-            ),
             const SizedBox(height: 20),
             const SectionHeader(
               eyebrow: 'Pulso Mascotify',
@@ -129,7 +150,8 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _PrimaryAccessGrid(
-              pets: pets,
+              primaryPet: primaryPet,
+              qrFocusPet: qrFocusPet,
               onOpenMessages: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const MessagesInboxScreen()),
               ),
@@ -138,11 +160,13 @@ class HomeScreen extends StatelessWidget {
                   builder: (_) => const ConnectionsInboxScreen(),
                 ),
               ),
-              onOpenQr: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => QrTraceabilityScreen(pet: qrFocusPet),
-                ),
-              ),
+              onOpenQr: qrFocusPet == null
+                  ? null
+                  : () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => QrTraceabilityScreen(pet: qrFocusPet),
+                        ),
+                      ),
               onOpenProfessionals: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const ProfessionalsScreen()),
               ),
@@ -154,24 +178,28 @@ class HomeScreen extends StatelessWidget {
                   'Señales concretas para que la home resuma valor real y no solo atajos.',
               child: Column(
                 children: [
-                  _EcosystemFeedTile(
-                    title: latestNotification.title,
-                    subtitle: latestNotification.timeLabel,
-                    description: latestNotification.description,
-                    tone: Color(latestNotification.accentColorHex),
-                    icon: Icons.notifications_active_outlined,
-                  ),
-                  const SizedBox(height: 10),
-                  _EcosystemFeedTile(
-                    title: 'Mensajería con contexto activo',
-                    subtitle:
-                        '${replyThread.ownerName} • ${replyThread.status}',
-                    description:
-                        '${replyThread.lastMessage} Próximo paso: ${replyThread.nextStepLabel}',
-                    tone: Color(replyThread.accentColorHex),
-                    icon: Icons.chat_bubble_outline_rounded,
-                  ),
-                  const SizedBox(height: 10),
+                  if (latestNotification != null) ...[
+                    _EcosystemFeedTile(
+                      title: latestNotification.title,
+                      subtitle: latestNotification.timeLabel,
+                      description: latestNotification.description,
+                      tone: Color(latestNotification.accentColorHex),
+                      icon: Icons.notifications_active_outlined,
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                  if (replyThread != null) ...[
+                    _EcosystemFeedTile(
+                      title: 'Mensajería con contexto activo',
+                      subtitle:
+                          '${replyThread.ownerName} • ${replyThread.status}',
+                      description:
+                          '${replyThread.lastMessage} Próximo paso: ${replyThread.nextStepLabel}',
+                      tone: Color(replyThread.accentColorHex),
+                      icon: Icons.chat_bubble_outline_rounded,
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                   _EcosystemFeedTile(
                     title: featuredContent.title,
                     subtitle:
@@ -190,30 +218,39 @@ class HomeScreen extends StatelessWidget {
               title: 'Mis mascotas',
               subtitle:
                   'Perfiles que ya conectan identidad, matching, trazabilidad QR y seguridad.',
-              trailing: TextButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => PetDetailScreen(pet: pets.first),
-                  ),
-                ),
-                child: const Text('Ver ficha'),
-              ),
+              trailing: primaryPet == null
+                  ? null
+                  : TextButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => PetDetailScreen(pet: primaryPet),
+                        ),
+                      ),
+                      child: const Text('Ver ficha'),
+                    ),
             ),
             const SizedBox(height: 16),
-            ...pets.take(3).map(
-                  (pet) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: PetCard(
-                      pet: pet,
-                      compact: true,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => PetDetailScreen(pet: pet),
+            if (pets.isEmpty)
+              const _HomeEmptyStateCard(
+                title: 'Todavía no hay mascotas cargadas',
+                description:
+                    'La cuenta quedó válida y limpia. Cuando agregues la primera mascota desde la sección Mascotas, esta área empezará a poblarse con identidad, QR y seguimiento.',
+              )
+            else
+              ...pets.take(3).map(
+                    (pet) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: PetCard(
+                        pet: pet,
+                        compact: true,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => PetDetailScreen(pet: pet),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
             const SizedBox(height: 24),
             _AccountStatusCard(account: account, familyProfile: familyProfile),
           ],
@@ -474,17 +511,19 @@ class _EcosystemOverview extends StatelessWidget {
 
 class _PrimaryAccessGrid extends StatelessWidget {
   const _PrimaryAccessGrid({
-    required this.pets,
+    required this.primaryPet,
+    required this.qrFocusPet,
     required this.onOpenMessages,
     required this.onOpenSocial,
     required this.onOpenQr,
     required this.onOpenProfessionals,
   });
 
-  final List<Pet> pets;
+  final Pet? primaryPet;
+  final Pet? qrFocusPet;
   final VoidCallback onOpenMessages;
   final VoidCallback onOpenSocial;
-  final VoidCallback onOpenQr;
+  final VoidCallback? onOpenQr;
   final VoidCallback onOpenProfessionals;
 
   @override
@@ -496,15 +535,21 @@ class _PrimaryAccessGrid extends StatelessWidget {
             Expanded(
               child: _PrimaryAccessCard(
                 title: 'Mascotas',
-                subtitle:
-                    'Entrá a identidad, salud, matching y ficha completa desde una sola base.',
+                subtitle: primaryPet == null
+                    ? 'Agrega tu primera mascota desde la sección Mascotas para destrabar identidad, QR, matching y ficha completa.'
+                    : 'Entrá a identidad, salud, matching y ficha completa desde una sola base.',
                 icon: Icons.pets_rounded,
                 tone: AppColors.primarySoft,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => PetDetailScreen(pet: pets.first),
-                  ),
-                ),
+                onTap: primaryPet == null
+                    ? null
+                    : () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => PetDetailScreen(pet: primaryPet!),
+                          ),
+                        ),
+                highlight: primaryPet == null
+                    ? 'Todavía no hay perfiles cargados en esta cuenta.'
+                    : null,
               ),
             ),
             const SizedBox(width: 12),
@@ -526,11 +571,15 @@ class _PrimaryAccessGrid extends StatelessWidget {
             Expanded(
               child: _PrimaryAccessCard(
                 title: 'QR y seguridad',
-                subtitle:
-                    'Historial, contacto protegido y trazabilidad ya visible dentro del producto.',
+                subtitle: qrFocusPet == null
+                    ? 'Se habilita cuando tengas al menos una mascota cargada en la base local.'
+                    : 'Historial, contacto protegido y trazabilidad ya visible dentro del producto.',
                 icon: Icons.qr_code_2_rounded,
                 tone: AppColors.supportSoft,
                 onTap: onOpenQr,
+                highlight: qrFocusPet == null
+                    ? 'La cuenta nueva ya no hereda QR ajenos.'
+                    : null,
               ),
             ),
             const SizedBox(width: 12),
@@ -606,15 +655,15 @@ class _PriorityCard extends StatelessWidget {
     required this.onOpenQr,
   });
 
-  final EcosystemNotification latestNotification;
-  final MessageThread replyThread;
-  final Pet qrFocusPet;
-  final QrStatusSnapshot qrFocusSnapshot;
+  final EcosystemNotification? latestNotification;
+  final MessageThread? replyThread;
+  final Pet? qrFocusPet;
+  final QrStatusSnapshot? qrFocusSnapshot;
   final int socialPendingCount;
   final VoidCallback onOpenNotifications;
   final VoidCallback onOpenMessages;
   final VoidCallback onOpenSocial;
-  final VoidCallback onOpenQr;
+  final VoidCallback? onOpenQr;
 
   @override
   Widget build(BuildContext context) {
@@ -634,54 +683,98 @@ class _PriorityCard extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
-            _PriorityRow(
-              title: latestNotification.title,
-              description: latestNotification.description,
-              pill: latestNotification.timeLabel,
-              tone: Color(latestNotification.accentColorHex),
-              icon: Icons.notifications_active_outlined,
-            ),
-            const SizedBox(height: 10),
-            _PriorityRow(
-              title: 'Mensajería en seguimiento',
-              description:
-                  '${replyThread.ownerName} espera respuesta. ${replyThread.nextStepLabel}',
-              pill:
-                  '${replyThread.unreadCount} nuevo${replyThread.unreadCount == 1 ? '' : 's'}',
-              tone: Color(replyThread.accentColorHex),
-              icon: Icons.chat_bubble_outline_rounded,
-            ),
-            const SizedBox(height: 10),
-            _PriorityRow(
-              title: 'QR y trazabilidad de ${qrFocusPet.name}',
-              description:
-                  '${qrFocusSnapshot.lastSignalLabel}. ${qrFocusSnapshot.lastSignalDetail}',
-              pill: qrFocusSnapshot.activeWindowLabel,
-              tone: Color(qrFocusPet.colorHex),
-              icon: Icons.qr_code_2_rounded,
-            ),
-            const SizedBox(height: 10),
-            _PriorityRow(
-              title: 'Matching y social',
-              description:
-                  'Hay $socialPendingCount afinidades o intereses que conviene revisar dentro de la bandeja social.',
-              pill: 'Social activo',
-              tone: AppColors.accentSoft,
-              icon: Icons.favorite_border_rounded,
-            ),
+            if (latestNotification != null) ...[
+              _PriorityRow(
+                title: latestNotification!.title,
+                description: latestNotification!.description,
+                pill: latestNotification!.timeLabel,
+                tone: Color(latestNotification!.accentColorHex),
+                icon: Icons.notifications_active_outlined,
+              ),
+              const SizedBox(height: 10),
+            ],
+            if (replyThread != null) ...[
+              _PriorityRow(
+                title: 'Mensajería en seguimiento',
+                description:
+                    '${replyThread!.ownerName} espera respuesta. ${replyThread!.nextStepLabel}',
+                pill:
+                    '${replyThread!.unreadCount} nuevo${replyThread!.unreadCount == 1 ? '' : 's'}',
+                tone: Color(replyThread!.accentColorHex),
+                icon: Icons.chat_bubble_outline_rounded,
+              ),
+              const SizedBox(height: 10),
+            ],
+            if (qrFocusPet != null && qrFocusSnapshot != null) ...[
+              _PriorityRow(
+                title: 'QR y trazabilidad de ${qrFocusPet!.name}',
+                description:
+                    '${qrFocusSnapshot!.lastSignalLabel}. ${qrFocusSnapshot!.lastSignalDetail}',
+                pill: qrFocusSnapshot!.activeWindowLabel,
+                tone: Color(qrFocusPet!.colorHex),
+                icon: Icons.qr_code_2_rounded,
+              ),
+              const SizedBox(height: 10),
+            ],
+            if (socialPendingCount > 0)
+              _PriorityRow(
+                title: 'Matching y social',
+                description:
+                    'Hay $socialPendingCount afinidades o intereses que conviene revisar dentro de la bandeja social.',
+                pill: 'Social activo',
+                tone: AppColors.accentSoft,
+                icon: Icons.favorite_border_rounded,
+              ),
             const SizedBox(height: 16),
             Wrap(
               spacing: 10,
               runSpacing: 10,
               children: [
-                _InlineActionChip(
-                  label: 'Notificaciones',
-                  onTap: onOpenNotifications,
-                ),
-                _InlineActionChip(label: 'Mensajes', onTap: onOpenMessages),
-                _InlineActionChip(label: 'Social', onTap: onOpenSocial),
-                _InlineActionChip(label: 'Historial QR', onTap: onOpenQr),
+                if (latestNotification != null)
+                  _InlineActionChip(
+                    label: 'Notificaciones',
+                    onTap: onOpenNotifications,
+                  ),
+                if (replyThread != null)
+                  _InlineActionChip(label: 'Mensajes', onTap: onOpenMessages),
+                if (socialPendingCount > 0)
+                  _InlineActionChip(label: 'Social', onTap: onOpenSocial),
+                if (onOpenQr != null)
+                  _InlineActionChip(label: 'Historial QR', onTap: onOpenQr!),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeEmptyStateCard extends StatelessWidget {
+  const _HomeEmptyStateCard({
+    required this.title,
+    required this.description,
+  });
+
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textPrimary,
+                height: 1.45,
+              ),
             ),
           ],
         ),
@@ -1130,7 +1223,7 @@ class _PrimaryAccessCard extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final Color tone;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final String? highlight;
 
   @override
@@ -1140,47 +1233,50 @@ class _PrimaryAccessCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(24),
         onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceAlt,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: tone,
-                  borderRadius: BorderRadius.circular(16),
+        child: Opacity(
+          opacity: onTap == null ? 0.82 : 1,
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceAlt,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: tone,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(icon, color: AppColors.textPrimary),
                 ),
-                child: Icon(icon, color: AppColors.textPrimary),
-              ),
-              const SizedBox(height: 16),
-              Text(title, style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 6),
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.45,
-                ),
-              ),
-              if (highlight != null) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
+                Text(title, style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 6),
                 Text(
-                  highlight!,
+                  subtitle,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
                     height: 1.45,
                   ),
                 ),
+                if (highlight != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    highlight!,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      height: 1.45,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

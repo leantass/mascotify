@@ -1,63 +1,85 @@
 import '../models/notification_models.dart';
 import '../models/pet.dart';
-import 'mock_data.dart';
 import 'professional_mock_data.dart';
 import 'reporting_mock_data.dart';
 import 'social_mock_data.dart';
 
 List<EcosystemNotification> buildMockNotifications([List<Pet>? sourcePets]) {
   final pets = _resolveNotificationPets(sourcePets);
+  if (pets.isEmpty) {
+    return const <EcosystemNotification>[];
+  }
+
   final inboxItems = buildMockSocialInboxEntries(pets);
   final threads = buildMockMessageThreads(pets);
   final savedProfiles = buildMockSavedProfiles(pets);
-  final qrLocation = buildSuggestedLocationForPet(pets[2]);
   final featuredContent = professionalLibraryContents.first;
+  final notifications = <EcosystemNotification>[];
 
-  return [
+  if (inboxItems.isNotEmpty) {
+    final inboxItem = inboxItems.first;
+    notifications.add(
+      EcosystemNotification(
+        id: 'notif-social-${inboxItem.pet.id}',
+        type: EcosystemNotificationType.socialInterest,
+        title: 'Nuevo interés recibido por ${inboxItem.pet.name}',
+        description: inboxItem.message,
+        timeLabel: 'Hace 5 min',
+        accentColorHex: inboxItem.accentColorHex,
+        priority: EcosystemNotificationPriority.attention,
+        isUnread: true,
+        actionLabel: 'Abrir bandeja social',
+        action: EcosystemNotificationAction.openConnectionsInbox,
+        petId: inboxItem.pet.id,
+      ),
+    );
+  }
+
+  if (threads.isNotEmpty) {
+    final thread = threads.first;
+    notifications.add(
+      EcosystemNotification(
+        id: 'notif-message-${thread.pet.id}',
+        type: EcosystemNotificationType.message,
+        title: 'Conversación activa con ${thread.ownerName}',
+        description: thread.lastMessage,
+        timeLabel: thread.lastActivity,
+        accentColorHex: thread.accentColorHex,
+        priority: EcosystemNotificationPriority.attention,
+        isUnread: true,
+        actionLabel: 'Ir a mensajes',
+        action: EcosystemNotificationAction.openMessagesInbox,
+        petId: thread.pet.id,
+      ),
+    );
+  }
+
+  if (pets.length >= 3) {
+    final qrPet = pets[2];
+    final qrLocation = buildSuggestedLocationForPet(qrPet);
+    notifications.add(
+      EcosystemNotification(
+        id: 'notif-qr-${qrPet.id}',
+        type: EcosystemNotificationType.qrReport,
+        title: 'Nuevo avistamiento QR sobre ${qrPet.name}',
+        description:
+            'Se registró una referencia aproximada en ${qrLocation.zoneReference} y quedó visible dentro del historial QR.',
+        timeLabel: 'Hace 18 min',
+        accentColorHex: 0xFFFFF2C6,
+        priority: EcosystemNotificationPriority.attention,
+        isUnread: true,
+        actionLabel: 'Ver historial QR',
+        action: EcosystemNotificationAction.openPetQrTraceability,
+        petId: qrPet.id,
+      ),
+    );
+  }
+
+  notifications.add(
     EcosystemNotification(
-      id: 'notif-social-nina',
-      type: EcosystemNotificationType.socialInterest,
-      title: 'Nuevo interés recibido por Nina',
-      description: inboxItems.first.message,
-      timeLabel: 'Hace 5 min',
-      accentColorHex: inboxItems.first.accentColorHex,
-      priority: EcosystemNotificationPriority.attention,
-      isUnread: true,
-      actionLabel: 'Abrir bandeja social',
-      action: EcosystemNotificationAction.openConnectionsInbox,
-      petId: inboxItems.first.pet.id,
-    ),
-    EcosystemNotification(
-      id: 'notif-message-thread',
-      type: EcosystemNotificationType.message,
-      title: 'Conversación activa con ${threads.first.ownerName}',
-      description: threads.first.lastMessage,
-      timeLabel: threads.first.lastActivity,
-      accentColorHex: threads.first.accentColorHex,
-      priority: EcosystemNotificationPriority.attention,
-      isUnread: true,
-      actionLabel: 'Ir a mensajes',
-      action: EcosystemNotificationAction.openMessagesInbox,
-      petId: threads.first.pet.id,
-    ),
-    EcosystemNotification(
-      id: 'notif-qr-bruno',
+      id: 'notif-qr-history-${pets.first.id}',
       type: EcosystemNotificationType.qrReport,
-      title: 'Nuevo avistamiento QR sobre ${pets[2].name}',
-      description:
-          'Se registró una referencia aproximada en ${qrLocation.zoneReference} y quedó visible dentro del historial QR.',
-      timeLabel: 'Hace 18 min',
-      accentColorHex: 0xFFFFF2C6,
-      priority: EcosystemNotificationPriority.attention,
-      isUnread: true,
-      actionLabel: 'Ver historial QR',
-      action: EcosystemNotificationAction.openPetQrTraceability,
-      petId: pets[2].id,
-    ),
-    EcosystemNotification(
-      id: 'notif-qr-history',
-      type: EcosystemNotificationType.qrReport,
-      title: 'El historial QR de ${pets[0].name} sumó una nueva señal',
+      title: 'El historial QR de ${pets.first.name} sumó una nueva señal',
       description:
           'Ya hay más contexto de escaneos, contacto protegido y actividad reciente dentro de la ficha.',
       timeLabel: 'Hace 1 h',
@@ -66,8 +88,11 @@ List<EcosystemNotification> buildMockNotifications([List<Pet>? sourcePets]) {
       isUnread: false,
       actionLabel: 'Ver historial QR',
       action: EcosystemNotificationAction.openPetQrTraceability,
-      petId: pets[0].id,
+      petId: pets.first.id,
     ),
+  );
+
+  notifications.add(
     EcosystemNotification(
       id: 'notif-content-professional',
       type: EcosystemNotificationType.professionalContent,
@@ -82,8 +107,11 @@ List<EcosystemNotification> buildMockNotifications([List<Pet>? sourcePets]) {
       professionalName: featuredContent.professional,
       contentTitle: featuredContent.title,
     ),
+  );
+
+  notifications.add(
     EcosystemNotification(
-      id: 'notif-reminder-milo',
+      id: 'notif-reminder-${pets.first.id}',
       type: EcosystemNotificationType.reminder,
       title: '${pets.first.name} ya tiene matching listo para explorar',
       description:
@@ -96,20 +124,29 @@ List<EcosystemNotification> buildMockNotifications([List<Pet>? sourcePets]) {
       action: EcosystemNotificationAction.openPetDetail,
       petId: pets.first.id,
     ),
-    EcosystemNotification(
-      id: 'notif-saved-profile',
-      type: EcosystemNotificationType.reminder,
-      title: 'Retomar perfil guardado de ${savedProfiles.last.pet.name}',
-      description:
-          '${savedProfiles.last.reason} ${savedProfiles.last.savedAtLabel}.',
-      timeLabel: 'Ayer',
-      accentColorHex: 0xFFFFE1EA,
-      priority: EcosystemNotificationPriority.info,
-      isUnread: false,
-      actionLabel: 'Abrir perfil',
-      action: EcosystemNotificationAction.openPetDetail,
-      petId: savedProfiles.last.pet.id,
-    ),
+  );
+
+  if (savedProfiles.isNotEmpty) {
+    final savedProfile = savedProfiles.last;
+    notifications.add(
+      EcosystemNotification(
+        id: 'notif-saved-${savedProfile.pet.id}',
+        type: EcosystemNotificationType.reminder,
+        title: 'Retomar perfil guardado de ${savedProfile.pet.name}',
+        description:
+            '${savedProfile.reason} ${savedProfile.savedAtLabel}.',
+        timeLabel: 'Ayer',
+        accentColorHex: 0xFFFFE1EA,
+        priority: EcosystemNotificationPriority.info,
+        isUnread: false,
+        actionLabel: 'Abrir perfil',
+        action: EcosystemNotificationAction.openPetDetail,
+        petId: savedProfile.pet.id,
+      ),
+    );
+  }
+
+  notifications.add(
     EcosystemNotification(
       id: 'notif-professionals-feed',
       type: EcosystemNotificationType.professionalContent,
@@ -123,12 +160,11 @@ List<EcosystemNotification> buildMockNotifications([List<Pet>? sourcePets]) {
       actionLabel: 'Ver profesionales',
       action: EcosystemNotificationAction.openProfessionals,
     ),
-  ];
+  );
+
+  return notifications;
 }
 
 List<Pet> _resolveNotificationPets(List<Pet>? sourcePets) {
-  if (sourcePets != null && sourcePets.length >= 3) {
-    return sourcePets;
-  }
-  return MockData.pets;
+  return sourcePets ?? const <Pet>[];
 }
