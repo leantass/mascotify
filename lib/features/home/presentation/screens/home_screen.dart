@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../../features/explore/presentation/screens/connections_inbox_screen.dart';
 import '../../../../features/explore/presentation/screens/messages_inbox_screen.dart';
 import '../../../../features/explore/presentation/screens/professionals_screen.dart';
-import '../../../../features/auth/presentation/auth_session_controller.dart';
 import '../../../../features/pets/presentation/screens/pet_detail_screen.dart';
 import '../../../../features/pets/presentation/screens/qr_traceability_screen.dart';
 import '../../../../shared/data/app_data_source.dart';
@@ -22,9 +21,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final auth = AuthScope.of(context);
-    final user = auth.currentUser!;
-    final account = auth.accountFor(AccountExperience.family);
+    final user = AppData.currentUser;
+    final account = AppData.accountFor(AccountExperience.family);
     final familyProfile = account.familyProfile!;
     final pets = AppData.pets;
     final notifications = AppData.notifications;
@@ -202,9 +200,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            ...pets
-                .take(3)
-                .map(
+            ...pets.take(3).map(
                   (pet) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: PetCard(

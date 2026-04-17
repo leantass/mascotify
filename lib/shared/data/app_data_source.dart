@@ -43,6 +43,10 @@ abstract class MascotifyDataSource {
   SightingLocationReference getSuggestedLocationForPet(Pet pet);
   QrStatusSnapshot getQrStatusSnapshotForPet(Pet pet);
   List<QrActivityEntry> getQrActivityEntriesForPet(Pet pet);
+
+  Future<void> syncCurrentUserState();
+  Future<void> addPet(Pet pet);
+  Future<void> setNotificationsEnabled(bool enabled);
 }
 
 class MockMascotifyDataSource implements MascotifyDataSource {
@@ -169,6 +173,15 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   OnboardingTrack trackFor(AccountExperience experience) {
     return AccountIdentityMockData.trackFor(experience);
   }
+
+  @override
+  Future<void> addPet(Pet pet) async {}
+
+  @override
+  Future<void> setNotificationsEnabled(bool enabled) async {}
+
+  @override
+  Future<void> syncCurrentUserState() async {}
 }
 
 class AppData {
@@ -246,5 +259,17 @@ class AppData {
 
   static List<QrActivityEntry> qrActivityEntriesForPet(Pet pet) {
     return source.getQrActivityEntriesForPet(pet);
+  }
+
+  static Future<void> syncCurrentUserState() {
+    return source.syncCurrentUserState();
+  }
+
+  static Future<void> addPet(Pet pet) {
+    return source.addPet(pet);
+  }
+
+  static Future<void> setNotificationsEnabled(bool enabled) {
+    return source.setNotificationsEnabled(enabled);
   }
 }

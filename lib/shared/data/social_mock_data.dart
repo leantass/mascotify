@@ -2,8 +2,8 @@ import '../models/pet.dart';
 import '../models/social_models.dart';
 import 'mock_data.dart';
 
-List<MessageThread> buildMockMessageThreads() {
-  final pets = MockData.pets;
+List<MessageThread> buildMockMessageThreads([List<Pet>? sourcePets]) {
+  final pets = _resolveSocialPets(sourcePets);
 
   return [
     MessageThread(
@@ -155,8 +155,8 @@ List<MessageThread> buildMockMessageThreads() {
   ];
 }
 
-MessageThread? findMockThreadForPet(Pet pet) {
-  final threads = buildMockMessageThreads();
+MessageThread? findMockThreadForPet(Pet pet, {List<Pet>? pets}) {
+  final threads = buildMockMessageThreads(pets);
   for (final thread in threads) {
     if (thread.pet.id == pet.id) {
       return thread;
@@ -165,8 +165,8 @@ MessageThread? findMockThreadForPet(Pet pet) {
   return null;
 }
 
-List<SocialInboxEntry> buildMockSocialInboxEntries() {
-  final pets = MockData.pets;
+List<SocialInboxEntry> buildMockSocialInboxEntries([List<Pet>? sourcePets]) {
+  final pets = _resolveSocialPets(sourcePets);
 
   return [
     SocialInboxEntry(
@@ -199,8 +199,8 @@ List<SocialInboxEntry> buildMockSocialInboxEntries() {
   ];
 }
 
-List<SavedProfileEntry> buildMockSavedProfiles() {
-  final pets = MockData.pets;
+List<SavedProfileEntry> buildMockSavedProfiles([List<Pet>? sourcePets]) {
+  final pets = _resolveSocialPets(sourcePets);
 
   return [
     SavedProfileEntry(
@@ -214,4 +214,11 @@ List<SavedProfileEntry> buildMockSavedProfiles() {
       reason: 'Perfil calmo para una futura conexión gradual.',
     ),
   ];
+}
+
+List<Pet> _resolveSocialPets(List<Pet>? sourcePets) {
+  if (sourcePets != null && sourcePets.length >= 3) {
+    return sourcePets;
+  }
+  return MockData.pets;
 }

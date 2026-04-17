@@ -1,14 +1,15 @@
 import '../models/notification_models.dart';
+import '../models/pet.dart';
 import 'mock_data.dart';
 import 'professional_mock_data.dart';
 import 'reporting_mock_data.dart';
 import 'social_mock_data.dart';
 
-List<EcosystemNotification> buildMockNotifications() {
-  final pets = MockData.pets;
-  final inboxItems = buildMockSocialInboxEntries();
-  final threads = buildMockMessageThreads();
-  final savedProfiles = buildMockSavedProfiles();
+List<EcosystemNotification> buildMockNotifications([List<Pet>? sourcePets]) {
+  final pets = _resolveNotificationPets(sourcePets);
+  final inboxItems = buildMockSocialInboxEntries(pets);
+  final threads = buildMockMessageThreads(pets);
+  final savedProfiles = buildMockSavedProfiles(pets);
   final qrLocation = buildSuggestedLocationForPet(pets[2]);
   final featuredContent = professionalLibraryContents.first;
 
@@ -115,7 +116,7 @@ List<EcosystemNotification> buildMockNotifications() {
       title: 'La comunidad experta sumó nuevas piezas breves',
       description:
           'Hay nuevas charlas y recomendaciones para cuidado, matching responsable y contacto seguro.',
-      timeLabel: 'Hace 2 dias',
+      timeLabel: 'Hace 2 días',
       accentColorHex: 0xFFFFF2C6,
       priority: EcosystemNotificationPriority.info,
       isUnread: false,
@@ -123,4 +124,11 @@ List<EcosystemNotification> buildMockNotifications() {
       action: EcosystemNotificationAction.openProfessionals,
     ),
   ];
+}
+
+List<Pet> _resolveNotificationPets(List<Pet>? sourcePets) {
+  if (sourcePets != null && sourcePets.length >= 3) {
+    return sourcePets;
+  }
+  return MockData.pets;
 }

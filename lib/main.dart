@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/app.dart';
 import 'features/auth/data/local_auth_repository.dart';
 import 'features/auth/presentation/auth_session_controller.dart';
+import 'shared/data/app_data_source.dart';
+import 'shared/data/local_persistent_data_source.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,7 +13,12 @@ Future<void> main() async {
   final preferences = await SharedPreferences.getInstance();
   final repository = LocalAuthRepository(preferences);
   final sessionController = AuthSessionController(repository: repository);
+  AppData.source = PersistentLocalMascotifyDataSource(
+    preferences: preferences,
+    sessionController: sessionController,
+  );
   await sessionController.initialize();
+  await AppData.syncCurrentUserState();
 
   runApp(MascotifyApp(sessionController: sessionController));
 }

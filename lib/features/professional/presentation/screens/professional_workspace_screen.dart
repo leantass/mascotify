@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../features/auth/presentation/auth_session_controller.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../theme/app_colors.dart';
@@ -10,8 +9,7 @@ class ProfessionalWorkspaceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final auth = AuthScope.of(context);
-    final profile = auth.accountFor(
+    final profile = AppData.accountFor(
       AccountExperience.professional,
     ).professionalProfile!;
     final publicPresence = AppData.professionalProfiles.first;

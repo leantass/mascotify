@@ -1,25 +1,30 @@
 import 'package:flutter/material.dart';
 
 import '../../../../features/auth/presentation/auth_session_controller.dart';
+import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../shared/widgets/profile_option_tile.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
-import '../../../../shared/data/app_data_source.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key, this.experience = AccountExperience.family});
 
   final AccountExperience experience;
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
   Widget build(BuildContext context) {
     final auth = AuthScope.of(context);
-    final user = auth.currentUser!;
-    final account = auth.accountFor(experience);
+    final user = AppData.currentUser;
+    final account = AppData.accountFor(widget.experience);
     final familyProfile = account.familyProfile;
     final professionalProfile = account.professionalProfile;
-    final isFamily = experience == AccountExperience.family;
+    final isFamily = widget.experience == AccountExperience.family;
 
     return Scaffold(
       body: SafeArea(
@@ -172,7 +177,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
                       _AccountInfoTile(
-                        label: 'Categoria',
+                        label: 'Categoría',
                         value: professionalProfile.category,
                       ),
                       const SizedBox(height: 10),
@@ -203,7 +208,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Si la cuenta ya soporta mas de un rol, el perfil activo se guarda y se recupera en la proxima sesion.',
+                      'Si la cuenta ya soporta más de un rol, el perfil activo se guarda y se recupera en la próxima sesión.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 12),
@@ -216,7 +221,7 @@ class ProfileScreen extends StatelessWidget {
                               label: item == AccountExperience.family
                                   ? 'Familia'
                                   : 'Profesional',
-                              isActive: item == experience,
+                              isActive: item == widget.experience,
                               onTap: auth.isBusy
                                   ? null
                                   : () => auth.switchExperience(item),
@@ -233,7 +238,7 @@ class ProfileScreen extends StatelessWidget {
               eyebrow: 'Cuenta Mascotify',
               title: 'Preferencias y plan',
               subtitle:
-                  'La base actual ya admite sesion persistida, roles y futuras capas de seguridad.',
+                  'La base local ya guarda sesión, mascotas y una preferencia mínima por cuenta.',
               trailing: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -263,16 +268,22 @@ class ProfileScreen extends StatelessWidget {
             Card(
               child: SwitchListTile(
                 value: user.notificationsEnabled,
-                onChanged: (_) {},
+                onChanged: auth.isBusy
+                    ? null
+                    : (value) async {
+                        await AppData.setNotificationsEnabled(value);
+                        if (!mounted) return;
+                        setState(() {});
+                      },
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 18,
                   vertical: 10,
                 ),
                 activeThumbColor: AppColors.accent,
                 activeTrackColor: AppColors.accentSoft,
-                title: const Text('Notificaciones estrategicas'),
+                title: const Text('Notificaciones estratégicas'),
                 subtitle: const Text(
-                  'Placeholder de preferencias para una etapa posterior mas configurable.',
+                  'Preferencia persistida localmente para la cuenta activa.',
                 ),
               ),
             ),
@@ -284,12 +295,12 @@ class ProfileScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Sesion',
+                      'Sesión',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Tu autenticacion actual se persiste localmente. Logout limpia la sesion activa pero mantiene las cuentas registradas en este dispositivo.',
+                      'Tu autenticación actual se persiste localmente. Logout limpia la sesión activa pero mantiene las cuentas registradas en este dispositivo.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
@@ -299,7 +310,7 @@ class ProfileScreen extends StatelessWidget {
                         onPressed: auth.isBusy ? null : () => auth.logout(),
                         icon: const Icon(Icons.logout_rounded),
                         label: Text(
-                          auth.isBusy ? 'Cerrando sesion...' : 'Cerrar sesion',
+                          auth.isBusy ? 'Cerrando sesión...' : 'Cerrar sesión',
                         ),
                       ),
                     ),
