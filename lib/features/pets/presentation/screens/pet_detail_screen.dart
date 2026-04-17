@@ -802,7 +802,7 @@ class _MomentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 108,
+      constraints: const BoxConstraints(minHeight: 108),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -828,8 +828,11 @@ class _MomentCard extends StatelessWidget {
               size: 18,
             ),
           ),
-          const Spacer(),
-          Text(label, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 14),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
         ],
       ),
     );
