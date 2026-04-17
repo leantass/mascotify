@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/navigation/main_navigation_screen.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../theme/app_colors.dart';
+import '../auth_session_controller.dart';
 
 class AccountOnboardingScreen extends StatelessWidget {
   const AccountOnboardingScreen({super.key, required this.experience});
@@ -12,8 +12,9 @@ class AccountOnboardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final auth = AuthScope.of(context);
     final track = AppData.trackFor(experience);
-    final account = AppData.accountFor(experience);
+    final account = auth.accountFor(experience);
     final accentColor = experience == AccountExperience.family
         ? AppColors.primarySoft
         : AppColors.accentSoft;
@@ -22,7 +23,10 @@ class AccountOnboardingScreen extends StatelessWidget {
         : Icons.work_rounded;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Onboarding inicial')),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text('Onboarding inicial'),
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
@@ -61,7 +65,7 @@ class AccountOnboardingScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    track.subtitle,
+                    'La cuenta ${account.ownerName} ya quedo creada y la sesion esta guardada. Este paso solo termina de alinear el perfil activo con la navegacion actual.',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -77,7 +81,7 @@ class AccountOnboardingScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Cómo queda pensada la cuenta',
+                      'Como queda pensada la cuenta',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 8),
@@ -88,7 +92,7 @@ class AccountOnboardingScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     _InfoTile(
                       label: 'Cuenta base',
-                      value: '${account.ownerName} • ${account.email}',
+                      value: '${account.ownerName} - ${account.email}',
                     ),
                     const SizedBox(height: 10),
                     _InfoTile(
@@ -97,8 +101,8 @@ class AccountOnboardingScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     _InfoTile(
-                      label: 'Plan mock',
-                      value: '${account.planName} • ${account.city}',
+                      label: 'Plan activo',
+                      value: '${account.planName} - ${account.city}',
                     ),
                   ],
                 ),
@@ -142,7 +146,7 @@ class AccountOnboardingScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Señales del perfil elegido',
+                      'Senales del perfil elegido',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 12),
@@ -153,7 +157,8 @@ class AccountOnboardingScreen extends StatelessWidget {
                           .map((item) => _HighlightChip(label: item))
                           .toList(),
                     ),
-                    if (experience == AccountExperience.professional) ...[
+                    if (experience == AccountExperience.professional &&
+                        account.professionalProfile != null) ...[
                       const SizedBox(height: 16),
                       Text(
                         'Servicios contemplados',
@@ -176,13 +181,14 @@ class AccountOnboardingScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        MainNavigationScreen(experience: experience),
-                  ),
+                onPressed: auth.isBusy
+                    ? null
+                    : () async {
+                        await auth.completeOnboarding();
+                      },
+                child: Text(
+                  auth.isBusy ? 'Guardando...' : track.ctaLabel,
                 ),
-                child: Text(track.ctaLabel),
               ),
             ),
           ],
@@ -212,9 +218,9 @@ class _InfoTile extends StatelessWidget {
         children: [
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textMuted,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
@@ -260,9 +266,9 @@ class _OnboardingStepTile extends StatelessWidget {
             child: Center(
               child: Text(
                 '$index',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(color: Colors.white),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.white,
+                ),
               ),
             ),
           ),

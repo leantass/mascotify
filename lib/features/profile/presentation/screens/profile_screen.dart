@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/data/app_data_source.dart';
+import '../../../../features/auth/presentation/auth_session_controller.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../shared/widgets/profile_option_tile.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../shared/data/app_data_source.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key, this.experience = AccountExperience.family});
@@ -13,8 +14,9 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = AppData.currentUser;
-    final account = AppData.accountFor(experience);
+    final auth = AuthScope.of(context);
+    final user = auth.currentUser!;
+    final account = auth.accountFor(experience);
     final familyProfile = account.familyProfile;
     final professionalProfile = account.professionalProfile;
     final isFamily = experience == AccountExperience.family;
@@ -80,8 +82,8 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           child: Text(
                             isFamily
-                                ? 'Modo familia • ${account.city}'
-                                : 'Modo profesional • ${account.city}',
+                                ? 'Modo familia - ${account.city}'
+                                : 'Modo profesional - ${account.city}',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   color: AppColors.accentDeep,
@@ -123,7 +125,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     _AccountInfoTile(
-                      label: 'Plan mock',
+                      label: 'Plan activo',
                       value: account.planName,
                     ),
                   ],
@@ -170,7 +172,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
                       _AccountInfoTile(
-                        label: 'Categoría',
+                        label: 'Categoria',
                         value: professionalProfile.category,
                       ),
                       const SizedBox(height: 10),
@@ -196,20 +198,28 @@ class ProfileScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Perfiles previstos por cuenta',
+                      'Perfiles disponibles',
                       style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Si la cuenta ya soporta mas de un rol, el perfil activo se guarda y se recupera en la proxima sesion.',
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 10,
                       runSpacing: 10,
-                      children: account.availableExperiences
+                      children: auth.availableExperiences
                           .map(
                             (item) => _ModeChip(
                               label: item == AccountExperience.family
                                   ? 'Familia'
                                   : 'Profesional',
                               isActive: item == experience,
+                              onTap: auth.isBusy
+                                  ? null
+                                  : () => auth.switchExperience(item),
                             ),
                           )
                           .toList(),
@@ -223,7 +233,7 @@ class ProfileScreen extends StatelessWidget {
               eyebrow: 'Cuenta Mascotify',
               title: 'Preferencias y plan',
               subtitle:
-                  'Controles listos para seguridad, suscripción y ajustes.',
+                  'La base actual ya admite sesion persistida, roles y futuras capas de seguridad.',
               trailing: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -260,9 +270,40 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 activeThumbColor: AppColors.accent,
                 activeTrackColor: AppColors.accentSoft,
-                title: const Text('Notificaciones estratégicas'),
+                title: const Text('Notificaciones estrategicas'),
                 subtitle: const Text(
-                  'Simulación de preferencias para futuras alertas, seguridad y actividad.',
+                  'Placeholder de preferencias para una etapa posterior mas configurable.',
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sesion',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tu autenticacion actual se persiste localmente. Logout limpia la sesion activa pero mantiene las cuentas registradas en este dispositivo.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: auth.isBusy ? null : () => auth.logout(),
+                        icon: const Icon(Icons.logout_rounded),
+                        label: Text(
+                          auth.isBusy ? 'Cerrando sesion...' : 'Cerrar sesion',
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -293,9 +334,9 @@ class _AccountInfoTile extends StatelessWidget {
         children: [
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textMuted,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
@@ -313,25 +354,34 @@ class _AccountInfoTile extends StatelessWidget {
 }
 
 class _ModeChip extends StatelessWidget {
-  const _ModeChip({required this.label, required this.isActive});
+  const _ModeChip({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
 
   final String label;
   final bool isActive;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.accentSoft : AppColors.surfaceAlt,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w700,
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.accentSoft : AppColors.surfaceAlt,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
