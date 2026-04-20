@@ -69,24 +69,31 @@ class PersistedLocalUserState {
     required this.pets,
     required this.threads,
     required this.qrStates,
+    required this.professionalProfile,
   });
 
   final bool notificationsEnabled;
   final List<Pet> pets;
   final List<MessageThread> threads;
   final Map<String, PersistedPetQrState> qrStates;
+  final ProfessionalProfile? professionalProfile;
 
   PersistedLocalUserState copyWith({
     bool? notificationsEnabled,
     List<Pet>? pets,
     List<MessageThread>? threads,
     Map<String, PersistedPetQrState>? qrStates,
+    ProfessionalProfile? professionalProfile,
+    bool clearProfessionalProfile = false,
   }) {
     return PersistedLocalUserState(
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       pets: pets ?? this.pets,
       threads: threads ?? this.threads,
       qrStates: qrStates ?? this.qrStates,
+      professionalProfile: clearProfessionalProfile
+          ? null
+          : professionalProfile ?? this.professionalProfile,
     );
   }
 
@@ -98,6 +105,7 @@ class PersistedLocalUserState {
       'qrStates': qrStates.map(
         (key, value) => MapEntry(key, value.toJson()),
       ),
+      'professionalProfile': professionalProfile?.toJson(),
     };
   }
 
@@ -127,6 +135,13 @@ class PersistedLocalUserState {
               ),
             ),
           ),
+      professionalProfile: json['professionalProfile'] == null
+          ? null
+          : ProfessionalProfile.fromJson(
+              Map<String, dynamic>.from(
+                json['professionalProfile'] as Map<dynamic, dynamic>,
+              ),
+            ),
     );
   }
 }
@@ -160,6 +175,8 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
     final currentState = _stateForCurrentUser();
     final familyProfile = currentAccount.familyProfile;
+    final publicProfessionalProfile = currentState.professionalProfile;
+    final professionalProfile = currentAccount.professionalProfile;
 
     return MascotifyAccount(
       id: currentAccount.id,
@@ -182,7 +199,20 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
                   : familyProfile.nextSetupStep,
               capabilities: familyProfile.capabilities,
             ),
-      professionalProfile: currentAccount.professionalProfile,
+      professionalProfile: professionalProfile == null
+          ? null
+          : ProfessionalAccountProfile(
+              businessName: professionalProfile.businessName,
+              category: publicProfessionalProfile?.specialty ??
+                  professionalProfile.category,
+              operationLabel: publicProfessionalProfile?.serviceAvailabilityLabel ??
+                  professionalProfile.operationLabel,
+              primaryGoal: professionalProfile.primaryGoal,
+              nextSetupStep: professionalProfile.nextSetupStep,
+              services: publicProfessionalProfile?.services ??
+                  professionalProfile.services,
+              capabilities: professionalProfile.capabilities,
+            ),
     );
   }
 
@@ -223,7 +253,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
   @override
   ProfessionalProfile? findProfessionalByName(String name) {
-    for (final professional in professionalProfiles) {
+    for (final professional in getProfessionalProfiles()) {
       if (professional.name == name) return professional;
     }
     return null;
@@ -276,12 +306,50 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
   @override
   List<ProfessionalLibraryContent> getProfessionalLibraryContents() {
-    return List.unmodifiable(professionalLibraryContents);
+    final currentProfessionalProfile = getCurrentProfessionalProfile();
+    final currentProfileContents = currentProfessionalProfile == null
+        ? const <ProfessionalLibraryContent>[]
+        : currentProfessionalProfile.featuredContent
+              .map(
+                (content) => ProfessionalLibraryContent(
+                  title: content.title,
+                  professional: currentProfessionalProfile.name,
+                  category: content.category,
+                  duration: content.duration,
+                  summary: content.summary,
+                  accentColorHex: currentProfessionalProfile.accentColorHex,
+                ),
+              )
+              .toList();
+
+    return List.unmodifiable(
+      _prependUniqueByTitle(
+        currentProfileContents,
+        professionalLibraryContents,
+        (item) => item.title,
+      ),
+    );
   }
 
   @override
   List<ProfessionalProfile> getProfessionalProfiles() {
-    return List.unmodifiable(professionalProfiles);
+    final currentProfessionalProfile = getCurrentProfessionalProfile();
+    if (currentProfessionalProfile == null) {
+      return List.unmodifiable(professionalProfiles);
+    }
+
+    return List.unmodifiable(
+      _prependUniqueByTitle(
+        <ProfessionalProfile>[currentProfessionalProfile],
+        professionalProfiles,
+        (item) => item.name,
+      ),
+    );
+  }
+
+  @override
+  ProfessionalProfile? getCurrentProfessionalProfile() {
+    return _stateForCurrentUser().professionalProfile;
   }
 
   @override
@@ -296,12 +364,42 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
   @override
   List<ProfessionalServiceSpotlight> getProfessionalServiceSpotlights() {
-    return List.unmodifiable(professionalServiceSpotlights);
+    final currentProfessionalProfile = getCurrentProfessionalProfile();
+    final currentSpotlight = currentProfessionalProfile == null
+        ? const <ProfessionalServiceSpotlight>[]
+        : <ProfessionalServiceSpotlight>[
+            ProfessionalServiceSpotlight(
+              title: currentProfessionalProfile.specialty,
+              subtitle: currentProfessionalProfile.serviceSummary,
+              availabilityLabel:
+                  currentProfessionalProfile.serviceAvailabilityLabel,
+              accentColorHex: currentProfessionalProfile.accentColorHex,
+            ),
+          ];
+
+    return List.unmodifiable(
+      _prependUniqueByTitle(
+        currentSpotlight,
+        professionalServiceSpotlights,
+        (item) => item.title,
+      ),
+    );
   }
 
   @override
   List<String> getProfessionalSpecialties() {
-    return List.unmodifiable(professionalSpecialties);
+    final currentProfessionalProfile = getCurrentProfessionalProfile();
+    if (currentProfessionalProfile == null) {
+      return List.unmodifiable(professionalSpecialties);
+    }
+
+    return List.unmodifiable(
+      _prependUniqueByTitle(
+        <String>[currentProfessionalProfile.specialty],
+        professionalSpecialties,
+        (item) => item,
+      ),
+    );
   }
 
   @override
@@ -535,6 +633,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     if (nextUserId == null) return;
 
     _ensureUserStateLoaded(nextUserId);
+    _synchronizeCurrentProfessionalProfile(nextUserId);
     unawaited(_persistUserState(nextUserId));
   }
 
@@ -549,6 +648,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         pets: pets,
         threads: _seedThreadsForCurrentAccount(pets),
         qrStates: _seedQrStatesForCurrentAccount(pets),
+        professionalProfile: null,
       );
     }
     return _stateForUser(userId);
@@ -580,6 +680,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       pets: pets,
       threads: _seedThreadsForCurrentAccount(pets),
       qrStates: _seedQrStatesForCurrentAccount(pets),
+      professionalProfile: _seedProfessionalProfileForCurrentAccount(),
     );
   }
 
@@ -646,6 +747,68 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     final preferMockSeed =
         currentAccount == null || !_isLocalUserId(currentAccount.id);
     return _buildQrStatesForPets(pets, preferMockSeed: preferMockSeed);
+  }
+
+  ProfessionalProfile? _seedProfessionalProfileForCurrentAccount() {
+    final currentAccount = _sessionController.currentAccount;
+    if (currentAccount == null) return null;
+
+    final professionalProfile = currentAccount.professionalProfile;
+    if (!_shouldExposeProfessionalProfile(professionalProfile)) {
+      return null;
+    }
+
+    if (!_isLocalUserId(currentAccount.id)) {
+      for (final profile in professionalProfiles) {
+        if (profile.name == currentAccount.ownerName) {
+          return ProfessionalProfile.fromJson(
+            Map<String, dynamic>.from(profile.toJson()),
+          );
+        }
+      }
+    }
+
+    return _buildProfessionalProfileFromAccount(
+      account: currentAccount,
+      profile: professionalProfile!,
+      accentColorHex: _accentColorForProfessionalCategory(
+        professionalProfile.category,
+      ),
+    );
+  }
+
+  void _synchronizeCurrentProfessionalProfile(String userId) {
+    final currentState = _stateForUser(userId);
+    final seededProfile = _seedProfessionalProfileForCurrentAccount();
+
+    if (seededProfile == null) {
+      if (currentState.professionalProfile == null) return;
+      _userStates[userId] = currentState.copyWith(clearProfessionalProfile: true);
+      return;
+    }
+
+    final nextProfile = currentState.professionalProfile == null
+        ? seededProfile
+        : currentState.professionalProfile!.copyWith(
+            name: seededProfile.name,
+            specialty: seededProfile.specialty,
+            valueProposition: seededProfile.valueProposition,
+            helpSummary: seededProfile.helpSummary,
+            presenceStatusLabel: seededProfile.presenceStatusLabel,
+            serviceAvailabilityLabel: seededProfile.serviceAvailabilityLabel,
+            serviceSummary: seededProfile.serviceSummary,
+            services: seededProfile.services,
+            trustSignals: seededProfile.trustSignals,
+            topics: seededProfile.topics,
+            featuredContent: seededProfile.featuredContent,
+            accentColorHex: seededProfile.accentColorHex,
+          );
+
+    final previousJson = currentState.professionalProfile?.toJson();
+    final nextJson = nextProfile.toJson();
+    if (jsonEncode(previousJson) == jsonEncode(nextJson)) return;
+
+    _userStates[userId] = currentState.copyWith(professionalProfile: nextProfile);
   }
 
   PersistedLocalUserState _normalizeUserState(
@@ -949,6 +1112,113 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       default:
         return qrState.activity.first.timeLabel;
     }
+  }
+
+  bool _shouldExposeProfessionalProfile(
+    ProfessionalAccountProfile? profile,
+  ) {
+    if (profile == null) return false;
+
+    final businessName = profile.businessName.toLowerCase();
+    final category = profile.category.toLowerCase();
+    return !businessName.contains('futuro') &&
+        !category.contains('disponible para activar');
+  }
+
+  ProfessionalProfile _buildProfessionalProfileFromAccount({
+    required MascotifyAccount account,
+    required ProfessionalAccountProfile profile,
+    required int accentColorHex,
+  }) {
+    final trimmedServices = profile.services
+        .where((item) => item.trim().isNotEmpty)
+        .toList();
+    final visibleServices = trimmedServices.isEmpty
+        ? const <String>['Servicio principal', 'Orientación']
+        : trimmedServices;
+    final mainTopic = visibleServices.first;
+    final topics = _prependUniqueByTitle(
+      <String>[profile.category],
+      visibleServices,
+      (item) => item,
+    ).take(4).toList();
+
+    return ProfessionalProfile(
+      name: profile.businessName,
+      specialty: profile.category,
+      biography:
+          '${profile.businessName} ya tiene una presencia profesional persistida por cuenta dentro de Mascotify, pensada para ordenar servicios, confianza y visibilidad desde ${account.city}.',
+      description:
+          'Este perfil deja de ser solo vidriera: resume base operativa, servicios visibles y una presencia pública coherente con la cuenta profesional activa.',
+      contentType: 'Base operativa + contenido',
+      valueProposition: profile.operationLabel,
+      approachStyle: 'Claro, profesional y orientado a operación real',
+      helpSummary:
+          'Puede centralizar servicios como ${visibleServices.take(3).join(', ')}, dejando una base lista para contacto, solicitudes y capas más operativas.',
+      profileModeLabel: 'Perfil profesional persistido',
+      presenceStatusLabel: _isLocalUserId(account.id)
+          ? 'Perfil real guardado por cuenta'
+          : 'Perfil validado y visible',
+      serviceAvailabilityLabel: profile.operationLabel,
+      serviceSummary:
+          'Servicios visibles hoy: ${visibleServices.join(', ')}. La cuenta ya sostiene una base profesional coherente para crecer sin rehacer la vertical.',
+      services: visibleServices,
+      trustSignals: _prependUniqueByTitle(
+        <String>[
+          'Cuenta profesional persistida',
+          'Servicios asociados a la cuenta correcta',
+        ],
+        profile.capabilities,
+        (item) => item,
+      ).take(4).toList(),
+      primaryActionLabel: 'Recibir solicitud',
+      secondaryActionLabel: 'Ver contenido',
+      topics: topics,
+      featuredContent: <ProfessionalContentPreview>[
+        ProfessionalContentPreview(
+          title: '$mainTopic dentro de una base profesional real',
+          category: profile.category,
+          duration: '2 min',
+          summary:
+              'Una pieza breve para explicar cómo ${profile.businessName} presenta su propuesta, servicios y forma de trabajo dentro de Mascotify.',
+        ),
+        ProfessionalContentPreview(
+          title: 'Qué servicios ya están visibles en ${profile.businessName}',
+          category: 'Operación',
+          duration: '1 min 30 s',
+          summary:
+              'Resumen corto para ordenar la presencia pública, el alcance actual y los próximos pasos operativos del perfil.',
+        ),
+      ],
+      accentColorHex: accentColorHex,
+    );
+  }
+
+  int _accentColorForProfessionalCategory(String category) {
+    final normalized = category.toLowerCase();
+    if (normalized.contains('veter')) return 0xFFDDF6F6;
+    if (normalized.contains('comport')) return 0xFFFFE1EA;
+    if (normalized.contains('cría') || normalized.contains('cria')) {
+      return 0xFFFFF2C6;
+    }
+    return 0xFFDDF6F6;
+  }
+
+  List<T> _prependUniqueByTitle<T>(
+    List<T> leading,
+    List<T> trailing,
+    String Function(T item) keyBuilder,
+  ) {
+    final seen = <String>{};
+    final merged = <T>[];
+
+    for (final item in [...leading, ...trailing]) {
+      final key = keyBuilder(item);
+      if (!seen.add(key)) continue;
+      merged.add(item);
+    }
+
+    return merged;
   }
 
   String _buildPetsSummaryLabel(int count) {

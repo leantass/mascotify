@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../explore/presentation/screens/professional_public_profile_screen.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../theme/app_colors.dart';
@@ -11,7 +12,7 @@ class ProfessionalDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final account = AppData.accountFor(AccountExperience.professional);
     final profile = account.professionalProfile!;
-    final publicPresence = AppData.professionalProfiles.first;
+    final publicPresence = AppData.currentProfessionalProfile;
 
     return Scaffold(
       body: SafeArea(
@@ -60,7 +61,7 @@ class ProfessionalDashboardScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    publicPresence.profileModeLabel,
+                    publicPresence?.profileModeLabel ?? 'Perfil profesional activo',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -78,18 +79,36 @@ class ProfessionalDashboardScreen extends StatelessWidget {
                       Expanded(
                         child: _MetricTile(
                           label: 'Estado',
-                          value: publicPresence.presenceStatusLabel,
+                          value: publicPresence?.presenceStatusLabel ??
+                              profile.operationLabel,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _MetricTile(
                           label: 'Servicios',
-                          value: publicPresence.serviceAvailabilityLabel,
+                          value: publicPresence?.serviceAvailabilityLabel ??
+                              profile.operationLabel,
                         ),
                       ),
                     ],
                   ),
+                  if (publicPresence != null) ...[
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ProfessionalPublicProfileScreen(
+                              professional: publicPresence,
+                            ),
+                          ),
+                        ),
+                        child: const Text('Ver perfil público'),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -112,7 +131,8 @@ class ProfessionalDashboardScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     _InfoTile(
                       label: 'Perfil público',
-                      value: publicPresence.serviceSummary,
+                      value: publicPresence?.serviceSummary ??
+                          'La cuenta profesional ya tiene base local, pero todavía no expone una presencia pública más operativa.',
                     ),
                     const SizedBox(height: 10),
                     _InfoTile(
@@ -135,12 +155,18 @@ class ProfessionalDashboardScreen extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 12),
-                    ...publicPresence.trustSignals.map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _CapabilityTile(label: item),
+                    if (publicPresence != null)
+                      ...publicPresence.trustSignals.map(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _CapabilityTile(label: item),
+                        ),
                       ),
-                    ),
+                    if (publicPresence == null)
+                      const _CapabilityTile(
+                        label:
+                            'La presencia pública profesional se activará cuando la cuenta tenga una base profesional real y visible.',
+                      ),
                   ],
                 ),
               ),

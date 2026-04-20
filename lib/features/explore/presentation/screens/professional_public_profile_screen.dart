@@ -202,7 +202,7 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                     Text('Acciones', style: textTheme.titleLarge),
                     const SizedBox(height: 8),
                     Text(
-                      'Interacciones mock para una comunidad experta que puede crecer a relaciones, orientación o servicios.',
+                      'Interacciones iniciales para una comunidad experta que puede crecer a relaciones, orientación o servicios.',
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
@@ -221,7 +221,7 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                               context,
                               title: professional.primaryActionLabel,
                               message:
-                                  'Esta interacción mock representa cómo ${professional.name} podría pasar de voz experta a relación profesional más útil dentro de Mascotify.',
+                                  'Esta interacción representa cómo ${professional.name} puede pasar de voz experta a una relación profesional más útil dentro de Mascotify.',
                             ),
                             child: Text(professional.primaryActionLabel),
                           ),
@@ -318,7 +318,7 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
-                    'Este flujo es mock y representa cómo Mascotify puede acercar voces expertas, seguimiento de contenidos y futuras relaciones de servicio dentro del mismo ecosistema.',
+                    'Este flujo representa cómo Mascotify puede acercar voces expertas, seguimiento de contenidos y futuras relaciones de servicio dentro del mismo ecosistema.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       height: 1.5,

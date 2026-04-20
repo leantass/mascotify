@@ -33,6 +33,7 @@ abstract class MascotifyDataSource {
   List<SavedProfileEntry> getSavedProfiles();
 
   List<ProfessionalProfile> getProfessionalProfiles();
+  ProfessionalProfile? getCurrentProfessionalProfile();
   ProfessionalProfile? findProfessionalByName(String name);
   ProfessionalContentPreview? findFeaturedContent(
     ProfessionalProfile professional,
@@ -140,6 +141,11 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   @override
   List<ProfessionalProfile> getProfessionalProfiles() {
     return List.unmodifiable(professionalProfiles);
+  }
+
+  @override
+  ProfessionalProfile? getCurrentProfessionalProfile() {
+    return professionalProfiles.isEmpty ? null : professionalProfiles.first;
   }
 
   @override
@@ -267,6 +273,9 @@ class AppData {
 
   static List<ProfessionalProfile> get professionalProfiles =>
       source.getProfessionalProfiles();
+
+  static ProfessionalProfile? get currentProfessionalProfile =>
+      source.getCurrentProfessionalProfile();
 
   static ProfessionalProfile? findProfessionalByName(String name) {
     return source.findProfessionalByName(name);

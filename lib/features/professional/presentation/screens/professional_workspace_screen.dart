@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../explore/presentation/screens/professional_public_profile_screen.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../theme/app_colors.dart';
@@ -12,7 +13,7 @@ class ProfessionalWorkspaceScreen extends StatelessWidget {
     final profile = AppData.accountFor(
       AccountExperience.professional,
     ).professionalProfile!;
-    final publicPresence = AppData.professionalProfiles.first;
+    final publicPresence = AppData.currentProfessionalProfile;
 
     return Scaffold(
       body: SafeArea(
@@ -43,11 +44,27 @@ class ProfessionalWorkspaceScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Esta vista ya puede leerse como base de operación profesional: qué ofrecés, cómo se percibe tu ficha y qué tipos de servicio podrían vivir dentro de Mascotify.',
+                    'Esta vista ya puede leerse como base de operación profesional: qué ofrecés, cómo se percibe tu ficha y qué tipos de servicio ya quedan asociados a tu cuenta.',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
+                  if (publicPresence != null) ...[
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ProfessionalPublicProfileScreen(
+                              professional: publicPresence,
+                            ),
+                          ),
+                        ),
+                        child: const Text('Abrir perfil público'),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -64,16 +81,18 @@ class ProfessionalWorkspaceScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      publicPresence.serviceSummary,
+                      publicPresence?.serviceSummary ??
+                          'La cuenta profesional ya sostiene servicios básicos, aunque la presencia pública todavía no se publicó.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
-                    ...profile.services.map(
+                    ...(publicPresence?.services ?? profile.services).map(
                       (service) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: _ServiceCard(
                           service: service,
-                          availability: publicPresence.serviceAvailabilityLabel,
+                          availability: publicPresence?.serviceAvailabilityLabel ??
+                              profile.operationLabel,
                         ),
                       ),
                     ),
@@ -94,16 +113,22 @@ class ProfessionalWorkspaceScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'La ficha profesional no vive aislada: contenido, reputación y servicios se alimentan entre sí para construir valor percibido.',
+                      'La ficha profesional no vive aislada: contenido, reputación y servicios se alimentan entre sí para construir valor percibido y una base operativa más real.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
-                    ...publicPresence.trustSignals.map(
-                      (signal) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _SignalTile(label: signal),
+                    if (publicPresence != null)
+                      ...publicPresence.trustSignals.map(
+                        (signal) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _SignalTile(label: signal),
+                        ),
                       ),
-                    ),
+                    if (publicPresence == null)
+                      const _SignalTile(
+                        label:
+                            'La cuenta profesional todavía no publicó una presencia pública más completa, pero la base local ya está lista para crecer.',
+                      ),
                   ],
                 ),
               ),
@@ -144,7 +169,7 @@ class _ServiceCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Espacio mock para definir cómo este servicio se presentaría, se ordenaría y se habilitaría dentro de una presencia profesional más completa.',
+            'Base inicial para definir cómo este servicio se presenta, se ordena y puede evolucionar dentro de una presencia profesional más operativa.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppColors.textPrimary,
               height: 1.45,
