@@ -23,18 +23,22 @@ class PersistedLocalUserState {
   const PersistedLocalUserState({
     required this.notificationsEnabled,
     required this.pets,
+    required this.threads,
   });
 
   final bool notificationsEnabled;
   final List<Pet> pets;
+  final List<MessageThread> threads;
 
   PersistedLocalUserState copyWith({
     bool? notificationsEnabled,
     List<Pet>? pets,
+    List<MessageThread>? threads,
   }) {
     return PersistedLocalUserState(
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       pets: pets ?? this.pets,
+      threads: threads ?? this.threads,
     );
   }
 
@@ -42,6 +46,7 @@ class PersistedLocalUserState {
     return <String, dynamic>{
       'notificationsEnabled': notificationsEnabled,
       'pets': pets.map((item) => item.toJson()).toList(),
+      'threads': threads.map((item) => item.toJson()).toList(),
     };
   }
 
@@ -51,6 +56,13 @@ class PersistedLocalUserState {
       pets: (json['pets'] as List<dynamic>)
           .map(
             (item) => Pet.fromJson(
+              Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+            ),
+          )
+          .toList(),
+      threads: (json['threads'] as List<dynamic>? ?? const <dynamic>[])
+          .map(
+            (item) => MessageThread.fromJson(
               Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
             ),
           )
@@ -127,7 +139,18 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
   @override
   MessageThread? findMessageThreadForPet(Pet pet) {
-    return findMockThreadForPet(pet, pets: getPets());
+    for (final thread in getMessageThreads()) {
+      if (thread.pet.id == pet.id) return thread;
+    }
+    return null;
+  }
+
+  @override
+  MessageThread? findMessageThreadById(String id) {
+    for (final thread in getMessageThreads()) {
+      if (thread.id == id) return thread;
+    }
+    return null;
   }
 
   @override
@@ -172,12 +195,14 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
   @override
   List<EcosystemNotification> getNotifications() {
-    return List.unmodifiable(buildMockNotifications(getPets()));
+    return List.unmodifiable(
+      buildMockNotifications(getPets(), getMessageThreads()),
+    );
   }
 
   @override
   List<MessageThread> getMessageThreads() {
-    return List.unmodifiable(buildMockMessageThreads(getPets()));
+    return List.unmodifiable(_stateForCurrentUser().threads);
   }
 
   @override
@@ -259,6 +284,68 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  Future<void> addAutomatedReply(String threadId) async {
+    final thread = findMessageThreadById(threadId);
+    if (thread == null || thread.autoReplies.isEmpty) return;
+
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final reply = thread.autoReplies[
+      thread.messages.length % thread.autoReplies.length
+    ];
+
+    await _updateThread(
+      userId,
+      threadId,
+      (currentThread) {
+        return currentThread.copyWith(
+          messages: <MessageEntry>[
+            ...currentThread.messages,
+            MessageEntry(
+              text: reply,
+              timestamp: 'Ahora',
+              isMine: false,
+            ),
+          ],
+          lastMessage: reply,
+          lastActivity: 'Ahora',
+          unreadCount: currentThread.unreadCount + 1,
+          isAwaitingMyReply: true,
+        );
+      },
+    );
+  }
+
+  @override
+  Future<void> sendMessage(String threadId, String text) async {
+    final trimmedText = text.trim();
+    if (trimmedText.isEmpty) return;
+
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    await _updateThread(
+      userId,
+      threadId,
+      (currentThread) => currentThread.copyWith(
+        messages: <MessageEntry>[
+          ...currentThread.messages,
+          MessageEntry(
+            text: trimmedText,
+            timestamp: 'Ahora',
+            isMine: true,
+          ),
+        ],
+        lastMessage: trimmedText,
+        lastActivity: 'Ahora',
+        unreadCount: 0,
+        isAwaitingMyReply: false,
+      ),
+    );
+  }
+
+  @override
   Future<void> setNotificationsEnabled(bool enabled) async {
     final userId = _currentUserId;
     if (userId == null) return;
@@ -298,6 +385,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       return PersistedLocalUserState(
         notificationsEnabled: true,
         pets: _seedPetsForCurrentAccount(),
+        threads: _seedThreadsForCurrentAccount(_seedPetsForCurrentAccount()),
       );
     }
     return _stateForUser(userId);
@@ -317,7 +405,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       final restoredState = PersistedLocalUserState.fromJson(decoded);
       final normalizedState = _normalizeUserState(userId, restoredState);
       _userStates[userId] = normalizedState;
-      if (normalizedState.pets.length != restoredState.pets.length) {
+      if (_stateWasNormalized(restoredState, normalizedState)) {
         unawaited(_persistUserState(userId));
       }
       return;
@@ -326,6 +414,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     _userStates[userId] = PersistedLocalUserState(
       notificationsEnabled: true,
       pets: _seedPetsForCurrentAccount(),
+      threads: _seedThreadsForCurrentAccount(_seedPetsForCurrentAccount()),
     );
   }
 
@@ -349,7 +438,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       final restoredState = PersistedLocalUserState.fromJson(decoded);
       final normalizedState = _normalizeUserState(userId, restoredState);
       _userStates[userId] = normalizedState;
-      if (normalizedState.pets.length != restoredState.pets.length) {
+      if (_stateWasNormalized(restoredState, normalizedState)) {
         unawaited(_persistUserState(userId));
       }
     }
@@ -370,15 +459,43 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         .toList();
   }
 
+  List<MessageThread> _seedThreadsForCurrentAccount(List<Pet> pets) {
+    final currentAccount = _sessionController.currentAccount;
+    if (currentAccount != null && _isLocalUserId(currentAccount.id)) {
+      return const <MessageThread>[];
+    }
+
+    return buildMockMessageThreads(pets)
+        .map(
+          (thread) => MessageThread.fromJson(
+            Map<String, dynamic>.from(thread.toJson()),
+          ),
+        )
+        .toList();
+  }
+
   PersistedLocalUserState _normalizeUserState(
     String userId,
     PersistedLocalUserState state,
   ) {
-    if (!_isLocalUserId(userId) || !_looksLikeLegacyMockSeed(state.pets)) {
-      return state;
+    if (_isLocalUserId(userId)) {
+      final nextPets = _looksLikeLegacyMockSeed(state.pets)
+          ? const <Pet>[]
+          : state.pets;
+      final nextThreads =
+          _looksLikeLegacyMockThreads(state.threads) || nextPets.isEmpty
+          ? const <MessageThread>[]
+          : state.threads;
+      return state.copyWith(pets: nextPets, threads: nextThreads);
     }
 
-    return state.copyWith(pets: const <Pet>[]);
+    if (state.threads.isEmpty && state.pets.isNotEmpty) {
+      return state.copyWith(
+        threads: _seedThreadsForCurrentAccount(state.pets),
+      );
+    }
+
+    return state;
   }
 
   bool _isLocalUserId(String userId) {
@@ -395,6 +512,44 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     }
 
     return true;
+  }
+
+  bool _looksLikeLegacyMockThreads(List<MessageThread> threads) {
+    final mockThreads = buildMockMessageThreads(MockData.pets);
+    if (threads.length != mockThreads.length) return false;
+
+    for (var index = 0; index < threads.length; index++) {
+      if (threads[index].id != mockThreads[index].id) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  bool _stateWasNormalized(
+    PersistedLocalUserState previous,
+    PersistedLocalUserState next,
+  ) {
+    return previous.pets.length != next.pets.length ||
+        previous.threads.length != next.threads.length;
+  }
+
+  Future<void> _updateThread(
+    String userId,
+    String threadId,
+    MessageThread Function(MessageThread thread) transform,
+  ) async {
+    final currentState = _stateForUser(userId);
+    final threadIndex = currentState.threads.indexWhere(
+      (thread) => thread.id == threadId,
+    );
+    if (threadIndex == -1) return;
+
+    final updatedThreads = <MessageThread>[...currentState.threads];
+    updatedThreads[threadIndex] = transform(updatedThreads[threadIndex]);
+    _userStates[userId] = currentState.copyWith(threads: updatedThreads);
+    await _persistUserState(userId);
   }
 
   String _buildPetsSummaryLabel(int count) {

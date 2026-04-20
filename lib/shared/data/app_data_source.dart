@@ -25,7 +25,10 @@ abstract class MascotifyDataSource {
   List<EcosystemNotification> getNotifications();
 
   List<MessageThread> getMessageThreads();
+  MessageThread? findMessageThreadById(String id);
   MessageThread? findMessageThreadForPet(Pet pet);
+  Future<void> sendMessage(String threadId, String text);
+  Future<void> addAutomatedReply(String threadId);
   List<SocialInboxEntry> getSocialInboxEntries();
   List<SavedProfileEntry> getSavedProfiles();
 
@@ -70,7 +73,15 @@ class MockMascotifyDataSource implements MascotifyDataSource {
 
   @override
   MessageThread? findMessageThreadForPet(Pet pet) {
-    return findMockThreadForPet(pet);
+    return findMockThreadForPet(pet, pets: MockData.pets);
+  }
+
+  @override
+  MessageThread? findMessageThreadById(String id) {
+    for (final thread in buildMockMessageThreads(MockData.pets)) {
+      if (thread.id == id) return thread;
+    }
+    return null;
   }
 
   @override
@@ -101,12 +112,17 @@ class MockMascotifyDataSource implements MascotifyDataSource {
 
   @override
   List<EcosystemNotification> getNotifications() {
-    return List.unmodifiable(buildMockNotifications());
+    return List.unmodifiable(
+      buildMockNotifications(
+        MockData.pets,
+        buildMockMessageThreads(MockData.pets),
+      ),
+    );
   }
 
   @override
   List<MessageThread> getMessageThreads() {
-    return List.unmodifiable(buildMockMessageThreads());
+    return List.unmodifiable(buildMockMessageThreads(MockData.pets));
   }
 
   @override
@@ -156,12 +172,12 @@ class MockMascotifyDataSource implements MascotifyDataSource {
 
   @override
   List<SavedProfileEntry> getSavedProfiles() {
-    return List.unmodifiable(buildMockSavedProfiles());
+    return List.unmodifiable(buildMockSavedProfiles(MockData.pets));
   }
 
   @override
   List<SocialInboxEntry> getSocialInboxEntries() {
-    return List.unmodifiable(buildMockSocialInboxEntries());
+    return List.unmodifiable(buildMockSocialInboxEntries(MockData.pets));
   }
 
   @override
@@ -176,6 +192,12 @@ class MockMascotifyDataSource implements MascotifyDataSource {
 
   @override
   Future<void> addPet(Pet pet) async {}
+
+  @override
+  Future<void> addAutomatedReply(String threadId) async {}
+
+  @override
+  Future<void> sendMessage(String threadId, String text) async {}
 
   @override
   Future<void> setNotificationsEnabled(bool enabled) async {}
@@ -214,8 +236,20 @@ class AppData {
 
   static List<MessageThread> get messageThreads => source.getMessageThreads();
 
+  static MessageThread? findMessageThreadById(String id) {
+    return source.findMessageThreadById(id);
+  }
+
   static MessageThread? findMessageThreadForPet(Pet pet) {
     return source.findMessageThreadForPet(pet);
+  }
+
+  static Future<void> sendMessage(String threadId, String text) {
+    return source.sendMessage(threadId, text);
+  }
+
+  static Future<void> addAutomatedReply(String threadId) {
+    return source.addAutomatedReply(threadId);
   }
 
   static List<SocialInboxEntry> get socialInboxEntries =>

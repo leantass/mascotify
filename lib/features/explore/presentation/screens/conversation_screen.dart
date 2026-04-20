@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/social_models.dart';
 import '../../../../theme/app_colors.dart';
 
@@ -14,15 +15,14 @@ class ConversationScreen extends StatefulWidget {
 
 class _ConversationScreenState extends State<ConversationScreen> {
   final _messageController = TextEditingController();
-  late final List<MessageEntry> _messages;
+  late MessageThread _thread;
 
-  int _replyCursor = 0;
   bool _isSimulatingReply = false;
 
   @override
   void initState() {
     super.initState();
-    _messages = List<MessageEntry>.from(widget.thread.messages);
+    _thread = AppData.findMessageThreadById(widget.thread.id) ?? widget.thread;
   }
 
   @override
@@ -34,7 +34,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final thread = widget.thread;
+    final thread = _thread;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Conversación')),
@@ -183,9 +183,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
-                itemCount: _messages.length,
+                itemCount: thread.messages.length,
                 itemBuilder: (context, index) {
-                  final message = _messages[index];
+                  final message = thread.messages[index];
                   return _MessageBubble(
                     message: message,
                     accentColor: Color(thread.accentColorHex),
@@ -213,7 +213,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: widget.thread.autoReplies
+                      children: thread.autoReplies
                           .take(3)
                           .map(
                             (reply) => Padding(
@@ -285,7 +285,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                       SizedBox(
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: _sendMockMessage,
+                          onPressed: _sendMessage,
                           child: const Text('Enviar'),
                         ),
                       ),
@@ -300,30 +300,36 @@ class _ConversationScreenState extends State<ConversationScreen> {
     );
   }
 
-  Future<void> _sendMockMessage() async {
+  Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
+    final threadId = _thread.id;
+    await AppData.sendMessage(threadId, text);
+    _reloadThread();
+    if (!mounted) return;
+
     setState(() {
-      _messages.add(MessageEntry(text: text, timestamp: 'Ahora', isMine: true));
       _messageController.clear();
-      _isSimulatingReply = true;
+      _isSimulatingReply = _thread.autoReplies.isNotEmpty;
     });
+
+    if (_thread.autoReplies.isEmpty) return;
 
     await Future<void>.delayed(const Duration(milliseconds: 750));
     if (!mounted) return;
 
-    final reply = widget
-        .thread
-        .autoReplies[_replyCursor % widget.thread.autoReplies.length];
-    _replyCursor += 1;
+    await AppData.addAutomatedReply(threadId);
+    _reloadThread();
+    if (!mounted) return;
 
     setState(() {
-      _messages.add(
-        MessageEntry(text: reply, timestamp: 'Ahora', isMine: false),
-      );
       _isSimulatingReply = false;
     });
+  }
+
+  void _reloadThread() {
+    _thread = AppData.findMessageThreadById(widget.thread.id) ?? _thread;
   }
 }
 

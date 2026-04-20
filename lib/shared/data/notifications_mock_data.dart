@@ -1,17 +1,21 @@
 import '../models/notification_models.dart';
 import '../models/pet.dart';
+import '../models/social_models.dart';
 import 'professional_mock_data.dart';
 import 'reporting_mock_data.dart';
 import 'social_mock_data.dart';
 
-List<EcosystemNotification> buildMockNotifications([List<Pet>? sourcePets]) {
+List<EcosystemNotification> buildMockNotifications([
+  List<Pet>? sourcePets,
+  List<MessageThread>? sourceThreads,
+]) {
   final pets = _resolveNotificationPets(sourcePets);
   if (pets.isEmpty) {
     return const <EcosystemNotification>[];
   }
 
   final inboxItems = buildMockSocialInboxEntries(pets);
-  final threads = buildMockMessageThreads(pets);
+  final threads = sourceThreads ?? buildMockMessageThreads(pets);
   final savedProfiles = buildMockSavedProfiles(pets);
   final featuredContent = professionalLibraryContents.first;
   final notifications = <EcosystemNotification>[];
