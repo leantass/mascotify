@@ -1,5 +1,6 @@
 import '../models/notification_models.dart';
 import '../models/pet.dart';
+import '../models/report_models.dart';
 import '../models/social_models.dart';
 import 'professional_mock_data.dart';
 import 'reporting_mock_data.dart';
@@ -8,6 +9,7 @@ import 'social_mock_data.dart';
 List<EcosystemNotification> buildMockNotifications([
   List<Pet>? sourcePets,
   List<MessageThread>? sourceThreads,
+  SightingLocationReference Function(Pet pet)? locationResolver,
 ]) {
   final pets = _resolveNotificationPets(sourcePets);
   if (pets.isEmpty) {
@@ -60,7 +62,8 @@ List<EcosystemNotification> buildMockNotifications([
 
   if (pets.length >= 3) {
     final qrPet = pets[2];
-    final qrLocation = buildSuggestedLocationForPet(qrPet);
+    final qrLocation =
+        locationResolver?.call(qrPet) ?? buildSuggestedLocationForPet(qrPet);
     notifications.add(
       EcosystemNotification(
         id: 'notif-qr-${qrPet.id}',
@@ -137,8 +140,7 @@ List<EcosystemNotification> buildMockNotifications([
         id: 'notif-saved-${savedProfile.pet.id}',
         type: EcosystemNotificationType.reminder,
         title: 'Retomar perfil guardado de ${savedProfile.pet.name}',
-        description:
-            '${savedProfile.reason} ${savedProfile.savedAtLabel}.',
+        description: '${savedProfile.reason} ${savedProfile.savedAtLabel}.',
         timeLabel: 'Ayer',
         accentColorHex: 0xFFFFE1EA,
         priority: EcosystemNotificationPriority.info,

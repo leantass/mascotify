@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/data/reporting_mock_data.dart';
+import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/report_models.dart';
 import '../../../../theme/app_colors.dart';
@@ -12,8 +12,8 @@ class QrTraceabilityScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = buildQrStatusSnapshotForPet(pet);
-    final activity = buildQrActivityEntriesForPet(pet);
+    final status = AppData.qrStatusSnapshotForPet(pet);
+    final activity = AppData.qrActivityEntriesForPet(pet);
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -64,7 +64,7 @@ class QrTraceabilityScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Este historial mock reúne escaneos, señales públicas, estado del contacto protegido y eventos recientes para comunicar valor real del QR.',
+                    'Este historial reúne escaneos, señales públicas, estado del contacto protegido y eventos recientes persistidos para comunicar valor real del QR.',
                     style: textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -153,7 +153,7 @@ class QrTraceabilityScreen extends StatelessWidget {
                     Text('Timeline de actividad', style: textTheme.titleLarge),
                     const SizedBox(height: 8),
                     Text(
-                      'Eventos mock que ayudan a leer qué pasó con el QR y en qué momento.',
+                      'Eventos persistidos que ayudan a leer qué pasó con el QR y en qué momento.',
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/data/reporting_mock_data.dart';
+import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/report_models.dart';
 import '../../../../theme/app_colors.dart';
@@ -26,7 +26,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
   @override
   void initState() {
     super.initState();
-    _suggestedLocation = buildSuggestedLocationForPet(widget.pet);
+    _suggestedLocation = AppData.suggestedLocationForPet(widget.pet);
     _locationController.text = _suggestedLocation.zoneReference;
   }
 
@@ -41,8 +41,8 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
   Widget build(BuildContext context) {
     final pet = widget.pet;
     final textTheme = Theme.of(context).textTheme;
-    final snapshot = buildQrStatusSnapshotForPet(pet);
-    final activity = buildQrActivityEntriesForPet(pet);
+    final snapshot = AppData.qrStatusSnapshotForPet(pet);
+    final activity = AppData.qrActivityEntriesForPet(pet);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Reportar avistamiento')),
@@ -140,7 +140,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                     Text('Trazabilidad QR activa', style: textTheme.titleLarge),
                     const SizedBox(height: 8),
                     Text(
-                      'Este reporte se sumaría a la actividad reciente del QR y reforzaría la lectura de seguimiento del perfil.',
+                      'Este reporte se suma a la actividad reciente del QR y refuerza la lectura de seguimiento del perfil.',
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
@@ -187,7 +187,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Representación mock de la referencia que podría capturarse al escanear el QR y preparar el aviso para el responsable.',
+                      'Representación de la referencia que puede capturarse al escanear el QR y preparar el aviso para el responsable.',
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
@@ -360,6 +360,16 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
     final locationLabel = _locationController.text.trim().isEmpty
         ? _suggestedLocation.zoneReference
         : _locationController.text.trim();
+    final draft = SightingReportDraft(
+      petId: widget.pet.id,
+      locationLabel: locationLabel,
+      notes: _notesController.text.trim(),
+      condition: _selectedCondition,
+      allowContact: _allowContact,
+    );
+
+    await AppData.submitSightingReport(draft);
+    if (!mounted) return;
 
     await showDialog<void>(
       context: context,
@@ -392,7 +402,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'La referencia sobre ${pet.name} quedó registrada en este flujo mock y podría enviarse al responsable como una ubicación aproximada útil desde Mascotify.',
+                  'La referencia sobre ${pet.name} quedó registrada y puede enviarse al responsable como una ubicación aproximada útil desde Mascotify.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 18),
@@ -452,7 +462,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
-                    'Dentro del historial QR, este evento aparecería como una nueva señal de trazabilidad vinculada a ${pet.qrCodeLabel}.',
+                    'Dentro del historial QR, este evento ya quedó asentado como una nueva señal de trazabilidad vinculada a ${pet.qrCodeLabel}.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       height: 1.45,

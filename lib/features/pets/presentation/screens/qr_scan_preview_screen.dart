@@ -1,22 +1,38 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/data/reporting_mock_data.dart';
+import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/report_models.dart';
 import '../../../../theme/app_colors.dart';
 import 'qr_traceability_screen.dart';
 import 'report_sighting_screen.dart';
 
-class QrScanPreviewScreen extends StatelessWidget {
+class QrScanPreviewScreen extends StatefulWidget {
   const QrScanPreviewScreen({super.key, required this.pet});
 
   final Pet pet;
 
   @override
+  State<QrScanPreviewScreen> createState() => _QrScanPreviewScreenState();
+}
+
+class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
+  late QrStatusSnapshot _snapshot;
+  late List<QrActivityEntry> _activity;
+
+  @override
+  void initState() {
+    super.initState();
+    _reloadQrState();
+    _registerScan();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final pet = widget.pet;
     final textTheme = Theme.of(context).textTheme;
-    final snapshot = buildQrStatusSnapshotForPet(pet);
-    final activity = buildQrActivityEntriesForPet(pet);
+    final snapshot = _snapshot;
+    final activity = _activity;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Escaneo público')),
@@ -220,7 +236,7 @@ class QrScanPreviewScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Podés informar un avistamiento de forma simple. El sistema está preparado para registrar la señal, mantener trazabilidad y derivar la información al responsable sin mostrar contacto privado directo.',
+                            'Podés informar un avistamiento de forma simple. El sistema registra la señal, mantiene trazabilidad y deriva la información al responsable sin mostrar contacto privado directo.',
                             style: textTheme.bodyMedium?.copyWith(
                               color: Colors.white.withValues(alpha: 0.82),
                               height: 1.5,
@@ -285,18 +301,16 @@ class QrScanPreviewScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Señales mock que ayudan a entender que este código no es solo visual, sino una pieza útil de seguimiento.',
+                      'Señales persistidas que ayudan a entender que este código no es solo visual, sino una pieza útil de seguimiento.',
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
-                    ...activity
-                        .take(3)
-                        .map(
-                          (entry) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _ActivityTile(entry: entry),
-                          ),
-                        ),
+                    ...activity.take(3).map(
+                      (entry) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _ActivityTile(entry: entry),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -319,7 +333,7 @@ class QrScanPreviewScreen extends StatelessWidget {
                     ),
                     const _InfoBullet(
                       text:
-                          'Cada escaneo o reporte puede transformarse en una señal útil dentro del historial QR.',
+                          'Cada escaneo o reporte puede transformarse en una señal útil dentro del historial QR persistente.',
                     ),
                     const _InfoBullet(
                       text:
@@ -333,6 +347,18 @@ class QrScanPreviewScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _reloadQrState() {
+    _snapshot = AppData.qrStatusSnapshotForPet(widget.pet);
+    _activity = AppData.qrActivityEntriesForPet(widget.pet);
+  }
+
+  Future<void> _registerScan() async {
+    await AppData.registerQrScan(widget.pet.id);
+    if (!mounted) return;
+
+    setState(_reloadQrState);
   }
 }
 

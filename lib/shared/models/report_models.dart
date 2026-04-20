@@ -18,6 +18,54 @@ class SightingLocationReference {
   final String mapLabelBottom;
   final double horizontalFactor;
   final double verticalFactor;
+
+  SightingLocationReference copyWith({
+    String? zone,
+    String? zoneReference,
+    String? shortReference,
+    String? timeReference,
+    String? mapLabelTop,
+    String? mapLabelBottom,
+    double? horizontalFactor,
+    double? verticalFactor,
+  }) {
+    return SightingLocationReference(
+      zone: zone ?? this.zone,
+      zoneReference: zoneReference ?? this.zoneReference,
+      shortReference: shortReference ?? this.shortReference,
+      timeReference: timeReference ?? this.timeReference,
+      mapLabelTop: mapLabelTop ?? this.mapLabelTop,
+      mapLabelBottom: mapLabelBottom ?? this.mapLabelBottom,
+      horizontalFactor: horizontalFactor ?? this.horizontalFactor,
+      verticalFactor: verticalFactor ?? this.verticalFactor,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'zone': zone,
+      'zoneReference': zoneReference,
+      'shortReference': shortReference,
+      'timeReference': timeReference,
+      'mapLabelTop': mapLabelTop,
+      'mapLabelBottom': mapLabelBottom,
+      'horizontalFactor': horizontalFactor,
+      'verticalFactor': verticalFactor,
+    };
+  }
+
+  factory SightingLocationReference.fromJson(Map<String, dynamic> json) {
+    return SightingLocationReference(
+      zone: json['zone'] as String,
+      zoneReference: json['zoneReference'] as String,
+      shortReference: json['shortReference'] as String,
+      timeReference: json['timeReference'] as String,
+      mapLabelTop: json['mapLabelTop'] as String,
+      mapLabelBottom: json['mapLabelBottom'] as String,
+      horizontalFactor: (json['horizontalFactor'] as num).toDouble(),
+      verticalFactor: (json['verticalFactor'] as num).toDouble(),
+    );
+  }
 }
 
 class SightingReportDraft {
@@ -70,4 +118,26 @@ class QrActivityEntry {
   final String statusLabel;
   final String iconKey;
   final int accentColorHex;
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'title': title,
+      'detail': detail,
+      'timeLabel': timeLabel,
+      'statusLabel': statusLabel,
+      'iconKey': iconKey,
+      'accentColorHex': accentColorHex,
+    };
+  }
+
+  factory QrActivityEntry.fromJson(Map<String, dynamic> json) {
+    return QrActivityEntry(
+      title: json['title'] as String,
+      detail: json['detail'] as String,
+      timeLabel: json['timeLabel'] as String,
+      statusLabel: json['statusLabel'] as String,
+      iconKey: json['iconKey'] as String,
+      accentColorHex: json['accentColorHex'] as int,
+    );
+  }
 }

@@ -46,6 +46,8 @@ abstract class MascotifyDataSource {
   SightingLocationReference getSuggestedLocationForPet(Pet pet);
   QrStatusSnapshot getQrStatusSnapshotForPet(Pet pet);
   List<QrActivityEntry> getQrActivityEntriesForPet(Pet pet);
+  Future<void> registerQrScan(String petId);
+  Future<void> submitSightingReport(SightingReportDraft draft);
 
   Future<void> syncCurrentUserState();
   Future<void> addPet(Pet pet);
@@ -171,6 +173,9 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  Future<void> registerQrScan(String petId) async {}
+
+  @override
   List<SavedProfileEntry> getSavedProfiles() {
     return List.unmodifiable(buildMockSavedProfiles(MockData.pets));
   }
@@ -201,6 +206,9 @@ class MockMascotifyDataSource implements MascotifyDataSource {
 
   @override
   Future<void> setNotificationsEnabled(bool enabled) async {}
+
+  @override
+  Future<void> submitSightingReport(SightingReportDraft draft) async {}
 
   @override
   Future<void> syncCurrentUserState() async {}
@@ -293,6 +301,14 @@ class AppData {
 
   static List<QrActivityEntry> qrActivityEntriesForPet(Pet pet) {
     return source.getQrActivityEntriesForPet(pet);
+  }
+
+  static Future<void> registerQrScan(String petId) {
+    return source.registerQrScan(petId);
+  }
+
+  static Future<void> submitSightingReport(SightingReportDraft draft) {
+    return source.submitSightingReport(draft);
   }
 
   static Future<void> syncCurrentUserState() {

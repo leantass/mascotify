@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/data/reporting_mock_data.dart';
+import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/report_models.dart';
 import '../../../../theme/app_colors.dart';
@@ -523,9 +523,10 @@ class _QrExperienceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentPet = AppData.findPetById(pet.id) ?? pet;
     final textTheme = Theme.of(context).textTheme;
-    final snapshot = buildQrStatusSnapshotForPet(pet);
-    final activity = buildQrActivityEntriesForPet(pet);
+    final snapshot = AppData.qrStatusSnapshotForPet(currentPet);
+    final activity = AppData.qrActivityEntriesForPet(currentPet);
 
     return Card(
       child: Padding(
@@ -584,8 +585,8 @@ class _QrExperienceCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _QrStatusBadge(
-                          label: pet.qrEnabled ? 'Activo' : 'Pendiente',
-                          backgroundColor: pet.qrEnabled
+                          label: currentPet.qrEnabled ? 'Activo' : 'Pendiente',
+                          backgroundColor: currentPet.qrEnabled
                               ? AppColors.primarySoft
                               : AppColors.supportSoft,
                           textColor: AppColors.textPrimary,
@@ -594,7 +595,7 @@ class _QrExperienceCard extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _QrStatusBadge(
-                          label: pet.qrLastUpdate,
+                          label: currentPet.qrLastUpdate,
                           backgroundColor: Colors.white.withValues(alpha: 0.10),
                           textColor: Colors.white,
                         ),
@@ -614,7 +615,7 @@ class _QrExperienceCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    pet.qrCodeLabel,
+                    currentPet.qrCodeLabel,
                     style: textTheme.titleMedium?.copyWith(
                       color: Colors.white,
                       letterSpacing: 1.1,
@@ -622,7 +623,7 @@ class _QrExperienceCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    pet.qrStatus,
+                    currentPet.qrStatus,
                     textAlign: TextAlign.center,
                     style: textTheme.bodyMedium?.copyWith(
                       color: Colors.white.withValues(alpha: 0.82),
