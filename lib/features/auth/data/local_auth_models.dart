@@ -304,18 +304,18 @@ class StoredAuthAccount {
   }
 
   String _buildBaseSummary() {
-    return 'Cuenta base local y persistida para centralizar identidad, sesion y crecimiento por perfiles sin rehacer la arquitectura.';
+    return 'Cuenta base local y persistida para centralizar identidad, sesión y crecimiento por perfiles sin rehacer la arquitectura.';
   }
 
   String _buildLinkedProfilesSummary() {
     if (availableExperiences.length > 1) {
-      return 'La misma cuenta ya puede recuperar y alternar entre familia y profesional dentro de una sola sesion.';
+      return 'La misma cuenta ya puede recuperar y alternar entre familia y profesional dentro de una sola sesión.';
     }
 
     final target = availableExperiences.first == AccountExperience.family
         ? 'profesional'
         : 'familiar';
-    return 'La cuenta arranca con un perfil activo, pero queda lista para sumar una capa $target mas adelante sin duplicar identidad.';
+    return 'La cuenta arranca con un perfil activo, pero queda lista para sumar una capa $target más adelante sin duplicar identidad.';
   }
 }
 
@@ -343,4 +343,3 @@ String hashPassword(String rawPassword) {
 
   return hash.toRadixString(16).padLeft(16, '0');
 }
-

@@ -1,7 +1,11 @@
 import '../models/app_user.dart';
 import '../models/pet.dart';
+import '../models/profile_option_item.dart';
 
 class MockData {
+  // Demo seeds remain intentionally small and deterministic. Real accounts
+  // should never inherit this state, but the catalog is still useful for
+  // previews and the seeded demo flow.
   static const AppUser currentUser = AppUser(
     id: 'user-01',
     name: 'Camila Rojas',
@@ -217,24 +221,6 @@ class MockData {
     ),
   ];
 
-  static const List<QuickActionItem> quickActions = [
-    QuickActionItem(
-      title: 'Identidad digital',
-      subtitle: 'Centraliza datos, vacunas y contactos.',
-      iconKey: 'badge',
-    ),
-    QuickActionItem(
-      title: 'QR de rastreo',
-      subtitle: 'Preparado para vincular chapitas seguras.',
-      iconKey: 'qr',
-    ),
-    QuickActionItem(
-      title: 'Reportes',
-      subtitle: 'Base lista para avistamientos y alertas.',
-      iconKey: 'report',
-    ),
-  ];
-
   static const List<ProfileOptionItem> profileOptions = [
     ProfileOptionItem(
       title: 'Suscripción',
@@ -254,28 +240,4 @@ class MockData {
   ];
 
   const MockData._();
-}
-
-class QuickActionItem {
-  const QuickActionItem({
-    required this.title,
-    required this.subtitle,
-    required this.iconKey,
-  });
-
-  final String title;
-  final String subtitle;
-  final String iconKey;
-}
-
-class ProfileOptionItem {
-  const ProfileOptionItem({
-    required this.title,
-    required this.subtitle,
-    required this.iconKey,
-  });
-
-  final String title;
-  final String subtitle;
-  final String iconKey;
 }

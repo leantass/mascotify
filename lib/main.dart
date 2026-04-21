@@ -13,10 +13,15 @@ Future<void> main() async {
   final preferences = await SharedPreferences.getInstance();
   final repository = LocalAuthRepository(preferences);
   final sessionController = AuthSessionController(repository: repository);
+  // AppData depends on the auth controller because every persisted slice is
+  // scoped to the active account. Wiring both here keeps the rest of the app
+  // free from bootstrap decisions.
   AppData.source = PersistentLocalMascotifyDataSource(
     preferences: preferences,
     sessionController: sessionController,
   );
+  // Restore auth first so the data source can hydrate the correct account
+  // state before the first frame.
   await sessionController.initialize();
   await AppData.syncCurrentUserState();
 

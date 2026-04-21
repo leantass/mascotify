@@ -12,6 +12,8 @@ class ResponsivePageBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Mobile keeps edge-to-edge sections, while web/tablet uses this wrapper to
+    // cap line length and avoid duplicating platform-specific page shells.
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
@@ -120,6 +122,8 @@ class ResponsiveWrapGrid extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
+        // Wrap keeps the same child widgets for mobile and desktop while only
+        // changing how many fit per row.
         final columnCount =
             ((constraints.maxWidth + spacing) / (minItemWidth + spacing))
                 .floor()

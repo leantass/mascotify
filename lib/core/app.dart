@@ -51,6 +51,9 @@ class _AppSessionGate extends StatelessWidget {
       return AccountOnboardingScreen(experience: experience);
     }
 
+    // The navigation shell is keyed by experience so switching between family
+    // and professional resets the tab stack instead of leaking stale state
+    // across roles.
     return MainNavigationScreen(
       key: ValueKey<String>('nav-${experience.name}'),
       experience: experience,

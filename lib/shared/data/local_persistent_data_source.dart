@@ -8,6 +8,7 @@ import '../models/account_identity_models.dart';
 import '../models/app_user.dart';
 import '../models/notification_models.dart';
 import '../models/pet.dart';
+import '../models/profile_option_item.dart';
 import '../models/professional_models.dart';
 import '../models/report_models.dart';
 import '../models/social_models.dart';
@@ -180,6 +181,8 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     required AuthSessionController sessionController,
   }) : _preferences = preferences,
        _sessionController = sessionController {
+    // Hydrate known account snapshots once so role/session changes can swap
+    // state without recomputing every persisted slice from scratch.
     _hydrateStoredUserStates();
     _sessionController.addListener(_handleAuthStateChanged);
     _handleAuthStateChanged();
@@ -749,6 +752,8 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     _activeUserId = nextUserId;
     if (nextUserId == null) return;
 
+    // Auth restore may happen before some derived slices exist on disk for the
+    // current account, so every account switch re-validates the local snapshot.
     _ensureUserStateLoaded(nextUserId);
     _synchronizeCurrentProfessionalProfile(nextUserId);
     unawaited(_persistUserState(nextUserId));
@@ -760,15 +765,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     final userId = _currentUserId;
     if (userId == null) {
       final pets = _seedPetsForCurrentAccount();
-      return PersistedLocalUserState(
-        notificationsEnabled: true,
-        pets: pets,
-        threads: _seedThreadsForCurrentAccount(pets),
-        qrStates: _seedQrStatesForCurrentAccount(pets),
-        socialInboxEntries: _seedSocialInboxEntriesForCurrentAccount(pets),
-        savedProfiles: _seedSavedProfilesForCurrentAccount(pets),
-        professionalProfile: null,
-      );
+      return _buildSeededUserState(pets, professionalProfile: null);
     }
     return _stateForUser(userId);
   }
@@ -781,7 +778,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   void _ensureUserStateLoaded(String userId) {
     if (_userStates.containsKey(userId)) return;
 
-    final rawValue = _preferences.getString('$_userStatePrefix$userId');
+    final rawValue = _preferences.getString(_userStateStorageKey(userId));
     if (rawValue != null && rawValue.isNotEmpty) {
       final decoded = jsonDecode(rawValue) as Map<String, dynamic>;
       final restoredState = PersistedLocalUserState.fromJson(decoded);
@@ -794,13 +791,8 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     }
 
     final pets = _seedPetsForCurrentAccount();
-    _userStates[userId] = PersistedLocalUserState(
-      notificationsEnabled: true,
-      pets: pets,
-      threads: _seedThreadsForCurrentAccount(pets),
-      qrStates: _seedQrStatesForCurrentAccount(pets),
-      socialInboxEntries: _seedSocialInboxEntriesForCurrentAccount(pets),
-      savedProfiles: _seedSavedProfilesForCurrentAccount(pets),
+    _userStates[userId] = _buildSeededUserState(
+      pets,
       professionalProfile: _seedProfessionalProfileForCurrentAccount(),
     );
   }
@@ -810,7 +802,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     if (state == null) return;
 
     await _preferences.setString(
-      '$_userStatePrefix$userId',
+      _userStateStorageKey(userId),
       jsonEncode(state.toJson()),
     );
   }
@@ -831,74 +823,75 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     }
   }
 
+  String _userStateStorageKey(String userId) {
+    return '$_userStatePrefix$userId';
+  }
+
+  PersistedLocalUserState _buildSeededUserState(
+    List<Pet> pets, {
+    required ProfessionalProfile? professionalProfile,
+  }) {
+    return PersistedLocalUserState(
+      notificationsEnabled: true,
+      pets: pets,
+      threads: _seedThreadsForCurrentAccount(pets),
+      qrStates: _seedQrStatesForCurrentAccount(pets),
+      socialInboxEntries: _seedSocialInboxEntriesForCurrentAccount(pets),
+      savedProfiles: _seedSavedProfilesForCurrentAccount(pets),
+      professionalProfile: professionalProfile,
+    );
+  }
+
   List<Pet> _seedPetsForCurrentAccount() {
-    final currentAccount = _sessionController.currentAccount;
-    if (currentAccount != null && _isLocalUserId(currentAccount.id)) {
+    if (!_shouldSeedDemoContentForCurrentAccount()) {
       return const <Pet>[];
     }
 
-    return MockData.pets
-        .map(
-          (pet) => Pet.fromJson(
-            Map<String, dynamic>.from(pet.toJson()),
-          ),
-        )
-        .toList();
+    return _cloneJsonList(MockData.pets, (pet) => pet.toJson(), Pet.fromJson);
   }
 
   List<MessageThread> _seedThreadsForCurrentAccount(List<Pet> pets) {
-    final currentAccount = _sessionController.currentAccount;
-    if (currentAccount != null && _isLocalUserId(currentAccount.id)) {
+    if (!_shouldSeedDemoContentForCurrentAccount()) {
       return const <MessageThread>[];
     }
 
-    return buildMockMessageThreads(pets)
-        .map(
-          (thread) => MessageThread.fromJson(
-            Map<String, dynamic>.from(thread.toJson()),
-          ),
-        )
-        .toList();
+    return _cloneJsonList(
+      buildMockMessageThreads(pets),
+      (thread) => thread.toJson(),
+      MessageThread.fromJson,
+    );
   }
 
   List<SocialInboxEntry> _seedSocialInboxEntriesForCurrentAccount(
     List<Pet> pets,
   ) {
-    final currentAccount = _sessionController.currentAccount;
-    if (currentAccount != null && _isLocalUserId(currentAccount.id)) {
+    if (!_shouldSeedDemoContentForCurrentAccount()) {
       return const <SocialInboxEntry>[];
     }
 
-    return buildMockSocialInboxEntries(pets)
-        .map(
-          (entry) => SocialInboxEntry.fromJson(
-            Map<String, dynamic>.from(entry.toJson()),
-          ),
-        )
-        .toList();
+    return _cloneJsonList(
+      buildMockSocialInboxEntries(pets),
+      (entry) => entry.toJson(),
+      SocialInboxEntry.fromJson,
+    );
   }
 
   List<SavedProfileEntry> _seedSavedProfilesForCurrentAccount(List<Pet> pets) {
-    final currentAccount = _sessionController.currentAccount;
-    if (currentAccount != null && _isLocalUserId(currentAccount.id)) {
+    if (!_shouldSeedDemoContentForCurrentAccount()) {
       return const <SavedProfileEntry>[];
     }
 
-    return buildMockSavedProfiles(pets)
-        .map(
-          (entry) => SavedProfileEntry.fromJson(
-            Map<String, dynamic>.from(entry.toJson()),
-          ),
-        )
-        .toList();
+    return _cloneJsonList(
+      buildMockSavedProfiles(pets),
+      (entry) => entry.toJson(),
+      SavedProfileEntry.fromJson,
+    );
   }
 
   Map<String, PersistedPetQrState> _seedQrStatesForCurrentAccount(
     List<Pet> pets,
   ) {
-    final currentAccount = _sessionController.currentAccount;
-    final preferMockSeed =
-        currentAccount == null || !_isLocalUserId(currentAccount.id);
+    final preferMockSeed = _shouldSeedDemoContentForCurrentAccount();
     return _buildQrStatesForPets(pets, preferMockSeed: preferMockSeed);
   }
 
@@ -990,6 +983,8 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     String userId,
     PersistedLocalUserState state,
   ) {
+    // Local accounts must never inherit demo seeds. Demo accounts can keep
+    // seeded scaffolding, but only until a real persisted slice replaces it.
     if (_isLocalUserId(userId)) {
       final nextPets = _looksLikeLegacyMockSeed(state.pets)
           ? const <Pet>[]
@@ -1056,6 +1051,11 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
   bool _isLocalUserId(String userId) {
     return userId.startsWith('local-');
+  }
+
+  bool _shouldSeedDemoContentForCurrentAccount() {
+    final currentAccount = _sessionController.currentAccount;
+    return currentAccount == null || !_isLocalUserId(currentAccount.id);
   }
 
   bool _looksLikeLegacyMockSeed(List<Pet> pets) {
@@ -1513,6 +1513,16 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     }
 
     return merged;
+  }
+
+  List<T> _cloneJsonList<T>(
+    Iterable<T> source,
+    Map<String, dynamic> Function(T item) toJson,
+    T Function(Map<String, dynamic> json) fromJson,
+  ) {
+    return source
+        .map((item) => fromJson(Map<String, dynamic>.from(toJson(item))))
+        .toList();
   }
 
   String _buildPetsSummaryLabel(int count) {

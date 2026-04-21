@@ -35,6 +35,9 @@ class LocalAuthRepository {
     final users = _loadUsers();
     if (users.isNotEmpty) return;
 
+    // Demo accounts live in the same persistence layer as real accounts so the
+    // rest of the product can exercise session restore and role switching
+    // without special-case bypasses.
     final seededUsers = <StoredAuthAccount>[
       _buildSeededAccount(
         account: AccountIdentityMockData.familyAccount,
@@ -127,7 +130,7 @@ class LocalAuthRepository {
       return const AuthOperationResult.failure('Necesitamos una ciudad base.');
     }
     if (normalizedEmail.isEmpty || !normalizedEmail.contains('@')) {
-      return const AuthOperationResult.failure('Ingresa un email valido.');
+      return const AuthOperationResult.failure('Ingresa un email válido.');
     }
     if (trimmedPassword.length < 8) {
       return const AuthOperationResult.failure(
@@ -139,7 +142,7 @@ class LocalAuthRepository {
     final emailExists = users.any((item) => item.email == normalizedEmail);
     if (emailExists) {
       return const AuthOperationResult.failure(
-        'Ese email ya esta registrado. Inicia sesion o usa otro.',
+        'Ese email ya está registrado. Inicia sesión o usa otro.',
       );
     }
 
@@ -179,7 +182,7 @@ class LocalAuthRepository {
               primaryGoal:
                   'Ordenar presencia, servicios y una cuenta profesional que pueda escalar sin rehacer la base.',
               nextSetupStep:
-                  'Completar onboarding y definir mejor como se presenta tu perfil.',
+                  'Completar onboarding y definir mejor cómo se presenta tu perfil.',
               services: const <String>[
                 'Servicio principal',
                 'Orientacion',
@@ -241,7 +244,7 @@ class LocalAuthRepository {
     final account = users[index];
     if (!account.supportsExperience(experience)) {
       return const AuthOperationResult.failure(
-        'Ese perfil todavia no esta disponible en esta cuenta.',
+        'Ese perfil todavía no está disponible en esta cuenta.',
       );
     }
 

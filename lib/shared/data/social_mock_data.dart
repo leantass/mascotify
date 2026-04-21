@@ -2,6 +2,9 @@ import '../models/pet.dart';
 import '../models/social_models.dart';
 
 List<MessageThread> buildMockMessageThreads([List<Pet>? sourcePets]) {
+  // Social demo threads are derived from the seeded pets so the demo flow keeps
+  // consistent references even when the same builder is reused by tests or
+  // previews.
   final pets = _resolveSocialPets(sourcePets);
   final threads = <MessageThread>[];
 

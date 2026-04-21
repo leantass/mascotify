@@ -2,6 +2,7 @@ import '../models/account_identity_models.dart';
 import '../models/app_user.dart';
 import '../models/notification_models.dart';
 import '../models/pet.dart';
+import '../models/profile_option_item.dart';
 import '../models/professional_models.dart';
 import '../models/report_models.dart';
 import '../models/social_models.dart';
@@ -63,6 +64,8 @@ abstract class MascotifyDataSource {
 }
 
 class MockMascotifyDataSource implements MascotifyDataSource {
+  // Keeps the original demo-only behavior available for isolated previews and
+  // as a safe fallback before the persistent source is wired in main().
   const MockMascotifyDataSource();
 
   @override
@@ -247,6 +250,9 @@ class MockMascotifyDataSource implements MascotifyDataSource {
 class AppData {
   AppData._();
 
+  // The app reads data through this static façade so screens stay agnostic
+  // about whether they are backed by pure mock data or account-scoped local
+  // persistence.
   static MascotifyDataSource source = const MockMascotifyDataSource();
 
   static AppUser get currentUser => source.getCurrentUser();

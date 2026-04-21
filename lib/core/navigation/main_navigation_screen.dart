@@ -85,6 +85,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final useRailNavigation = screenWidth >= 960;
     final extendRail = screenWidth >= 1280;
 
+    // The same tab inventory powers mobile and browser. Only the shell changes
+    // so product state and navigation behavior stay aligned across platforms.
     return Scaffold(
       body: useRailNavigation
           ? SafeArea(

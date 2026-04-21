@@ -14,6 +14,9 @@ List<EcosystemNotification> buildMockNotifications([
   List<SavedProfileEntry>? sourceSavedProfiles,
   List<QrActivityEntry> Function(Pet pet)? activityResolver,
 ]) {
+  // This builder still powers demo notifications, but it now accepts persisted
+  // slices so the same composition logic can be reused without reintroducing
+  // cross-account mock state.
   final pets = _resolveNotificationPets(sourcePets);
   if (pets.isEmpty) {
     return const <EcosystemNotification>[];
@@ -31,7 +34,7 @@ List<EcosystemNotification> buildMockNotifications([
       EcosystemNotification(
         id: 'notif-social-${inboxItem.pet.id}',
         type: EcosystemNotificationType.socialInterest,
-        title: 'Nuevo interes recibido por ${inboxItem.pet.name}',
+        title: 'Nuevo interés recibido por ${inboxItem.pet.name}',
         description: inboxItem.message,
         timeLabel: 'Hace 5 min',
         accentColorHex: inboxItem.accentColorHex,
@@ -50,7 +53,7 @@ List<EcosystemNotification> buildMockNotifications([
       EcosystemNotification(
         id: 'notif-message-${thread.pet.id}',
         type: EcosystemNotificationType.message,
-        title: 'Conversacion activa con ${thread.ownerName}',
+        title: 'Conversación activa con ${thread.ownerName}',
         description: thread.lastMessage,
         timeLabel: thread.lastActivity,
         accentColorHex: thread.accentColorHex,
@@ -80,7 +83,7 @@ List<EcosystemNotification> buildMockNotifications([
               ? 'Nuevo avistamiento QR sobre ${qrPet.name}'
               : 'Nuevo escaneo QR sobre ${qrPet.name}',
           description: latestQrSignal.iconKey == 'location'
-              ? 'Se registro una referencia aproximada en ${qrLocation.zoneReference} y quedo visible dentro del historial QR.'
+              ? 'Se registró una referencia aproximada en ${qrLocation.zoneReference} y quedó visible dentro del historial QR.'
               : latestQrSignal.detail,
           timeLabel: latestQrSignal.timeLabel,
           accentColorHex: latestQrSignal.iconKey == 'location'
@@ -106,7 +109,7 @@ List<EcosystemNotification> buildMockNotifications([
       EcosystemNotification(
         id: 'notif-qr-history-${pets.first.id}',
         type: EcosystemNotificationType.qrReport,
-        title: 'El historial QR de ${pets.first.name} sumo una nueva senal',
+        title: 'El historial QR de ${pets.first.name} sumó una nueva señal',
         description: primaryPetLatestSignal.detail,
         timeLabel: primaryPetLatestSignal.timeLabel,
         accentColorHex: primaryPetLatestSignal.accentColorHex,
@@ -142,7 +145,7 @@ List<EcosystemNotification> buildMockNotifications([
       type: EcosystemNotificationType.reminder,
       title: '${pets.first.name} ya tiene matching listo para explorar',
       description:
-          'Su ficha interna ya expresa mejor que busca, como le gustaria vincularse y en que contexto podria sentirse comodo.',
+          'Su ficha interna ya expresa mejor qué busca, cómo le gustaría vincularse y en qué contexto podría sentirse cómodo.',
       timeLabel: 'Hoy',
       accentColorHex: 0xFFDDF6F6,
       priority: EcosystemNotificationPriority.useful,
@@ -176,10 +179,10 @@ List<EcosystemNotification> buildMockNotifications([
     EcosystemNotification(
       id: 'notif-professionals-feed',
       type: EcosystemNotificationType.professionalContent,
-      title: 'La comunidad experta sumo nuevas piezas breves',
+      title: 'La comunidad experta sumó nuevas piezas breves',
       description:
           'Hay nuevas charlas y recomendaciones para cuidado, matching responsable y contacto seguro.',
-      timeLabel: 'Hace 2 dias',
+      timeLabel: 'Hace 2 días',
       accentColorHex: 0xFFFFF2C6,
       priority: EcosystemNotificationPriority.info,
       isUnread: false,

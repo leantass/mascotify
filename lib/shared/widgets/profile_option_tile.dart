@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
-import '../data/mock_data.dart';
+import '../models/profile_option_item.dart';
 
 class ProfileOptionTile extends StatelessWidget {
   const ProfileOptionTile({super.key, required this.item});

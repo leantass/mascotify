@@ -28,6 +28,9 @@ class AuthSessionController extends ChangeNotifier {
 
   Future<void> initialize() async {
     await _setBusy(() async {
+      // Demo accounts are seeded once, but every later interaction happens
+      // against the same local auth store as real accounts. That keeps the
+      // login flow honest while preserving a quick demo path.
       await _repository.ensureSeededAccounts();
       final restoredSession = await _repository.restoreSession();
       if (restoredSession != null) {
@@ -46,11 +49,8 @@ class AuthSessionController extends ChangeNotifier {
     if (account == null) {
       throw StateError('No hay una cuenta autenticada para resolver el perfil.');
     }
-
-    if (_account!.supportsExperience(experience)) {
-      return account;
-    }
-
+    // The active experience is already normalized when the session is restored
+    // or switched, so the controller only exposes the current account snapshot.
     return account;
   }
 
@@ -120,7 +120,7 @@ class AuthSessionController extends ChangeNotifier {
       if (result.isSuccess) {
         _applyResult(result);
       } else {
-        error = result.error ?? 'No pudimos completar la accion.';
+        error = result.error ?? 'No pudimos completar la acción.';
       }
     });
     return error;
@@ -153,7 +153,7 @@ class AuthScope extends InheritedNotifier<AuthSessionController> {
   static AuthSessionController of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<AuthScope>();
     if (scope == null || scope.notifier == null) {
-      throw StateError('AuthScope no esta disponible en este contexto.');
+      throw StateError('AuthScope no está disponible en este contexto.');
     }
     return scope.notifier!;
   }
