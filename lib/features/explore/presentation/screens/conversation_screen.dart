@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/social_models.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 
 class ConversationScreen extends StatefulWidget {
@@ -39,7 +40,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Conversación')),
       body: SafeArea(
-        child: Column(
+        child: ResponsivePageBody(
+          maxWidth: 920,
+          child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
@@ -295,6 +298,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

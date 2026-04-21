@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import '../../data/local_auth_models.dart';
 import '../auth_session_controller.dart';
@@ -47,40 +48,43 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-          children: [
-            _HeroCard(isBusy: auth.isBusy),
-            const SizedBox(height: 20),
-            _ModeSwitcher(
-              isLoginMode: _isLoginMode,
-              onModeChanged: (value) {
-                setState(() {
-                  _isLoginMode = value;
-                  _errorMessage = null;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            if (_isLoginMode)
-              _buildLoginCard(context, auth)
-            else
-              _buildRegisterCard(context, auth, options),
-            const SizedBox(height: 16),
-            _DemoCard(
-              isBusy: auth.isBusy,
-              onFamilyDemo: () => _submitDemoLogin(
-                email: LocalAuthSeedData.familyEmail,
+        child: ResponsivePageBody(
+          maxWidth: 860,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+            children: [
+              _HeroCard(isBusy: auth.isBusy),
+              const SizedBox(height: 20),
+              _ModeSwitcher(
+                isLoginMode: _isLoginMode,
+                onModeChanged: (value) {
+                  setState(() {
+                    _isLoginMode = value;
+                    _errorMessage = null;
+                  });
+                },
               ),
-              onProfessionalDemo: () => _submitDemoLogin(
-                email: LocalAuthSeedData.professionalEmail,
-              ),
-            ),
-            if (_errorMessage != null) ...[
               const SizedBox(height: 16),
-              _ErrorCard(message: _errorMessage!),
+              if (_isLoginMode)
+                _buildLoginCard(context, auth)
+              else
+                _buildRegisterCard(context, auth, options),
+              const SizedBox(height: 16),
+              _DemoCard(
+                isBusy: auth.isBusy,
+                onFamilyDemo: () => _submitDemoLogin(
+                  email: LocalAuthSeedData.familyEmail,
+                ),
+                onProfessionalDemo: () => _submitDemoLogin(
+                  email: LocalAuthSeedData.professionalEmail,
+                ),
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 16),
+                _ErrorCard(message: _errorMessage!),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

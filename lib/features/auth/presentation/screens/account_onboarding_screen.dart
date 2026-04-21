@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import '../auth_session_controller.dart';
 
@@ -28,9 +29,11 @@ class AccountOnboardingScreen extends StatelessWidget {
         title: const Text('Onboarding inicial'),
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
+        child: ResponsivePageBody(
+          maxWidth: 920,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -191,7 +194,8 @@ class AccountOnboardingScreen extends StatelessWidget {
                 ),
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

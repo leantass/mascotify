@@ -7,6 +7,7 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/professional/presentation/screens/professional_dashboard_screen.dart';
 import '../../features/professional/presentation/screens/professional_workspace_screen.dart';
 import '../../shared/models/account_identity_models.dart';
+import '../../theme/app_colors.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({
@@ -80,28 +81,149 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final useRailNavigation = screenWidth >= 960;
+    final extendRail = screenWidth >= 1280;
+
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _items.map((item) => item.screen).toList(),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        destinations: _items
-            .map(
-              (item) => NavigationDestination(
-                icon: Icon(item.icon),
-                selectedIcon: Icon(item.selectedIcon),
-                label: item.label,
+      body: useRailNavigation
+          ? SafeArea(
+              child: Row(
+                children: [
+                  NavigationRail(
+                    selectedIndex: _currentIndex,
+                    extended: extendRail,
+                    minExtendedWidth: 220,
+                    labelType: extendRail
+                        ? NavigationRailLabelType.none
+                        : NavigationRailLabelType.all,
+                    leading: _RailHeader(
+                      experience: widget.experience,
+                      isExtended: extendRail,
+                    ),
+                    onDestinationSelected: (index) {
+                      setState(() {
+                        _currentIndex = index;
+                      });
+                    },
+                    destinations: _items
+                        .map(
+                          (item) => NavigationRailDestination(
+                            icon: Icon(item.icon),
+                            selectedIcon: Icon(item.selectedIcon),
+                            label: Text(item.label),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  const VerticalDivider(width: 1),
+                  Expanded(
+                    child: IndexedStack(
+                      index: _currentIndex,
+                      children: _items.map((item) => item.screen).toList(),
+                    ),
+                  ),
+                ],
               ),
             )
-            .toList(),
-      ),
+          : IndexedStack(
+              index: _currentIndex,
+              children: _items.map((item) => item.screen).toList(),
+            ),
+      bottomNavigationBar: useRailNavigation
+          ? null
+          : NavigationBar(
+              selectedIndex: _currentIndex,
+              onDestinationSelected: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              destinations: _items
+                  .map(
+                    (item) => NavigationDestination(
+                      icon: Icon(item.icon),
+                      selectedIcon: Icon(item.selectedIcon),
+                      label: item.label,
+                    ),
+                  )
+                  .toList(),
+            ),
+    );
+  }
+}
+
+class _RailHeader extends StatelessWidget {
+  const _RailHeader({
+    required this.experience,
+    required this.isExtended,
+  });
+
+  final AccountExperience experience;
+  final bool isExtended;
+
+  @override
+  Widget build(BuildContext context) {
+    final roleLabel = experience == AccountExperience.family
+        ? 'Modo familia'
+        : 'Modo profesional';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
+      child: isExtended
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceAlt,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.dark,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.pets_rounded,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Mascotify',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          roleLabel,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.dark,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(Icons.pets_rounded, color: Colors.white),
+            ),
     );
   }
 }

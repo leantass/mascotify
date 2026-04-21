@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import 'express_interest_screen.dart';
 
@@ -18,7 +19,8 @@ class PetPublicProfileScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Perfil público')),
       body: SafeArea(
-        child: ListView(
+        child: ResponsivePageBody(
+          child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: [
             Container(
@@ -305,6 +307,7 @@ class PetPublicProfileScreen extends StatelessWidget {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/pet_card.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
@@ -21,9 +22,10 @@ class _PetsScreenState extends State<PetsScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
+        child: ResponsivePageBody(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
             Container(
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
@@ -77,7 +79,8 @@ class _PetsScreenState extends State<PetsScreen> {
                 ),
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

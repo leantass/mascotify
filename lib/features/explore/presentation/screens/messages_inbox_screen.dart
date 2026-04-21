@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../features/pets/presentation/screens/pet_public_profile_screen.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/social_models.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import 'conversation_screen.dart';
 
@@ -21,7 +22,8 @@ class MessagesInboxScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Mensajería')),
       body: SafeArea(
-        child: ListView(
+        child: ResponsivePageBody(
+          child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: [
             _MessagesHero(
@@ -60,6 +62,7 @@ class MessagesInboxScreen extends StatelessWidget {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

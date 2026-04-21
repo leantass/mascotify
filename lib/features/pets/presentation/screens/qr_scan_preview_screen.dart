@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/report_models.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import 'qr_traceability_screen.dart';
 import 'report_sighting_screen.dart';
@@ -40,7 +41,8 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Escaneo publico')),
       body: SafeArea(
-        child: ListView(
+        child: ResponsivePageBody(
+          child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: [
             Container(
@@ -350,6 +352,7 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

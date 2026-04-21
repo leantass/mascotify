@@ -10,6 +10,7 @@ import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/notification_models.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/professional_models.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -47,7 +48,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Actividad y notificaciones')),
       body: SafeArea(
-        child: ListView(
+        child: ResponsivePageBody(
+          child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: [
             _NotificationsHero(
@@ -129,6 +131,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

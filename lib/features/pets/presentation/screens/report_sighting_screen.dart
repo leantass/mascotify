@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/report_models.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 
 class ReportSightingScreen extends StatefulWidget {
@@ -51,7 +52,9 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Reportar avistamiento')),
       body: SafeArea(
-        child: ListView(
+        child: ResponsivePageBody(
+          maxWidth: 920,
+          child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: [
             Container(
@@ -356,6 +359,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
               child: const Text('Enviar reporte'),
             ),
           ],
+          ),
         ),
       ),
     );

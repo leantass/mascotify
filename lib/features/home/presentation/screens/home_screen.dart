@@ -11,6 +11,7 @@ import '../../../../shared/models/notification_models.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/report_models.dart';
 import '../../../../shared/models/social_models.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/pet_card.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
@@ -69,9 +70,10 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
+        child: ResponsivePageBody(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
             _HomeHero(
               firstName: user.name.split(' ').first,
               city: user.city,
@@ -253,7 +255,8 @@ class HomeScreen extends StatelessWidget {
                   ),
             const SizedBox(height: 24),
             _AccountStatusCard(account: account, familyProfile: familyProfile),
-          ],
+            ],
+          ),
         ),
       ),
     );

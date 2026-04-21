@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/models/professional_models.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import 'professional_content_detail_screen.dart';
 
@@ -19,7 +20,8 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Perfil profesional')),
       body: SafeArea(
-        child: ListView(
+        child: ResponsivePageBody(
+          child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: [
             Container(
@@ -261,6 +263,7 @@ class ProfessionalPublicProfileScreen extends StatelessWidget {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

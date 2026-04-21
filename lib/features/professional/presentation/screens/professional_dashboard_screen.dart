@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../explore/presentation/screens/professional_public_profile_screen.dart';
 
@@ -26,9 +27,10 @@ class _ProfessionalDashboardScreenState
 
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
+        child: ResponsivePageBody(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -234,7 +236,8 @@ class _ProfessionalDashboardScreenState
                   ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );

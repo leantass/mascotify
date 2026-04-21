@@ -5,6 +5,7 @@ import '../../../../features/pets/presentation/screens/pet_public_profile_screen
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/social_models.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import 'connections_inbox_screen.dart';
 import 'professionals_screen.dart';
@@ -24,9 +25,10 @@ class ExploreScreen extends StatelessWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
+        child: ResponsivePageBody(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
             const _ExploreHero(),
             const SizedBox(height: 16),
             _ConnectionsEntryCard(
@@ -125,7 +127,8 @@ class ExploreScreen extends StatelessWidget {
                   child: _SavedProfileCard(entry: entry),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );

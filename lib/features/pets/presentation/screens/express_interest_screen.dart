@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../features/explore/presentation/screens/connections_inbox_screen.dart';
 import '../../../../shared/models/pet.dart';
+import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 
 class ExpressInterestScreen extends StatefulWidget {
@@ -32,7 +33,9 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Expresar interés')),
       body: SafeArea(
-        child: ListView(
+        child: ResponsivePageBody(
+          maxWidth: 920,
+          child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: [
             Container(
@@ -213,6 +216,7 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
               child: const Text('Enviar intención'),
             ),
           ],
+          ),
         ),
       ),
     );
