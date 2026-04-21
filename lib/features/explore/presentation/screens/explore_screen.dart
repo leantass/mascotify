@@ -387,7 +387,7 @@ class _ExploreFilters extends StatelessWidget {
             Text('Filtros', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
-              'Controles mock para refinar descubrimiento social y compatibilidad.',
+              'Controles base para refinar descubrimiento social y compatibilidad.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),

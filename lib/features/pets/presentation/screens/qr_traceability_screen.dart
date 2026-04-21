@@ -115,7 +115,7 @@ class QrTraceabilityScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     _InfoTile(
-                      label: 'Ultima senal',
+                      label: 'Última señal',
                       value: status.lastSignalLabel,
                     ),
                     const SizedBox(height: 10),
@@ -191,7 +191,7 @@ class _EmptyTimelineState extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
       ),
       child: Text(
-        'Todavia no hay escaneos ni reportes reales para este QR. Cuando llegue el primer evento util, este historial va a mostrar el orden y el contexto de cada senal.',
+        'Todavía no hay escaneos ni reportes reales para este QR. Cuando llegue el primer evento útil, este historial va a mostrar el orden y el contexto de cada señal.',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           color: AppColors.textPrimary,
           height: 1.45,

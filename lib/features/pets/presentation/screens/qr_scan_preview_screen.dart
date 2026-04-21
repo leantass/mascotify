@@ -205,7 +205,7 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
                       children: [
                         Expanded(
                           child: _PublicInfoTile(
-                            label: 'Ultima senal',
+                            label: 'Última señal',
                             value: snapshot.lastSignalLabel,
                           ),
                         ),
@@ -345,7 +345,7 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
                     ),
                     const _InfoBullet(
                       text:
-                          'El objetivo es dar contexto claro, seguimiento y una via segura para actuar mas rapido.',
+                          'El objetivo es dar contexto claro, seguimiento y una vía segura para actuar más rápido.',
                     ),
                   ],
                 ),
@@ -386,7 +386,7 @@ class _PreviewEmptyState extends StatelessWidget {
         border: Border.all(color: AppColors.border),
       ),
       child: Text(
-        'Todavia no hay actividad QR real para esta mascota. Cuando llegue el primer escaneo o reporte, esta preview va a mostrar el contexto mas reciente.',
+        'Todavía no hay actividad QR real para esta mascota. Cuando llegue el primer escaneo o reporte, esta preview va a mostrar el contexto más reciente.',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           color: AppColors.textPrimary,
           height: 1.45,

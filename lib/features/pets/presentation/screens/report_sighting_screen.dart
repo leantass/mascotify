@@ -72,7 +72,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Tu reporte puede ayudar a ubicar a ${pet.name} mas rapido.',
+                    'Tu reporte puede ayudar a ubicar a ${pet.name} más rápido.',
                     style: textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
@@ -162,7 +162,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: _StatusMetric(
-                            label: 'Ultima senal',
+                            label: 'Última señal',
                             value: snapshot.lastSignalLabel,
                           ),
                         ),
@@ -190,7 +190,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Ubicacion aproximada detectada',
+                      'Ubicación aproximada detectada',
                       style: textTheme.titleLarge,
                     ),
                     const SizedBox(height: 8),
@@ -248,7 +248,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Ubicacion lista para enviar',
+                                  'Ubicación lista para enviar',
                                   style: textTheme.titleMedium,
                                 ),
                                 const SizedBox(height: 4),
@@ -284,7 +284,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                     TextField(
                       controller: _locationController,
                       decoration: const InputDecoration(
-                        labelText: 'Ubicacion aproximada',
+                        labelText: 'Ubicación aproximada',
                         hintText: 'Ej. Plaza Irlanda, Caballito',
                       ),
                     ),
@@ -346,7 +346,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                       contentPadding: EdgeInsets.zero,
                       title: const Text('Permitir contacto posterior'),
                       subtitle: const Text(
-                        'Si hace falta ampliar el reporte, Mascotify podria usar este permiso dentro del flujo seguro.',
+                        'Si hace falta ampliar el reporte, Mascotify podría usar este permiso dentro del flujo seguro.',
                       ),
                     ),
                   ],
@@ -432,7 +432,7 @@ class _ReportSightingScreenState extends State<ReportSightingScreen> {
                       const SizedBox(height: 10),
                       _SummaryRow(label: 'Estado', value: _selectedCondition),
                       _SummaryRow(
-                        label: 'Ubicacion aproximada',
+                        label: 'Ubicación aproximada',
                         value: locationLabel,
                       ),
                       _SummaryRow(
@@ -512,7 +512,7 @@ class _QrTraceabilityEmptyState extends StatelessWidget {
         border: Border.all(color: AppColors.border),
       ),
       child: Text(
-        'Todavia no hay eventos QR reales para esta mascota. Este reporte puede transformarse en la primera senal util dentro del historial.',
+        'Todavía no hay eventos QR reales para esta mascota. Este reporte puede transformarse en la primera señal útil dentro del historial.',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           color: AppColors.textPrimary,
           height: 1.45,

@@ -101,8 +101,8 @@ class PetPublicProfileScreen extends StatelessWidget {
                     children: [
                       _PublicStat(label: 'Sexo', value: pet.sex),
                       _PublicStat(
-                        label: 'Busca cria',
-                        value: pet.seekingBreeding ? 'Si' : 'No',
+                        label: 'Busca cría',
+                        value: pet.seekingBreeding ? 'Sí' : 'No',
                       ),
                     ],
                   ),

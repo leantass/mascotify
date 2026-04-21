@@ -205,7 +205,7 @@ class _AboutPetCard extends StatelessWidget {
                   color: AppColors.primarySoft,
                 ),
                 _SocialStatTile(
-                  label: 'Ubicacion',
+                  label: 'Ubicación',
                   value: pet.location,
                   color: AppColors.surfaceAlt,
                 ),
@@ -658,7 +658,7 @@ class _QrExperienceCard extends StatelessWidget {
               runSpacing: 10,
               children: [
                 _TrackingMetricTile(
-                  label: 'Ultima senal',
+                  label: 'Última señal',
                   value: snapshot.lastSignalLabel,
                 ),
                 _TrackingMetricTile(
@@ -708,7 +708,7 @@ class _QrExperienceCard extends StatelessWidget {
             if (recentQrActivity.isEmpty)
               const _QrEmptyStateCard(
                 text:
-                    'Todavia no hay escaneos ni reportes para esta mascota. Cuando llegue el primer evento QR real, aca vas a ver una lectura corta del historial.',
+                    'Todavía no hay escaneos ni reportes para esta mascota. Cuando llegue el primer evento QR real, acá vas a ver una lectura corta del historial.',
               )
             else
               ...recentQrActivity.map(

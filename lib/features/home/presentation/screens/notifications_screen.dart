@@ -351,7 +351,7 @@ class _NotificationsHero extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'El feed ahora prioriza lo sin leer, separa mejor lo urgente de lo informativo y permite pequeñas acciones mock sin volverse un panel pesado.',
+            'El feed ahora prioriza lo sin leer, separa mejor lo urgente de lo informativo y permite acciones rápidas sin volverse un panel pesado.',
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),

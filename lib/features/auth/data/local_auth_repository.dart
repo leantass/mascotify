@@ -96,7 +96,7 @@ class LocalAuthRepository {
     }
 
     if (account.passwordHash != hashedPassword) {
-      return const AuthOperationResult.failure('La contrasena no coincide.');
+      return const AuthOperationResult.failure('La contraseña no coincide.');
     }
 
     final session = StoredAuthSession(
@@ -131,7 +131,7 @@ class LocalAuthRepository {
     }
     if (trimmedPassword.length < 8) {
       return const AuthOperationResult.failure(
-        'La contrasena debe tener al menos 8 caracteres.',
+        'La contraseña debe tener al menos 8 caracteres.',
       );
     }
 
@@ -159,7 +159,7 @@ class LocalAuthRepository {
       familyProfile: experience == AccountExperience.family
           ? StoredFamilyProfile(
               householdName: 'Hogar de ${_firstName(trimmedName)}',
-              petsSummaryLabel: 'Todavia no cargaste mascotas',
+              petsSummaryLabel: 'Todavía no cargaste mascotas',
               primaryGoal:
                   'Ordenar identidad, seguridad y seguimiento de tus mascotas desde una sola base.',
               nextSetupStep:
@@ -359,4 +359,3 @@ extension<T> on Iterable<T> {
     return first;
   }
 }
-

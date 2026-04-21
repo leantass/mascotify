@@ -44,7 +44,7 @@ class MessagesInboxScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Una bandeja mock con mejor lectura de contexto, estado del vínculo y próximos pasos para que la mensajería se sienta más conectada con Mascotify.',
+                      'Una bandeja con mejor lectura de contexto, estado del vínculo y próximos pasos para que la mensajería se sienta más conectada con Mascotify.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),

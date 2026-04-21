@@ -467,12 +467,12 @@ class _DemoCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Transicion clara desde la base mock',
+              'Transición clara desde la base demo',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             Text(
-              'Mantuvimos dos cuentas demo reales y persistidas para entrar rapido sin volver al bypass mock. Ambas usan la contrasena ${LocalAuthSeedData.demoPassword}.',
+              'Mantuvimos dos cuentas demo reales y persistidas para entrar rápido sin volver al bypass inicial. Ambas usan la contraseña ${LocalAuthSeedData.demoPassword}.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),

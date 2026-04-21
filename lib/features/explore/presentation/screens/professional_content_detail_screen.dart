@@ -178,7 +178,7 @@ class ProfessionalContentDetailScreen extends StatelessWidget {
                     Text('Acciones', style: textTheme.titleLarge),
                     const SizedBox(height: 8),
                     Text(
-                      'Interacciones mock para seguir explorando contenido, confianza y posibles servicios dentro de Mascotify.',
+                      'Interacciones sugeridas para seguir explorando contenido, confianza y posibles servicios dentro de Mascotify.',
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
@@ -269,7 +269,7 @@ class ProfessionalContentDetailScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
-                    'Este flujo es mock y representa una futura relación entre contenido, confianza y servicios profesionales dentro de Mascotify.',
+                    'Este flujo representa una futura relación entre contenido, confianza y servicios profesionales dentro de Mascotify.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       height: 1.5,

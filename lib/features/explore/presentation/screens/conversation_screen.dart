@@ -37,7 +37,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
     final thread = _thread;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Conversacion')),
+      appBar: AppBar(title: const Text('Conversación')),
       body: SafeArea(
         child: ResponsivePageBody(
           maxWidth: 1160,
@@ -178,7 +178,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Respuestas rapidas mock',
+            'Respuestas rápidas sugeridas',
             style: textTheme.bodyMedium?.copyWith(
               color: AppColors.textSecondary,
               fontWeight: FontWeight.w700,
@@ -217,7 +217,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Text(
-                '${thread.ownerName} esta escribiendo una respuesta mock...',
+                '${thread.ownerName} está escribiendo una respuesta...',
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -232,7 +232,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
               borderRadius: BorderRadius.circular(18),
             ),
             child: Text(
-              'Esta mensajeria mantiene el contexto del interes original y simula un intercambio seguro entre familias dentro de Mascotify.',
+              'Esta mensajería mantiene el contexto del interés original y simula un intercambio seguro entre familias dentro de Mascotify.',
               style: textTheme.bodyMedium?.copyWith(
                 color: AppColors.textPrimary,
                 height: 1.45,
@@ -437,7 +437,7 @@ class _ThreadSummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Proximo paso sugerido',
+                  'Próximo paso sugerido',
                   style: textTheme.bodyMedium?.copyWith(
                     color: AppColors.textSecondary,
                     fontWeight: FontWeight.w700,
@@ -499,7 +499,7 @@ class _ContextSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'En browser, este bloque queda visible para no perder el hilo del interes original mientras lees o escribis mensajes.',
+            'En browser, este bloque queda visible para no perder el hilo del interés original mientras leés o escribís mensajes.',
             style: textTheme.bodyMedium?.copyWith(
               color: AppColors.textPrimary,
               height: 1.45,

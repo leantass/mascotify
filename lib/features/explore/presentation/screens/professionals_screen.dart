@@ -33,7 +33,7 @@ class ProfessionalsScreen extends StatelessWidget {
             _SectionCard(
               title: 'Servicios posibles dentro de Mascotify',
               subtitle:
-                  'Una base mock para leer esta vertical también como red de servicios, no solo como feed de contenido.',
+                  'Una base inicial para leer esta vertical también como red de servicios, no solo como feed de contenido.',
               children: AppData.professionalServiceSpotlights
                   .map((item) => _ServiceSpotlightCard(item: item))
                   .toList(),
@@ -60,7 +60,7 @@ class ProfessionalsScreen extends StatelessWidget {
             _SectionCard(
               title: 'Recomendado para vos',
               subtitle:
-                  'Señales mock que mezclan contenido, criterio profesional y futuras capas de servicio.',
+                  'Señales visibles que mezclan contenido, criterio profesional y futuras capas de servicio.',
               children: AppData.professionalRecommendations
                   .map(
                     (item) => _RecommendationTile(
@@ -465,7 +465,7 @@ class _ProfileCard extends StatelessWidget {
                     context,
                     title: profile.primaryActionLabel,
                     message:
-                        'Esta interacción mock representa cómo ${profile.name} podría evolucionar a una relación más útil dentro de Mascotify.',
+                        'Esta interacción representa cómo ${profile.name} podría evolucionar a una relación más útil dentro de Mascotify.',
                   ),
                   child: Text(profile.primaryActionLabel),
                 ),
@@ -678,7 +678,7 @@ Future<void> _showMockDialog(
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Text(
-                  'Este flujo es mock y representa cómo la comunidad experta puede crecer a relaciones más útiles, orientación y servicios dentro de Mascotify.',
+                  'Este flujo representa cómo la comunidad experta puede crecer a relaciones más útiles, orientación y servicios dentro de Mascotify.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textPrimary,
                     height: 1.5,
