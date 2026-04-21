@@ -18,6 +18,7 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="theme-color" content="#66cccc">
   <meta
     name="description"
     content="Mascotify es una experiencia multiplataforma para identidad, matching, mensajería y trazabilidad de mascotas."
@@ -34,8 +35,42 @@
 
   <title>Mascotify</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #f7fbfc;
+      font-family: Arial, sans-serif;
+    }
+
+    #mascotify-loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, #f7fbfc 0%, #ffffff 100%);
+      z-index: 9999;
+      transition: opacity 180ms ease;
+    }
+
+    #mascotify-loading.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #mascotify-loading img {
+      width: min(320px, 72vw);
+      height: auto;
+      display: block;
+    }
+  </style>
 </head>
 <body>
+  <div id="mascotify-loading" aria-label="Mascotify cargando">
+    <img src="branding/logo-mascotify.png" alt="Mascotify">
+  </div>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader
@@ -45,5 +80,15 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var loading = document.getElementById('mascotify-loading');
+      if (!loading) return;
+      loading.classList.add('is-hidden');
+      window.setTimeout(function () {
+        loading.remove();
+      }, 220);
+    });
+  </script>
 </body>
 </html>

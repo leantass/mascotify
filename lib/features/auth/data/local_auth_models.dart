@@ -331,14 +331,15 @@ String normalizeEmail(String value) {
 }
 
 String hashPassword(String rawPassword) {
-  const int offsetBasis = 0xcbf29ce484222325;
-  const int prime = 0x100000001b3;
+  final offsetBasis = BigInt.parse('cbf29ce484222325', radix: 16);
+  final prime = BigInt.parse('100000001b3', radix: 16);
+  final mask = BigInt.parse('ffffffffffffffff', radix: 16);
   final bytes = utf8.encode('mascotify-local-auth::$rawPassword');
 
   var hash = offsetBasis;
   for (final byte in bytes) {
-    hash ^= byte;
-    hash = (hash * prime) & 0xFFFFFFFFFFFFFFFF;
+    hash ^= BigInt.from(byte);
+    hash = (hash * prime) & mask;
   }
 
   return hash.toRadixString(16).padLeft(16, '0');

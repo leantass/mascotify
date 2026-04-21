@@ -1,6 +1,10 @@
 param(
     [Parameter(Mandatory = $true)]
-    [string]$SourcePng
+    [string]$SourcePng,
+
+    [string]$BackgroundColorHex = "#66CCCC",
+
+    [double]$InsetPercent = 0.14
 )
 
 Set-StrictMode -Version Latest
@@ -17,6 +21,12 @@ function New-ResizedPng {
         [int]$Size,
 
         [Parameter(Mandatory = $true)]
+        [System.Drawing.Color]$BackgroundColor,
+
+        [Parameter(Mandatory = $true)]
+        [double]$InsetPercent,
+
+        [Parameter(Mandatory = $true)]
         [string]$OutputPath
     )
 
@@ -29,12 +39,25 @@ function New-ResizedPng {
     $graphics = [System.Drawing.Graphics]::FromImage($canvas)
 
     try {
-        $graphics.Clear([System.Drawing.Color]::Transparent)
+        $graphics.Clear($BackgroundColor)
         $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
         $graphics.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
         $graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
         $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
-        $graphics.DrawImage($SourceBitmap, 0, 0, $Size, $Size)
+
+        $safeInsetPercent = [Math]::Max(0.0, [Math]::Min($InsetPercent, 0.4))
+        $availableSize = $Size * (1.0 - ($safeInsetPercent * 2.0))
+        $scale = [Math]::Min(
+            $availableSize / $SourceBitmap.Width,
+            $availableSize / $SourceBitmap.Height
+        )
+
+        $drawWidth = [int][Math]::Round($SourceBitmap.Width * $scale)
+        $drawHeight = [int][Math]::Round($SourceBitmap.Height * $scale)
+        $drawX = [int][Math]::Round(($Size - $drawWidth) / 2.0)
+        $drawY = [int][Math]::Round(($Size - $drawHeight) / 2.0)
+
+        $graphics.DrawImage($SourceBitmap, $drawX, $drawY, $drawWidth, $drawHeight)
         $canvas.Save($OutputPath, [System.Drawing.Imaging.ImageFormat]::Png)
     }
     finally {
@@ -52,12 +75,9 @@ if (-not (Test-Path $sourcePath)) {
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $sourceBitmap = [System.Drawing.Bitmap]::new($sourcePath)
+$backgroundColor = [System.Drawing.ColorTranslator]::FromHtml($BackgroundColorHex)
 
 try {
-    if ($sourceBitmap.Width -ne $sourceBitmap.Height) {
-        throw "El asset fuente debe ser cuadrado. Tamano detectado: $($sourceBitmap.Width)x$($sourceBitmap.Height)"
-    }
-
     if ($sourceBitmap.Width -lt 1024) {
         Write-Warning "El asset fuente mide menos de 1024px. Se recomienda usar al menos 1024x1024."
     }
@@ -100,7 +120,12 @@ try {
 
     foreach ($target in $allTargets) {
         $absolutePath = Join-Path $repoRoot $target.Path
-        New-ResizedPng -SourceBitmap $sourceBitmap -Size $target.Size -OutputPath $absolutePath
+        New-ResizedPng `
+            -SourceBitmap $sourceBitmap `
+            -Size $target.Size `
+            -BackgroundColor $backgroundColor `
+            -InsetPercent $InsetPercent `
+            -OutputPath $absolutePath
         Write-Output "Generado: $($target.Path) ($($target.Size)x$($target.Size))"
     }
 }
