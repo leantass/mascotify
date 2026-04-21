@@ -1,35 +1,35 @@
 {
-    "name": "Mascotify",
-    "short_name": "Mascotify",
-    "start_url": ".",
-    "display": "standalone",
-    "background_color": "#F7FBFC",
-    "theme_color": "#66CCCC",
-    "description": "Mascotify es una experiencia multiplataforma para identidad, matching, mensajería y trazabilidad de mascotas.",
-    "orientation": "portrait-primary",
-    "prefer_related_applications": false,
-    "icons": [
-        {
-            "src": "icons/Icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-maskable-192.png",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "maskable"
-        },
-        {
-            "src": "icons/Icon-maskable-512.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "maskable"
-        }
-    ]
+  "name": "Mascotify",
+  "short_name": "Mascotify",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F7FBFC",
+  "theme_color": "#66CCCC",
+  "description": "Mascotify es una experiencia multiplataforma para identidad, matching, mensajeria y trazabilidad de mascotas.",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }
