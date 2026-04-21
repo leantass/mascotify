@@ -46,12 +46,15 @@ class MessagesInboxScreen extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
-                    ...threads.map(
-                      (thread) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _ThreadCard(thread: thread),
+                    if (threads.isEmpty)
+                      const _InboxEmptyState()
+                    else
+                      ...threads.map(
+                        (thread) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _ThreadCard(thread: thread),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -158,6 +161,7 @@ class _ThreadCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentPet = AppData.findPetById(thread.pet.id) ?? thread.pet;
     final unreadLabel = thread.unreadCount > 0
         ? '${thread.unreadCount} nuevo${thread.unreadCount == 1 ? '' : 's'}'
         : 'Al día';
@@ -305,7 +309,7 @@ class _ThreadCard extends StatelessWidget {
                 child: OutlinedButton(
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => PetPublicProfileScreen(pet: thread.pet),
+                      builder: (_) => PetPublicProfileScreen(pet: currentPet),
                     ),
                   ),
                   child: const Text('Ver perfil'),
@@ -325,6 +329,29 @@ class _ThreadCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _InboxEmptyState extends StatelessWidget {
+  const _InboxEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Text(
+        'Todavía no hay conversaciones en esta cuenta. Cuando un interés derive en mensajería o se active un hilo desde social, esta bandeja va a mostrar el contexto y los próximos pasos.',
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          height: 1.45,
+        ),
       ),
     );
   }
