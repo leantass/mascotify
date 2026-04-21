@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 
-import '../../../explore/presentation/screens/professional_public_profile_screen.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../explore/presentation/screens/professional_public_profile_screen.dart';
 
-class ProfessionalWorkspaceScreen extends StatelessWidget {
+class ProfessionalWorkspaceScreen extends StatefulWidget {
   const ProfessionalWorkspaceScreen({super.key});
+
+  @override
+  State<ProfessionalWorkspaceScreen> createState() =>
+      _ProfessionalWorkspaceScreenState();
+}
+
+class _ProfessionalWorkspaceScreenState
+    extends State<ProfessionalWorkspaceScreen> {
+  bool _isActivating = false;
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +23,7 @@ class ProfessionalWorkspaceScreen extends StatelessWidget {
       AccountExperience.professional,
     ).professionalProfile!;
     final publicPresence = AppData.currentProfessionalProfile;
+    final hasPublicPresence = publicPresence != null;
 
     return Scaffold(
       body: SafeArea(
@@ -44,27 +54,38 @@ class ProfessionalWorkspaceScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Esta vista ya puede leerse como base de operación profesional: qué ofrecés, cómo se percibe tu ficha y qué tipos de servicio ya quedan asociados a tu cuenta.',
+                    hasPublicPresence
+                        ? 'Esta vista ya puede leerse como base de operación profesional: qué ofrecés, cómo se percibe tu ficha y qué tipos de servicio ya quedan asociados a tu cuenta.'
+                        : 'Tu base profesional ya está guardada, pero todavía no se proyecta como presencia pública. Desde acá podés activar una ficha visible sin rehacer servicios ni cuenta.',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
-                  if (publicPresence != null) ...[
-                    const SizedBox(height: 14),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ProfessionalPublicProfileScreen(
-                              professional: publicPresence,
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: hasPublicPresence
+                        ? OutlinedButton(
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ProfessionalPublicProfileScreen(
+                                  professional: publicPresence,
+                                ),
+                              ),
+                            ),
+                            child: const Text('Abrir perfil público'),
+                          )
+                        : ElevatedButton(
+                            onPressed: _isActivating
+                                ? null
+                                : _activateProfessionalPresence,
+                            child: Text(
+                              _isActivating
+                                  ? 'Activando presencia...'
+                                  : 'Activar presencia profesional',
                             ),
                           ),
-                        ),
-                        child: const Text('Abrir perfil público'),
-                      ),
-                    ),
-                  ],
+                  ),
                 ],
               ),
             ),
@@ -81,18 +102,20 @@ class ProfessionalWorkspaceScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      publicPresence?.serviceSummary ??
-                          'La cuenta profesional ya sostiene servicios básicos, aunque la presencia pública todavía no se publicó.',
+                      hasPublicPresence
+                          ? publicPresence.serviceSummary
+                          : 'Estos servicios ya viven en la cuenta profesional. Activar la presencia pública los vuelve visibles y coherentes con el resto de la vertical.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
-                    ...(publicPresence?.services ?? profile.services).map(
+                    ...profile.services.map(
                       (service) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: _ServiceCard(
                           service: service,
-                          availability: publicPresence?.serviceAvailabilityLabel ??
-                              profile.operationLabel,
+                          availability: hasPublicPresence
+                              ? publicPresence.serviceAvailabilityLabel
+                              : profile.operationLabel,
                         ),
                       ),
                     ),
@@ -108,27 +131,33 @@ class ProfessionalWorkspaceScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Contenido + confianza',
+                      hasPublicPresence
+                          ? 'Contenido + confianza'
+                          : 'Qué falta para volverla operativa',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'La ficha profesional no vive aislada: contenido, reputación y servicios se alimentan entre sí para construir valor percibido y una base operativa más real.',
+                      hasPublicPresence
+                          ? 'La ficha profesional no vive aislada: contenido, reputación y servicios se alimentan entre sí para construir valor percibido y una base operativa más real.'
+                          : 'La cuenta ya tiene servicios, categoría y objetivo. El paso pendiente es activar una presencia pública que use esa misma base persistida.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
-                    if (publicPresence != null)
+                    if (hasPublicPresence)
                       ...publicPresence.trustSignals.map(
                         (signal) => Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: _SignalTile(label: signal),
                         ),
-                      ),
-                    if (publicPresence == null)
-                      const _SignalTile(
-                        label:
-                            'La cuenta profesional todavía no publicó una presencia pública más completa, pero la base local ya está lista para crecer.',
-                      ),
+                      )
+                    else ...[
+                      _SignalTile(label: profile.category),
+                      const SizedBox(height: 10),
+                      _SignalTile(label: profile.primaryGoal),
+                      const SizedBox(height: 10),
+                      _SignalTile(label: profile.nextSetupStep),
+                    ],
                   ],
                 ),
               ),
@@ -137,6 +166,19 @@ class ProfessionalWorkspaceScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _activateProfessionalPresence() async {
+    setState(() {
+      _isActivating = true;
+    });
+
+    await AppData.activateCurrentProfessionalProfile();
+    if (!mounted) return;
+
+    setState(() {
+      _isActivating = false;
+    });
   }
 }
 

@@ -236,7 +236,9 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
               operationLabel: publicProfessionalProfile?.serviceAvailabilityLabel ??
                   professionalProfile.operationLabel,
               primaryGoal: professionalProfile.primaryGoal,
-              nextSetupStep: professionalProfile.nextSetupStep,
+              nextSetupStep: publicProfessionalProfile == null
+                  ? 'Activar la presencia profesional para volver visible tu base operativa y tus servicios.'
+                  : professionalProfile.nextSetupStep,
               services: publicProfessionalProfile?.services ??
                   professionalProfile.services,
               capabilities: professionalProfile.capabilities,
@@ -380,6 +382,23 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   @override
   ProfessionalProfile? getCurrentProfessionalProfile() {
     return _stateForCurrentUser().professionalProfile;
+  }
+
+  @override
+  Future<void> activateCurrentProfessionalProfile() async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final nextProfile = _buildProfessionalProfileForCurrentAccount(
+      requireExposure: false,
+    );
+    if (nextProfile == null) return;
+
+    final currentState = _stateForUser(userId);
+    _userStates[userId] = currentState.copyWith(
+      professionalProfile: nextProfile,
+    );
+    await _persistUserState(userId);
   }
 
   @override
@@ -713,6 +732,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     if (userId == null) return;
 
     _ensureUserStateLoaded(userId);
+    _synchronizeCurrentProfessionalProfile(userId);
     await _persistUserState(userId);
   }
 
@@ -877,11 +897,19 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }
 
   ProfessionalProfile? _seedProfessionalProfileForCurrentAccount() {
+    return _buildProfessionalProfileForCurrentAccount(requireExposure: true);
+  }
+
+  ProfessionalProfile? _buildProfessionalProfileForCurrentAccount({
+    required bool requireExposure,
+  }) {
     final currentAccount = _sessionController.currentAccount;
     if (currentAccount == null) return null;
 
     final professionalProfile = currentAccount.professionalProfile;
-    if (!_shouldExposeProfessionalProfile(professionalProfile)) {
+    if (professionalProfile == null) return null;
+    if (requireExposure &&
+        !_shouldExposeProfessionalProfile(professionalProfile)) {
       return null;
     }
 
@@ -897,7 +925,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
     return _buildProfessionalProfileFromAccount(
       account: currentAccount,
-      profile: professionalProfile!,
+      profile: professionalProfile,
       accentColorHex: _accentColorForProfessionalCategory(
         professionalProfile.category,
       ),
@@ -906,29 +934,43 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
   void _synchronizeCurrentProfessionalProfile(String userId) {
     final currentState = _stateForUser(userId);
-    final seededProfile = _seedProfessionalProfileForCurrentAccount();
+    final currentAccount = _sessionController.currentAccount;
 
-    if (seededProfile == null) {
+    if (currentAccount?.professionalProfile == null) {
       if (currentState.professionalProfile == null) return;
-      _userStates[userId] = currentState.copyWith(clearProfessionalProfile: true);
+      _userStates[userId] = currentState.copyWith(
+        clearProfessionalProfile: true,
+      );
       return;
     }
 
+    final sourceProfile = currentState.professionalProfile == null
+        ? _buildProfessionalProfileForCurrentAccount(requireExposure: true)
+        : _buildProfessionalProfileForCurrentAccount(requireExposure: false);
+    if (sourceProfile == null) return;
+
     final nextProfile = currentState.professionalProfile == null
-        ? seededProfile
+        ? sourceProfile
         : currentState.professionalProfile!.copyWith(
-            name: seededProfile.name,
-            specialty: seededProfile.specialty,
-            valueProposition: seededProfile.valueProposition,
-            helpSummary: seededProfile.helpSummary,
-            presenceStatusLabel: seededProfile.presenceStatusLabel,
-            serviceAvailabilityLabel: seededProfile.serviceAvailabilityLabel,
-            serviceSummary: seededProfile.serviceSummary,
-            services: seededProfile.services,
-            trustSignals: seededProfile.trustSignals,
-            topics: seededProfile.topics,
-            featuredContent: seededProfile.featuredContent,
-            accentColorHex: seededProfile.accentColorHex,
+            name: sourceProfile.name,
+            specialty: sourceProfile.specialty,
+            biography: sourceProfile.biography,
+            description: sourceProfile.description,
+            contentType: sourceProfile.contentType,
+            valueProposition: sourceProfile.valueProposition,
+            approachStyle: sourceProfile.approachStyle,
+            helpSummary: sourceProfile.helpSummary,
+            profileModeLabel: sourceProfile.profileModeLabel,
+            presenceStatusLabel: sourceProfile.presenceStatusLabel,
+            serviceAvailabilityLabel: sourceProfile.serviceAvailabilityLabel,
+            serviceSummary: sourceProfile.serviceSummary,
+            services: sourceProfile.services,
+            trustSignals: sourceProfile.trustSignals,
+            primaryActionLabel: sourceProfile.primaryActionLabel,
+            secondaryActionLabel: sourceProfile.secondaryActionLabel,
+            topics: sourceProfile.topics,
+            featuredContent: sourceProfile.featuredContent,
+            accentColorHex: sourceProfile.accentColorHex,
           );
 
     final previousJson = currentState.professionalProfile?.toJson();

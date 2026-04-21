@@ -1,18 +1,28 @@
 import 'package:flutter/material.dart';
 
-import '../../../explore/presentation/screens/professional_public_profile_screen.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../explore/presentation/screens/professional_public_profile_screen.dart';
 
-class ProfessionalDashboardScreen extends StatelessWidget {
+class ProfessionalDashboardScreen extends StatefulWidget {
   const ProfessionalDashboardScreen({super.key});
+
+  @override
+  State<ProfessionalDashboardScreen> createState() =>
+      _ProfessionalDashboardScreenState();
+}
+
+class _ProfessionalDashboardScreenState
+    extends State<ProfessionalDashboardScreen> {
+  bool _isActivating = false;
 
   @override
   Widget build(BuildContext context) {
     final account = AppData.accountFor(AccountExperience.professional);
     final profile = account.professionalProfile!;
     final publicPresence = AppData.currentProfessionalProfile;
+    final hasPublicPresence = publicPresence != null;
 
     return Scaffold(
       body: SafeArea(
@@ -61,14 +71,18 @@ class ProfessionalDashboardScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    publicPresence?.profileModeLabel ?? 'Perfil profesional activo',
+                    hasPublicPresence
+                        ? publicPresence.profileModeLabel
+                        : 'Presencia profesional pendiente',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    profile.primaryGoal,
+                    hasPublicPresence
+                        ? publicPresence.helpSummary
+                        : 'Tu cuenta profesional ya tiene base local y servicios asociados, pero todavía no expone una presencia pública coherente dentro de Mascotify.',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -79,36 +93,47 @@ class ProfessionalDashboardScreen extends StatelessWidget {
                       Expanded(
                         child: _MetricTile(
                           label: 'Estado',
-                          value: publicPresence?.presenceStatusLabel ??
-                              profile.operationLabel,
+                          value: hasPublicPresence
+                              ? publicPresence.presenceStatusLabel
+                              : 'Pendiente de activar',
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _MetricTile(
                           label: 'Servicios',
-                          value: publicPresence?.serviceAvailabilityLabel ??
-                              profile.operationLabel,
+                          value: hasPublicPresence
+                              ? publicPresence.serviceAvailabilityLabel
+                              : '${profile.services.length} bases listas',
                         ),
                       ),
                     ],
                   ),
-                  if (publicPresence != null) ...[
-                    const SizedBox(height: 14),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ProfessionalPublicProfileScreen(
-                              professional: publicPresence,
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: hasPublicPresence
+                        ? OutlinedButton(
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ProfessionalPublicProfileScreen(
+                                  professional: publicPresence,
+                                ),
+                              ),
+                            ),
+                            child: const Text('Ver perfil público'),
+                          )
+                        : ElevatedButton(
+                            onPressed: _isActivating
+                                ? null
+                                : _activateProfessionalPresence,
+                            child: Text(
+                              _isActivating
+                                  ? 'Activando presencia...'
+                                  : 'Activar presencia profesional',
                             ),
                           ),
-                        ),
-                        child: const Text('Ver perfil público'),
-                      ),
-                    ),
-                  ],
+                  ),
                 ],
               ),
             ),
@@ -120,7 +145,7 @@ class ProfessionalDashboardScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Cuenta y presencia pública',
+                      'Base operativa actual',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 8),
@@ -130,51 +155,102 @@ class ProfessionalDashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     _InfoTile(
-                      label: 'Perfil público',
-                      value: publicPresence?.serviceSummary ??
-                          'La cuenta profesional ya tiene base local, pero todavía no expone una presencia pública más operativa.',
+                      label: 'Cuenta profesional',
+                      value:
+                          '${profile.category}. ${profile.operationLabel}. ${profile.primaryGoal}',
                     ),
                     const SizedBox(height: 10),
                     _InfoTile(
                       label: 'Próximo paso',
-                      value: profile.nextSetupStep,
+                      value: hasPublicPresence
+                          ? profile.nextSetupStep
+                          : 'Activar la presencia profesional para volver visible tu propuesta, tus servicios y una proyección pública coherente con la cuenta.',
                     ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Señales de confianza',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 12),
-                    if (publicPresence != null)
+            if (!hasPublicPresence)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Activá tu presencia pública',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'La activación usa la base ya persistida en la cuenta profesional. No crea otra arquitectura: solo vuelve visible tu ficha operativa dentro de la vertical profesional.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      ...profile.services.map(
+                        (service) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _CapabilityTile(label: service),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isActivating
+                              ? null
+                              : _activateProfessionalPresence,
+                          child: Text(
+                            _isActivating
+                                ? 'Activando presencia...'
+                                : 'Publicar base profesional',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Señales de confianza',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 12),
                       ...publicPresence.trustSignals.map(
                         (item) => Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: _CapabilityTile(label: item),
                         ),
                       ),
-                    if (publicPresence == null)
-                      const _CapabilityTile(
-                        label:
-                            'La presencia pública profesional se activará cuando la cuenta tenga una base profesional real y visible.',
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _activateProfessionalPresence() async {
+    setState(() {
+      _isActivating = true;
+    });
+
+    await AppData.activateCurrentProfessionalProfile();
+    if (!mounted) return;
+
+    setState(() {
+      _isActivating = false;
+    });
   }
 }
 

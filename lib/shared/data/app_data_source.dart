@@ -40,6 +40,7 @@ abstract class MascotifyDataSource {
 
   List<ProfessionalProfile> getProfessionalProfiles();
   ProfessionalProfile? getCurrentProfessionalProfile();
+  Future<void> activateCurrentProfessionalProfile();
   ProfessionalProfile? findProfessionalByName(String name);
   ProfessionalContentPreview? findFeaturedContent(
     ProfessionalProfile professional,
@@ -153,6 +154,9 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   ProfessionalProfile? getCurrentProfessionalProfile() {
     return professionalProfiles.isEmpty ? null : professionalProfiles.first;
   }
+
+  @override
+  Future<void> activateCurrentProfessionalProfile() async {}
 
   @override
   List<ProfessionalRecommendation> getProfessionalRecommendations() {
@@ -308,6 +312,10 @@ class AppData {
 
   static ProfessionalProfile? get currentProfessionalProfile =>
       source.getCurrentProfessionalProfile();
+
+  static Future<void> activateCurrentProfessionalProfile() {
+    return source.activateCurrentProfessionalProfile();
+  }
 
   static ProfessionalProfile? findProfessionalByName(String name) {
     return source.findProfessionalByName(name);
