@@ -1,17 +1,20 @@
-# mascotify
+# Mascotify
 
-A new Flutter project.
+Mascotify es una experiencia Flutter multiplataforma orientada a identidad,
+matching, mensajería, QR y vertical profesional para mascotas.
 
-## Getting Started
+## Estado actual
 
-This project is a starting point for a Flutter application.
+- Base local real para auth, cuenta, perfil y mascotas
+- Separación entre cuentas demo y cuentas reales
+- Mensajería persistente por cuenta
+- QR persistente y trazabilidad por mascota
+- Vertical profesional persistente
+- Matching persistente por cuenta y por mascota
+- Espejo usable en browser/web
 
-A few resources to get you started if this is your first Flutter project:
+## Entrega
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+El proyecto mantiene una sola base de producto entre mobile y browser.
+La preparación final de release requiere completar identificadores, firma,
+assets de marca y metadatos definitivos por plataforma.
