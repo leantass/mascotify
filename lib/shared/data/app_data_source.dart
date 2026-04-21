@@ -126,6 +126,10 @@ class MockMascotifyDataSource implements MascotifyDataSource {
       buildMockNotifications(
         MockData.pets,
         buildMockMessageThreads(MockData.pets),
+        buildSuggestedLocationForPet,
+        null,
+        null,
+        buildQrActivityEntriesForPet,
       ),
     );
   }

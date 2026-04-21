@@ -545,6 +545,10 @@ class _QrExperienceCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final snapshot = AppData.qrStatusSnapshotForPet(currentPet);
     final activity = AppData.qrActivityEntriesForPet(currentPet);
+    final recentQrActivity = activity
+        .where((entry) => entry.iconKey == 'qr' || entry.iconKey == 'location')
+        .take(2)
+        .toList();
 
     return Card(
       child: Padding(
@@ -574,7 +578,7 @@ class _QrExperienceCard extends StatelessWidget {
                       Text('QR Mascotify', style: textTheme.titleLarge),
                       const SizedBox(height: 4),
                       Text(
-                        'Identificación, rastreo y contacto seguro desde una sola pieza.',
+                        'Identificacion, rastreo y contacto seguro desde una sola pieza.',
                         style: textTheme.bodyMedium,
                       ),
                     ],
@@ -662,7 +666,7 @@ class _QrExperienceCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _TrackingMetricTile(
-                    label: 'Escaneos',
+                    label: 'Actividad QR',
                     value: snapshot.totalScansLabel,
                   ),
                 ),
@@ -724,14 +728,18 @@ class _QrExperienceCard extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
-            ...activity
-                .take(2)
-                .map(
-                  (entry) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _QrTimelinePreviewTile(entry: entry),
-                  ),
+            if (recentQrActivity.isEmpty)
+              const _QrEmptyStateCard(
+                text:
+                    'Todavia no hay escaneos ni reportes para esta mascota. Cuando llegue el primer evento QR real, aca vas a ver una lectura corta del historial.',
+              )
+            else
+              ...recentQrActivity.map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _QrTimelinePreviewTile(entry: entry),
                 ),
+              ),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -739,7 +747,7 @@ class _QrExperienceCard extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => QrTraceabilityScreen(pet: pet),
+                        builder: (_) => QrTraceabilityScreen(pet: currentPet),
                       ),
                     ),
                     child: const Text('Ver historial QR'),
@@ -750,7 +758,7 @@ class _QrExperienceCard extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => QrScanPreviewScreen(pet: pet),
+                        builder: (_) => QrScanPreviewScreen(pet: currentPet),
                       ),
                     ),
                     child: const Text('Probar escaneo'),
@@ -764,13 +772,39 @@ class _QrExperienceCard extends StatelessWidget {
               child: TextButton(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => QrScanPreviewScreen(pet: pet),
+                    builder: (_) => QrScanPreviewScreen(pet: currentPet),
                   ),
                 ),
                 child: const Text('Probar experiencia pública de escaneo'),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QrEmptyStateCard extends StatelessWidget {
+  const _QrEmptyStateCard({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          height: 1.45,
         ),
       ),
     );

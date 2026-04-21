@@ -12,6 +12,7 @@ List<EcosystemNotification> buildMockNotifications([
   SightingLocationReference Function(Pet pet)? locationResolver,
   List<SocialInboxEntry>? sourceInboxItems,
   List<SavedProfileEntry>? sourceSavedProfiles,
+  List<QrActivityEntry> Function(Pet pet)? activityResolver,
 ]) {
   final pets = _resolveNotificationPets(sourcePets);
   if (pets.isEmpty) {
@@ -30,7 +31,7 @@ List<EcosystemNotification> buildMockNotifications([
       EcosystemNotification(
         id: 'notif-social-${inboxItem.pet.id}',
         type: EcosystemNotificationType.socialInterest,
-        title: 'Nuevo interés recibido por ${inboxItem.pet.name}',
+        title: 'Nuevo interes recibido por ${inboxItem.pet.name}',
         description: inboxItem.message,
         timeLabel: 'Hace 5 min',
         accentColorHex: inboxItem.accentColorHex,
@@ -49,7 +50,7 @@ List<EcosystemNotification> buildMockNotifications([
       EcosystemNotification(
         id: 'notif-message-${thread.pet.id}',
         type: EcosystemNotificationType.message,
-        title: 'Conversación activa con ${thread.ownerName}',
+        title: 'Conversacion activa con ${thread.ownerName}',
         description: thread.lastMessage,
         timeLabel: thread.lastActivity,
         accentColorHex: thread.accentColorHex,
@@ -64,42 +65,59 @@ List<EcosystemNotification> buildMockNotifications([
 
   if (pets.length >= 3) {
     final qrPet = pets[2];
-    final qrLocation =
-        locationResolver?.call(qrPet) ?? buildSuggestedLocationForPet(qrPet);
+    final qrActivity =
+        activityResolver?.call(qrPet) ?? const <QrActivityEntry>[];
+    final latestQrSignal = _latestOperationalQrSignal(qrActivity);
+
+    if (latestQrSignal != null) {
+      final qrLocation =
+          locationResolver?.call(qrPet) ?? buildSuggestedLocationForPet(qrPet);
+      notifications.add(
+        EcosystemNotification(
+          id: 'notif-qr-${qrPet.id}',
+          type: EcosystemNotificationType.qrReport,
+          title: latestQrSignal.iconKey == 'location'
+              ? 'Nuevo avistamiento QR sobre ${qrPet.name}'
+              : 'Nuevo escaneo QR sobre ${qrPet.name}',
+          description: latestQrSignal.iconKey == 'location'
+              ? 'Se registro una referencia aproximada en ${qrLocation.zoneReference} y quedo visible dentro del historial QR.'
+              : latestQrSignal.detail,
+          timeLabel: latestQrSignal.timeLabel,
+          accentColorHex: latestQrSignal.iconKey == 'location'
+              ? 0xFFFFF2C6
+              : latestQrSignal.accentColorHex,
+          priority: EcosystemNotificationPriority.attention,
+          isUnread: true,
+          actionLabel: 'Ver historial QR',
+          action: EcosystemNotificationAction.openPetQrTraceability,
+          petId: qrPet.id,
+        ),
+      );
+    }
+  }
+
+  final primaryPetQrActivity =
+      activityResolver?.call(pets.first) ?? const <QrActivityEntry>[];
+  final primaryPetLatestSignal =
+      _latestOperationalQrSignal(primaryPetQrActivity);
+
+  if (primaryPetLatestSignal != null) {
     notifications.add(
       EcosystemNotification(
-        id: 'notif-qr-${qrPet.id}',
+        id: 'notif-qr-history-${pets.first.id}',
         type: EcosystemNotificationType.qrReport,
-        title: 'Nuevo avistamiento QR sobre ${qrPet.name}',
-        description:
-            'Se registró una referencia aproximada en ${qrLocation.zoneReference} y quedó visible dentro del historial QR.',
-        timeLabel: 'Hace 18 min',
-        accentColorHex: 0xFFFFF2C6,
-        priority: EcosystemNotificationPriority.attention,
-        isUnread: true,
+        title: 'El historial QR de ${pets.first.name} sumo una nueva senal',
+        description: primaryPetLatestSignal.detail,
+        timeLabel: primaryPetLatestSignal.timeLabel,
+        accentColorHex: primaryPetLatestSignal.accentColorHex,
+        priority: EcosystemNotificationPriority.useful,
+        isUnread: false,
         actionLabel: 'Ver historial QR',
         action: EcosystemNotificationAction.openPetQrTraceability,
-        petId: qrPet.id,
+        petId: pets.first.id,
       ),
     );
   }
-
-  notifications.add(
-    EcosystemNotification(
-      id: 'notif-qr-history-${pets.first.id}',
-      type: EcosystemNotificationType.qrReport,
-      title: 'El historial QR de ${pets.first.name} sumó una nueva señal',
-      description:
-          'Ya hay más contexto de escaneos, contacto protegido y actividad reciente dentro de la ficha.',
-      timeLabel: 'Hace 1 h',
-      accentColorHex: 0xFFDDF6F6,
-      priority: EcosystemNotificationPriority.useful,
-      isUnread: false,
-      actionLabel: 'Ver historial QR',
-      action: EcosystemNotificationAction.openPetQrTraceability,
-      petId: pets.first.id,
-    ),
-  );
 
   notifications.add(
     EcosystemNotification(
@@ -124,7 +142,7 @@ List<EcosystemNotification> buildMockNotifications([
       type: EcosystemNotificationType.reminder,
       title: '${pets.first.name} ya tiene matching listo para explorar',
       description:
-          'Su ficha interna ya expresa mejor qué busca, cómo le gustaría vincularse y en qué contexto podría sentirse cómodo.',
+          'Su ficha interna ya expresa mejor que busca, como le gustaria vincularse y en que contexto podria sentirse comodo.',
       timeLabel: 'Hoy',
       accentColorHex: 0xFFDDF6F6,
       priority: EcosystemNotificationPriority.useful,
@@ -158,10 +176,10 @@ List<EcosystemNotification> buildMockNotifications([
     EcosystemNotification(
       id: 'notif-professionals-feed',
       type: EcosystemNotificationType.professionalContent,
-      title: 'La comunidad experta sumó nuevas piezas breves',
+      title: 'La comunidad experta sumo nuevas piezas breves',
       description:
           'Hay nuevas charlas y recomendaciones para cuidado, matching responsable y contacto seguro.',
-      timeLabel: 'Hace 2 días',
+      timeLabel: 'Hace 2 dias',
       accentColorHex: 0xFFFFF2C6,
       priority: EcosystemNotificationPriority.info,
       isUnread: false,
@@ -175,4 +193,18 @@ List<EcosystemNotification> buildMockNotifications([
 
 List<Pet> _resolveNotificationPets(List<Pet>? sourcePets) {
   return sourcePets ?? const <Pet>[];
+}
+
+QrActivityEntry? _latestOperationalQrSignal(List<QrActivityEntry> activity) {
+  for (final entry in activity) {
+    if (_isOperationalQrSignal(entry)) {
+      return entry;
+    }
+  }
+
+  return null;
+}
+
+bool _isOperationalQrSignal(QrActivityEntry entry) {
+  return entry.iconKey == 'qr' || entry.iconKey == 'location';
 }

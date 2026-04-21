@@ -12,8 +12,12 @@ class QrTraceabilityScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = AppData.qrStatusSnapshotForPet(pet);
-    final activity = AppData.qrActivityEntriesForPet(pet);
+    final currentPet = AppData.findPetById(pet.id) ?? pet;
+    final status = AppData.qrStatusSnapshotForPet(currentPet);
+    final activity = AppData.qrActivityEntriesForPet(currentPet);
+    final operationalActivity = activity
+        .where((entry) => entry.iconKey == 'qr' || entry.iconKey == 'location')
+        .toList();
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -27,7 +31,7 @@ class QrTraceabilityScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(pet.colorHex),
+                    Color(currentPet.colorHex),
                     AppColors.surface,
                     AppColors.primarySoft,
                   ],
@@ -59,12 +63,12 @@ class QrTraceabilityScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'El código de ${pet.name} ya puede leerse como una capa de seguimiento.',
+                    'El codigo de ${currentPet.name} ya puede leerse como una capa de seguimiento.',
                     style: textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Este historial reúne escaneos, señales públicas, estado del contacto protegido y eventos recientes persistidos para comunicar valor real del QR.',
+                    'Este historial reune escaneos, senales publicas, estado del contacto protegido y eventos recientes persistidos para comunicar valor real del QR.',
                     style: textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -103,7 +107,7 @@ class QrTraceabilityScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Lectura rápida del valor operativo del QR dentro de Mascotify.',
+                      'Lectura rapida del valor operativo del QR dentro de Mascotify.',
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
@@ -113,12 +117,12 @@ class QrTraceabilityScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     _InfoTile(
-                      label: 'Última señal',
+                      label: 'Ultima senal',
                       value: status.lastSignalLabel,
                     ),
                     const SizedBox(height: 10),
                     _InfoTile(
-                      label: 'Detalle útil',
+                      label: 'Detalle util',
                       value: status.lastSignalDetail,
                     ),
                     const SizedBox(height: 10),
@@ -126,7 +130,7 @@ class QrTraceabilityScreen extends StatelessWidget {
                       children: [
                         Expanded(
                           child: _InfoTile(
-                            label: 'Escaneos',
+                            label: 'Actividad QR',
                             value: status.totalScansLabel,
                           ),
                         ),
@@ -153,21 +157,47 @@ class QrTraceabilityScreen extends StatelessWidget {
                     Text('Timeline de actividad', style: textTheme.titleLarge),
                     const SizedBox(height: 8),
                     Text(
-                      'Eventos persistidos que ayudan a leer qué pasó con el QR y en qué momento.',
+                      'Eventos persistidos que ayudan a leer que paso con el QR y en que momento.',
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
-                    ...activity.map(
-                      (entry) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _TimelineEntry(entry: entry),
+                    if (operationalActivity.isEmpty)
+                      const _EmptyTimelineState()
+                    else
+                      ...operationalActivity.map(
+                        (entry) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _TimelineEntry(entry: entry),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyTimelineState extends StatelessWidget {
+  const _EmptyTimelineState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Text(
+        'Todavia no hay escaneos ni reportes reales para este QR. Cuando llegue el primer evento util, este historial va a mostrar el orden y el contexto de cada senal.',
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          height: 1.45,
         ),
       ),
     );

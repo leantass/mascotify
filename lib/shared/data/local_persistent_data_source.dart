@@ -322,6 +322,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         getSuggestedLocationForPet,
         getSocialInboxEntries(),
         getSavedProfiles(),
+        getQrActivityEntriesForPet,
       ),
     );
   }
@@ -548,12 +549,17 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     if (userId == null) return;
 
     final currentState = _stateForUser(userId);
+    final initialQrState = _buildInitialQrStateForPet(pet);
+    final normalizedPet = pet.copyWith(
+      qrStatus: _buildQrStatusSnapshot(pet, initialQrState).lastSignalDetail,
+      qrLastUpdate: _buildPetQrLastUpdateLabel(initialQrState),
+    );
     final updatedQrStates = <String, PersistedPetQrState>{
       ...currentState.qrStates,
-      pet.id: _buildInitialQrStateForPet(pet),
+      pet.id: initialQrState,
     };
     final updatedState = currentState.copyWith(
-      pets: <Pet>[...currentState.pets, pet],
+      pets: <Pet>[...currentState.pets, normalizedPet],
       qrStates: updatedQrStates,
     );
     _userStates[userId] = updatedState;
@@ -1187,6 +1193,26 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     return currentState.qrStates[pet.id] ?? _buildInitialQrStateForPet(pet);
   }
 
+  List<QrActivityEntry> _operationalQrActivity(PersistedPetQrState qrState) {
+    return qrState.activity
+        .where((entry) => _isOperationalQrSignal(entry))
+        .toList();
+  }
+
+  QrActivityEntry? _latestOperationalQrActivity(PersistedPetQrState qrState) {
+    for (final entry in qrState.activity) {
+      if (_isOperationalQrSignal(entry)) {
+        return entry;
+      }
+    }
+
+    return null;
+  }
+
+  bool _isOperationalQrSignal(QrActivityEntry entry) {
+    return entry.iconKey == 'qr' || entry.iconKey == 'location';
+  }
+
   Map<String, PersistedPetQrState> _buildQrStatesForPets(
     List<Pet> pets, {
     required bool preferMockSeed,
@@ -1256,10 +1282,8 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     Pet pet,
     PersistedPetQrState qrState,
   ) {
-    final latestActivity = qrState.activity.isEmpty ? null : qrState.activity.first;
-    final signalCount = qrState.activity
-        .where((entry) => entry.iconKey == 'qr' || entry.iconKey == 'location')
-        .length;
+    final latestActivity = _latestOperationalQrActivity(qrState);
+    final signalCount = _operationalQrActivity(qrState).length;
 
     return QrStatusSnapshot(
       currentStatus: _buildCurrentQrStatus(pet, latestActivity),
@@ -1268,19 +1292,21 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           : 'Contacto protegido pendiente de vincular',
       lastSignalLabel: _buildLastSignalLabel(latestActivity),
       lastSignalDetail: latestActivity?.detail ??
-          'La ficha está lista para sumar trazabilidad cuando llegue el primer escaneo o reporte.',
+          'La ficha está lista para sumar trazabilidad cuando llegue el primer escaneo o reporte real.',
       totalScansLabel: signalCount == 0
-          ? 'Sin escaneos todavía'
+          ? 'Sin actividad QR todavía'
           : signalCount == 1
-          ? '1 señal registrada'
-          : '$signalCount señales registradas',
+          ? '1 evento QR registrado'
+          : '$signalCount eventos QR registrados',
       activeWindowLabel: _buildActiveWindowLabel(latestActivity),
     );
   }
 
   String _buildCurrentQrStatus(Pet pet, QrActivityEntry? latestActivity) {
     if (latestActivity == null) {
-      return pet.qrEnabled ? 'QR activo y listo' : 'QR preparado para activación';
+      return pet.qrEnabled
+          ? 'QR activo sin actividad todavía'
+          : 'QR preparado sin actividad todavía';
     }
     if (latestActivity.iconKey == 'location') {
       return 'QR con reporte reciente';
@@ -1295,7 +1321,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
   String _buildLastSignalLabel(QrActivityEntry? latestActivity) {
     if (latestActivity == null) {
-      return 'Sin señales todavía';
+      return 'Sin actividad QR todavía';
     }
 
     final prefix = latestActivity.iconKey == 'location'
@@ -1316,7 +1342,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
   String _buildActiveWindowLabel(QrActivityEntry? latestActivity) {
     if (latestActivity == null) {
-      return 'Esperando primera señal';
+      return 'Esperando primer evento';
     }
     if (latestActivity.timeLabel == 'Ahora') {
       return 'Actividad en tiempo real';
@@ -1358,15 +1384,16 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }
 
   String _buildPetQrLastUpdateLabel(PersistedPetQrState qrState) {
-    if (qrState.activity.isEmpty) return 'Sin actividad todavía';
+    final latestActivity = _latestOperationalQrActivity(qrState);
+    if (latestActivity == null) return 'Sin actividad todavía';
 
-    switch (qrState.activity.first.timeLabel) {
+    switch (latestActivity.timeLabel) {
       case 'Ahora':
         return 'Actualizado ahora';
       case 'Hoy':
         return 'Actualizado hoy';
       default:
-        return qrState.activity.first.timeLabel;
+        return latestActivity.timeLabel;
     }
   }
 

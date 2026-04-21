@@ -29,13 +29,16 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final pet = widget.pet;
+    final pet = AppData.findPetById(widget.pet.id) ?? widget.pet;
     final textTheme = Theme.of(context).textTheme;
     final snapshot = _snapshot;
-    final activity = _activity;
+    final operationalActivity = _activity
+        .where((entry) => entry.iconKey == 'qr' || entry.iconKey == 'location')
+        .take(3)
+        .toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Escaneo público')),
+      appBar: AppBar(title: const Text('Escaneo publico')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
@@ -97,7 +100,7 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
                   Text(pet.name, style: textTheme.headlineLarge),
                   const SizedBox(height: 8),
                   Text(
-                    '${pet.species} • ${pet.breed}',
+                    '${pet.species} - ${pet.breed}',
                     style: textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -119,7 +122,7 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Este perfil fue diseñado para ayudar a ubicar a la mascota de forma simple, segura y confiable.',
+                          'Este perfil fue disenado para ayudar a ubicar a la mascota de forma simple, segura y confiable.',
                           style: textTheme.bodyMedium,
                         ),
                       ],
@@ -155,12 +158,12 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Código público activo',
+                                'Codigo publico activo',
                                 style: textTheme.titleLarge,
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Identificación visible para reportar un avistamiento sin exponer datos privados.',
+                                'Identificacion visible para reportar un avistamiento sin exponer datos privados.',
                                 style: textTheme.bodyMedium,
                               ),
                             ],
@@ -181,7 +184,7 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
                         children: [
                           Expanded(
                             child: _PublicInfoTile(
-                              label: 'Código',
+                              label: 'Codigo',
                               value: pet.qrCodeLabel,
                             ),
                           ),
@@ -200,7 +203,7 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
                       children: [
                         Expanded(
                           child: _PublicInfoTile(
-                            label: 'Última señal',
+                            label: 'Ultima senal',
                             value: snapshot.lastSignalLabel,
                           ),
                         ),
@@ -229,14 +232,14 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '¿Encontraste a ${pet.name}?',
+                            'Encontraste a ${pet.name}?',
                             style: textTheme.titleLarge?.copyWith(
                               color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Podés informar un avistamiento de forma simple. El sistema registra la señal, mantiene trazabilidad y deriva la información al responsable sin mostrar contacto privado directo.',
+                            'Podes informar un avistamiento de forma simple. El sistema registra la senal, mantiene trazabilidad y deriva la informacion al responsable sin mostrar contacto privado directo.',
                             style: textTheme.bodyMedium?.copyWith(
                               color: Colors.white.withValues(alpha: 0.82),
                               height: 1.5,
@@ -301,16 +304,19 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Señales persistidas que ayudan a entender que este código no es solo visual, sino una pieza útil de seguimiento.',
+                      'Ultimos eventos utiles para entender si este QR ya recibio escaneos o reportes reales.',
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
-                    ...activity.take(3).map(
-                      (entry) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _ActivityTile(entry: entry),
+                    if (operationalActivity.isEmpty)
+                      const _PreviewEmptyState()
+                    else
+                      ...operationalActivity.map(
+                        (entry) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _ActivityTile(entry: entry),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -323,21 +329,21 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Cómo funciona este flujo',
+                      'Como funciona este flujo',
                       style: textTheme.titleLarge,
                     ),
                     const SizedBox(height: 10),
                     const _InfoBullet(
                       text:
-                          'No se expone contacto privado directo del responsable en esta pantalla pública.',
+                          'No se expone contacto privado directo del responsable en esta pantalla publica.',
                     ),
                     const _InfoBullet(
                       text:
-                          'Cada escaneo o reporte puede transformarse en una señal útil dentro del historial QR persistente.',
+                          'Cada escaneo o reporte puede transformarse en una senal util dentro del historial QR persistente.',
                     ),
                     const _InfoBullet(
                       text:
-                          'El objetivo es dar contexto claro, seguimiento y una vía segura para actuar más rápido.',
+                          'El objetivo es dar contexto claro, seguimiento y una via segura para actuar mas rapido.',
                     ),
                   ],
                 ),
@@ -350,8 +356,9 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
   }
 
   void _reloadQrState() {
-    _snapshot = AppData.qrStatusSnapshotForPet(widget.pet);
-    _activity = AppData.qrActivityEntriesForPet(widget.pet);
+    final pet = AppData.findPetById(widget.pet.id) ?? widget.pet;
+    _snapshot = AppData.qrStatusSnapshotForPet(pet);
+    _activity = AppData.qrActivityEntriesForPet(pet);
   }
 
   Future<void> _registerScan() async {
@@ -359,6 +366,30 @@ class _QrScanPreviewScreenState extends State<QrScanPreviewScreen> {
     if (!mounted) return;
 
     setState(_reloadQrState);
+  }
+}
+
+class _PreviewEmptyState extends StatelessWidget {
+  const _PreviewEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Text(
+        'Todavia no hay actividad QR real para esta mascota. Cuando llegue el primer escaneo o reporte, esta preview va a mostrar el contexto mas reciente.',
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          height: 1.45,
+        ),
+      ),
+    );
   }
 }
 
@@ -436,7 +467,7 @@ class _ActivityTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${entry.statusLabel} • ${entry.timeLabel}',
+                  '${entry.statusLabel} - ${entry.timeLabel}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textSecondary,
                   ),
