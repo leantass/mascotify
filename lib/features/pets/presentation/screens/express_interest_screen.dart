@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../features/explore/presentation/screens/messages_inbox_screen.dart';
+import '../../../../shared/data/app_data_source.dart';
+import '../../../../features/explore/presentation/screens/connections_inbox_screen.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../theme/app_colors.dart';
 
@@ -25,7 +26,7 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final pet = widget.pet;
+    final pet = AppData.findPetById(widget.pet.id) ?? widget.pet;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -54,7 +55,7 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Este flujo mock representa el primer paso para futuras conexiones seguras dentro del módulo social de Mascotify.',
+                    'Este flujo representa el primer paso para futuras conexiones seguras dentro del módulo social de Mascotify.',
                     style: textTheme.bodyMedium,
                   ),
                 ],
@@ -218,10 +219,17 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
   }
 
   Future<void> _sendInterest() async {
+    final pet = AppData.findPetById(widget.pet.id) ?? widget.pet;
+    await AppData.expressInterest(
+      petId: pet.id,
+      interestType: _interestType,
+      message: _messageController.text.trim(),
+    );
+    if (!mounted) return;
+
     await showDialog<void>(
       context: context,
       builder: (context) {
-        final pet = widget.pet;
         return Dialog(
           insetPadding: const EdgeInsets.symmetric(horizontal: 24),
           child: Padding(
@@ -249,7 +257,7 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'La intención de conexión con ${pet.name} quedó registrada en este flujo mock y sería procesada por Mascotify como una interacción segura.',
+                  'La intención de conexión con ${pet.name} ya quedó registrada dentro de tu cuenta y pasa a formar parte de la bandeja social de Mascotify.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 18),
@@ -278,7 +286,7 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
-                    'Si la conexión avanza, esta intención pasaría primero por la bandeja social con el contexto de matching visible y después podría abrir una conversación cuidada entre familias dentro de la mensajería.',
+                    'Si la conexión avanza, esta intención ya queda visible en la bandeja social con el contexto de matching y después podría abrir una conversación cuidada entre familias dentro de la mensajería.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       height: 1.45,
@@ -294,11 +302,11 @@ class _ExpressInterestScreenState extends State<ExpressInterestScreen> {
                           Navigator.of(context).pop();
                           Navigator.of(this.context).pushReplacement(
                             MaterialPageRoute(
-                              builder: (_) => const MessagesInboxScreen(),
+                              builder: (_) => const ConnectionsInboxScreen(),
                             ),
                           );
                         },
-                        child: const Text('Ir a mensajes'),
+                        child: const Text('Ir a social'),
                       ),
                     ),
                     const SizedBox(width: 10),

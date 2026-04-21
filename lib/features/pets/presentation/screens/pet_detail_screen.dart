@@ -318,8 +318,15 @@ class _MatchingProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final preferences = pet.matchingPreferences;
+    final currentPet = AppData.findPetById(pet.id) ?? pet;
+    final preferences = currentPet.matchingPreferences;
     final textTheme = Theme.of(context).textTheme;
+    final isSaved = AppData.savedProfiles.any(
+      (entry) => entry.pet.id == currentPet.id,
+    );
+    final interestCount = AppData.socialInboxEntries
+        .where((entry) => entry.pet.id == currentPet.id)
+        .length;
 
     return Card(
       child: Padding(
@@ -330,7 +337,7 @@ class _MatchingProfileCard extends StatelessWidget {
             Text('Matching más expresivo', style: textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
-              'Una capa mock para expresar qué busca ${pet.name} dentro del ecosistema social.',
+              'Una base persistida para expresar qué busca ${currentPet.name} dentro del ecosistema social.',
               style: textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -372,7 +379,7 @@ class _MatchingProfileCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    pet.socialInterest,
+                    currentPet.socialInterest,
                     style: textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
                       height: 1.45,
@@ -401,6 +408,17 @@ class _MatchingProfileCard extends StatelessWidget {
                             : 'Prefiere vínculo más directo',
                         backgroundColor: Colors.white.withValues(alpha: 0.78),
                       ),
+                      if (isSaved)
+                        _MatchingPill(
+                          label: 'Perfil guardado',
+                          backgroundColor: Colors.white.withValues(alpha: 0.78),
+                        ),
+                      if (interestCount > 0)
+                        _MatchingPill(
+                          label:
+                              '$interestCount señal${interestCount == 1 ? '' : 'es'} social${interestCount == 1 ? '' : 'es'}',
+                          backgroundColor: Colors.white.withValues(alpha: 0.78),
+                        ),
                     ],
                   ),
                 ],
@@ -429,13 +447,13 @@ class _MatchingProfileCard extends StatelessWidget {
             const SizedBox(height: 10),
             _MatchingKeyTile(
               label: 'Afinidad principal',
-              value: pet.socialInterest,
+              value: currentPet.socialInterest,
               color: AppColors.accentSoft,
             ),
             const SizedBox(height: 10),
             _MatchingKeyTile(
               label: 'Interés reproductivo',
-              value: pet.seekingBreeding
+              value: currentPet.seekingBreeding
                   ? 'Disponible a evaluar con responsabilidad'
                   : 'No busca cría por ahora',
               color: AppColors.supportSoft,
@@ -502,7 +520,7 @@ class _MatchingProfileCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                'Esta estructura mock permite que la ficha no solo identifique a ${pet.name}, sino que también cuente con más claridad cómo le gustaría vincularse y bajo qué condiciones se sentiría cómodo dentro de Mascotify.',
+                'Esta estructura ya permite que la ficha no solo identifique a ${currentPet.name}, sino que también sostenga afinidades, guardados e intereses con una base local coherente dentro de Mascotify.',
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textPrimary,
                   height: 1.5,

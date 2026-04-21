@@ -69,6 +69,8 @@ class PersistedLocalUserState {
     required this.pets,
     required this.threads,
     required this.qrStates,
+    required this.socialInboxEntries,
+    required this.savedProfiles,
     required this.professionalProfile,
   });
 
@@ -76,6 +78,8 @@ class PersistedLocalUserState {
   final List<Pet> pets;
   final List<MessageThread> threads;
   final Map<String, PersistedPetQrState> qrStates;
+  final List<SocialInboxEntry> socialInboxEntries;
+  final List<SavedProfileEntry> savedProfiles;
   final ProfessionalProfile? professionalProfile;
 
   PersistedLocalUserState copyWith({
@@ -83,6 +87,8 @@ class PersistedLocalUserState {
     List<Pet>? pets,
     List<MessageThread>? threads,
     Map<String, PersistedPetQrState>? qrStates,
+    List<SocialInboxEntry>? socialInboxEntries,
+    List<SavedProfileEntry>? savedProfiles,
     ProfessionalProfile? professionalProfile,
     bool clearProfessionalProfile = false,
   }) {
@@ -91,6 +97,8 @@ class PersistedLocalUserState {
       pets: pets ?? this.pets,
       threads: threads ?? this.threads,
       qrStates: qrStates ?? this.qrStates,
+      socialInboxEntries: socialInboxEntries ?? this.socialInboxEntries,
+      savedProfiles: savedProfiles ?? this.savedProfiles,
       professionalProfile: clearProfessionalProfile
           ? null
           : professionalProfile ?? this.professionalProfile,
@@ -105,6 +113,10 @@ class PersistedLocalUserState {
       'qrStates': qrStates.map(
         (key, value) => MapEntry(key, value.toJson()),
       ),
+      'socialInboxEntries': socialInboxEntries
+          .map((item) => item.toJson())
+          .toList(),
+      'savedProfiles': savedProfiles.map((item) => item.toJson()).toList(),
       'professionalProfile': professionalProfile?.toJson(),
     };
   }
@@ -135,6 +147,22 @@ class PersistedLocalUserState {
               ),
             ),
           ),
+      socialInboxEntries:
+          (json['socialInboxEntries'] as List<dynamic>? ?? const <dynamic>[])
+              .map(
+                (item) => SocialInboxEntry.fromJson(
+                  Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+                ),
+              )
+              .toList(),
+      savedProfiles:
+          (json['savedProfiles'] as List<dynamic>? ?? const <dynamic>[])
+              .map(
+                (item) => SavedProfileEntry.fromJson(
+                  Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+                ),
+              )
+              .toList(),
       professionalProfile: json['professionalProfile'] == null
           ? null
           : ProfessionalProfile.fromJson(
@@ -290,6 +318,8 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         getPets(),
         getMessageThreads(),
         getSuggestedLocationForPet,
+        getSocialInboxEntries(),
+        getSavedProfiles(),
       ),
     );
   }
@@ -414,17 +444,78 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
   @override
   List<SavedProfileEntry> getSavedProfiles() {
-    return List.unmodifiable(buildMockSavedProfiles(getPets()));
+    return List.unmodifiable(_savedProfilesWithCurrentPets());
   }
 
   @override
   List<SocialInboxEntry> getSocialInboxEntries() {
-    return List.unmodifiable(buildMockSocialInboxEntries(getPets()));
+    return List.unmodifiable(_socialInboxEntriesWithCurrentPets());
+  }
+
+  @override
+  Future<void> expressInterest({
+    required String petId,
+    required String interestType,
+    required String message,
+  }) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final pet = findPetById(petId);
+    if (pet == null) return;
+
+    final trimmedMessage = message.trim();
+    final interestMessage = trimmedMessage.isEmpty
+        ? 'Hay interés en ${pet.name} y el perfil quedó marcado para seguir la afinidad dentro de Mascotify.'
+        : trimmedMessage;
+
+    final currentState = _stateForUser(userId);
+    final nextEntry = SocialInboxEntry(
+      pet: pet,
+      direction: 'Enviado',
+      interestType: interestType,
+      status: 'Pendiente',
+      message: interestMessage,
+      accentColorHex: _accentColorForInterestType(interestType),
+    );
+    final updatedEntries = <SocialInboxEntry>[
+      nextEntry,
+      ...currentState.socialInboxEntries.where(
+        (entry) => entry.pet.id != petId || entry.direction != 'Enviado',
+      ),
+    ];
+
+    _userStates[userId] = currentState.copyWith(
+      socialInboxEntries: updatedEntries,
+    );
+    await _persistUserState(userId);
   }
 
   @override
   SightingLocationReference getSuggestedLocationForPet(Pet pet) {
     return _qrStateForPet(pet).suggestedLocation;
+  }
+
+  @override
+  Future<void> saveProfile(String petId) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final pet = findPetById(petId);
+    if (pet == null) return;
+
+    final currentState = _stateForUser(userId);
+    final updatedEntries = <SavedProfileEntry>[
+      SavedProfileEntry(
+        pet: pet,
+        savedAtLabel: 'Guardado hoy',
+        reason: pet.matchingPreferences.matchSummary,
+      ),
+      ...currentState.savedProfiles.where((entry) => entry.pet.id != petId),
+    ];
+
+    _userStates[userId] = currentState.copyWith(savedProfiles: updatedEntries);
+    await _persistUserState(userId);
   }
 
   @override
@@ -648,6 +739,8 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         pets: pets,
         threads: _seedThreadsForCurrentAccount(pets),
         qrStates: _seedQrStatesForCurrentAccount(pets),
+        socialInboxEntries: _seedSocialInboxEntriesForCurrentAccount(pets),
+        savedProfiles: _seedSavedProfilesForCurrentAccount(pets),
         professionalProfile: null,
       );
     }
@@ -680,6 +773,8 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       pets: pets,
       threads: _seedThreadsForCurrentAccount(pets),
       qrStates: _seedQrStatesForCurrentAccount(pets),
+      socialInboxEntries: _seedSocialInboxEntriesForCurrentAccount(pets),
+      savedProfiles: _seedSavedProfilesForCurrentAccount(pets),
       professionalProfile: _seedProfessionalProfileForCurrentAccount(),
     );
   }
@@ -735,6 +830,38 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         .map(
           (thread) => MessageThread.fromJson(
             Map<String, dynamic>.from(thread.toJson()),
+          ),
+        )
+        .toList();
+  }
+
+  List<SocialInboxEntry> _seedSocialInboxEntriesForCurrentAccount(
+    List<Pet> pets,
+  ) {
+    final currentAccount = _sessionController.currentAccount;
+    if (currentAccount != null && _isLocalUserId(currentAccount.id)) {
+      return const <SocialInboxEntry>[];
+    }
+
+    return buildMockSocialInboxEntries(pets)
+        .map(
+          (entry) => SocialInboxEntry.fromJson(
+            Map<String, dynamic>.from(entry.toJson()),
+          ),
+        )
+        .toList();
+  }
+
+  List<SavedProfileEntry> _seedSavedProfilesForCurrentAccount(List<Pet> pets) {
+    final currentAccount = _sessionController.currentAccount;
+    if (currentAccount != null && _isLocalUserId(currentAccount.id)) {
+      return const <SavedProfileEntry>[];
+    }
+
+    return buildMockSavedProfiles(pets)
+        .map(
+          (entry) => SavedProfileEntry.fromJson(
+            Map<String, dynamic>.from(entry.toJson()),
           ),
         )
         .toList();
@@ -823,6 +950,16 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           _looksLikeLegacyMockThreads(state.threads) || nextPets.isEmpty
           ? const <MessageThread>[]
           : state.threads;
+      final nextSocialInboxEntries = _normalizeSocialInboxEntries(
+        nextPets,
+        state.socialInboxEntries,
+        preferMockSeed: false,
+      );
+      final nextSavedProfiles = _normalizeSavedProfiles(
+        nextPets,
+        state.savedProfiles,
+        preferMockSeed: false,
+      );
       return state.copyWith(
         pets: nextPets,
         threads: nextThreads,
@@ -831,6 +968,8 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           nextPets,
           state.qrStates,
         ),
+        socialInboxEntries: nextSocialInboxEntries,
+        savedProfiles: nextSavedProfiles,
       );
     }
 
@@ -842,10 +981,25 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       state.pets,
       state.qrStates,
     );
-    if (nextThreads != state.threads || nextQrStates != state.qrStates) {
+    final nextSocialInboxEntries = _normalizeSocialInboxEntries(
+      state.pets,
+      state.socialInboxEntries,
+      preferMockSeed: true,
+    );
+    final nextSavedProfiles = _normalizeSavedProfiles(
+      state.pets,
+      state.savedProfiles,
+      preferMockSeed: true,
+    );
+    if (nextThreads != state.threads ||
+        nextQrStates != state.qrStates ||
+        nextSocialInboxEntries != state.socialInboxEntries ||
+        nextSavedProfiles != state.savedProfiles) {
       return state.copyWith(
         threads: nextThreads,
         qrStates: nextQrStates,
+        socialInboxEntries: nextSocialInboxEntries,
+        savedProfiles: nextSavedProfiles,
       );
     }
 
@@ -902,6 +1056,50 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     return normalized;
   }
 
+  List<SocialInboxEntry> _normalizeSocialInboxEntries(
+    List<Pet> pets,
+    List<SocialInboxEntry> entries, {
+    required bool preferMockSeed,
+  }) {
+    if (pets.isEmpty) {
+      return const <SocialInboxEntry>[];
+    }
+
+    final petsById = <String, Pet>{for (final pet in pets) pet.id: pet};
+    final normalized = entries
+        .where((entry) => petsById.containsKey(entry.pet.id))
+        .map((entry) => entry.copyWith(pet: petsById[entry.pet.id]!))
+        .toList();
+
+    if (preferMockSeed && normalized.isEmpty) {
+      return _seedSocialInboxEntriesForCurrentAccount(pets);
+    }
+
+    return normalized;
+  }
+
+  List<SavedProfileEntry> _normalizeSavedProfiles(
+    List<Pet> pets,
+    List<SavedProfileEntry> entries, {
+    required bool preferMockSeed,
+  }) {
+    if (pets.isEmpty) {
+      return const <SavedProfileEntry>[];
+    }
+
+    final petsById = <String, Pet>{for (final pet in pets) pet.id: pet};
+    final normalized = entries
+        .where((entry) => petsById.containsKey(entry.pet.id))
+        .map((entry) => entry.copyWith(pet: petsById[entry.pet.id]!))
+        .toList();
+
+    if (preferMockSeed && normalized.isEmpty) {
+      return _seedSavedProfilesForCurrentAccount(pets);
+    }
+
+    return normalized;
+  }
+
   bool _stateWasNormalized(
     PersistedLocalUserState previous,
     PersistedLocalUserState next,
@@ -924,6 +1122,22 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     updatedThreads[threadIndex] = transform(updatedThreads[threadIndex]);
     _userStates[userId] = currentState.copyWith(threads: updatedThreads);
     await _persistUserState(userId);
+  }
+
+  List<SocialInboxEntry> _socialInboxEntriesWithCurrentPets() {
+    final petsById = <String, Pet>{for (final pet in getPets()) pet.id: pet};
+    return _stateForCurrentUser().socialInboxEntries
+        .where((entry) => petsById.containsKey(entry.pet.id))
+        .map((entry) => entry.copyWith(pet: petsById[entry.pet.id]!))
+        .toList();
+  }
+
+  List<SavedProfileEntry> _savedProfilesWithCurrentPets() {
+    final petsById = <String, Pet>{for (final pet in getPets()) pet.id: pet};
+    return _stateForCurrentUser().savedProfiles
+        .where((entry) => petsById.containsKey(entry.pet.id))
+        .map((entry) => entry.copyWith(pet: petsById[entry.pet.id]!))
+        .toList();
   }
 
   PersistedPetQrState _qrStateForPet(Pet pet) {
@@ -1202,6 +1416,17 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       return 0xFFFFF2C6;
     }
     return 0xFFDDF6F6;
+  }
+
+  int _accentColorForInterestType(String interestType) {
+    final normalized = interestType.toLowerCase();
+    if (normalized.contains('cría') || normalized.contains('cria')) {
+      return 0xFFDDF6F6;
+    }
+    if (normalized.contains('supervisado')) {
+      return 0xFFFFE1EA;
+    }
+    return 0xFFFFF2C6;
   }
 
   List<T> _prependUniqueByTitle<T>(

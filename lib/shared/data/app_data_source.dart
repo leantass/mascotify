@@ -31,6 +31,12 @@ abstract class MascotifyDataSource {
   Future<void> addAutomatedReply(String threadId);
   List<SocialInboxEntry> getSocialInboxEntries();
   List<SavedProfileEntry> getSavedProfiles();
+  Future<void> saveProfile(String petId);
+  Future<void> expressInterest({
+    required String petId,
+    required String interestType,
+    required String message,
+  });
 
   List<ProfessionalProfile> getProfessionalProfiles();
   ProfessionalProfile? getCurrentProfessionalProfile();
@@ -192,6 +198,13 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  Future<void> expressInterest({
+    required String petId,
+    required String interestType,
+    required String message,
+  }) async {}
+
+  @override
   SightingLocationReference getSuggestedLocationForPet(Pet pet) {
     return buildSuggestedLocationForPet(pet);
   }
@@ -206,6 +219,9 @@ class MockMascotifyDataSource implements MascotifyDataSource {
 
   @override
   Future<void> addAutomatedReply(String threadId) async {}
+
+  @override
+  Future<void> saveProfile(String petId) async {}
 
   @override
   Future<void> sendMessage(String threadId, String text) async {}
@@ -270,6 +286,22 @@ class AppData {
       source.getSocialInboxEntries();
 
   static List<SavedProfileEntry> get savedProfiles => source.getSavedProfiles();
+
+  static Future<void> saveProfile(String petId) {
+    return source.saveProfile(petId);
+  }
+
+  static Future<void> expressInterest({
+    required String petId,
+    required String interestType,
+    required String message,
+  }) {
+    return source.expressInterest(
+      petId: petId,
+      interestType: interestType,
+      message: message,
+    );
+  }
 
   static List<ProfessionalProfile> get professionalProfiles =>
       source.getProfessionalProfiles();

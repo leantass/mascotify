@@ -184,6 +184,48 @@ class SocialInboxEntry {
   final String status;
   final String message;
   final int accentColorHex;
+
+  SocialInboxEntry copyWith({
+    Pet? pet,
+    String? direction,
+    String? interestType,
+    String? status,
+    String? message,
+    int? accentColorHex,
+  }) {
+    return SocialInboxEntry(
+      pet: pet ?? this.pet,
+      direction: direction ?? this.direction,
+      interestType: interestType ?? this.interestType,
+      status: status ?? this.status,
+      message: message ?? this.message,
+      accentColorHex: accentColorHex ?? this.accentColorHex,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'pet': pet.toJson(),
+      'direction': direction,
+      'interestType': interestType,
+      'status': status,
+      'message': message,
+      'accentColorHex': accentColorHex,
+    };
+  }
+
+  factory SocialInboxEntry.fromJson(Map<String, dynamic> json) {
+    return SocialInboxEntry(
+      pet: Pet.fromJson(
+        Map<String, dynamic>.from(json['pet'] as Map<dynamic, dynamic>),
+      ),
+      direction: json['direction'] as String,
+      interestType: json['interestType'] as String,
+      status: json['status'] as String,
+      message: json['message'] as String,
+      accentColorHex: json['accentColorHex'] as int,
+    );
+  }
 }
 
 class SavedProfileEntry {
@@ -196,4 +238,34 @@ class SavedProfileEntry {
   final Pet pet;
   final String savedAtLabel;
   final String reason;
+
+  SavedProfileEntry copyWith({
+    Pet? pet,
+    String? savedAtLabel,
+    String? reason,
+  }) {
+    return SavedProfileEntry(
+      pet: pet ?? this.pet,
+      savedAtLabel: savedAtLabel ?? this.savedAtLabel,
+      reason: reason ?? this.reason,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'pet': pet.toJson(),
+      'savedAtLabel': savedAtLabel,
+      'reason': reason,
+    };
+  }
+
+  factory SavedProfileEntry.fromJson(Map<String, dynamic> json) {
+    return SavedProfileEntry(
+      pet: Pet.fromJson(
+        Map<String, dynamic>.from(json['pet'] as Map<dynamic, dynamic>),
+      ),
+      savedAtLabel: json['savedAtLabel'] as String,
+      reason: json['reason'] as String,
+    );
+  }
 }

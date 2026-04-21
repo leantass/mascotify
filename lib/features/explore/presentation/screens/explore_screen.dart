@@ -16,6 +16,11 @@ class ExploreScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final pets = AppData.pets;
     final savedProfiles = AppData.savedProfiles;
+    final inboxItems = AppData.socialInboxEntries;
+    final sentCount = inboxItems.where((item) => item.direction == 'Enviado').length;
+    final receivedCount = inboxItems
+        .where((item) => item.direction == 'Recibido')
+        .length;
 
     return Scaffold(
       body: SafeArea(
@@ -25,6 +30,8 @@ class ExploreScreen extends StatelessWidget {
             const _ExploreHero(),
             const SizedBox(height: 16),
             _ConnectionsEntryCard(
+              sentCount: sentCount,
+              receivedCount: receivedCount,
               onOpenInbox: () => Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => const ConnectionsInboxScreen(),
@@ -50,12 +57,19 @@ class ExploreScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
-            ...pets.map(
-              (pet) => Padding(
-                padding: const EdgeInsets.only(bottom: 14),
-                child: _ExplorePetCard(pet: pet),
+            if (pets.isEmpty)
+              const _ExploreEmptyState(
+                title: 'Todavía no hay perfiles para explorar',
+                description:
+                    'Cuando la cuenta tenga mascotas persistidas, esta vista podrá mostrar afinidades, guardados e intereses con más contexto.',
+              )
+            else
+              ...pets.map(
+                (pet) => Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: _ExplorePetCard(pet: pet),
+                ),
               ),
-            ),
             const SizedBox(height: 10),
             Text(
               'Perfiles guardados',
@@ -63,7 +77,7 @@ class ExploreScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Una base mock para volver a perfiles que te interesaron y seguir descubriendo con más calma.',
+              'Una base persistida para volver a perfiles que te interesaron y seguir descubriendo con más calma.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -98,12 +112,19 @@ class ExploreScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            ...savedProfiles.map(
-              (entry) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _SavedProfileCard(entry: entry),
+            if (savedProfiles.isEmpty)
+              const _ExploreEmptyState(
+                title: 'Todavía no guardaste perfiles',
+                description:
+                    'Cuando marques una mascota para revisar después, va a quedar persistida acá dentro de tu cuenta.',
+              )
+            else
+              ...savedProfiles.map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _SavedProfileCard(entry: entry),
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -178,8 +199,14 @@ class _ExploreHero extends StatelessWidget {
 }
 
 class _ConnectionsEntryCard extends StatelessWidget {
-  const _ConnectionsEntryCard({required this.onOpenInbox});
+  const _ConnectionsEntryCard({
+    required this.sentCount,
+    required this.receivedCount,
+    required this.onOpenInbox,
+  });
 
+  final int sentCount;
+  final int receivedCount;
   final VoidCallback onOpenInbox;
 
   @override
@@ -225,13 +252,19 @@ class _ConnectionsEntryCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Row(
-              children: const [
+              children: [
                 Expanded(
-                  child: _MiniMetric(label: 'Recibidos', value: '2 activos'),
+                  child: _MiniMetric(
+                    label: 'Recibidos',
+                    value: '$receivedCount activos',
+                  ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: _MiniMetric(label: 'En seguimiento', value: '1 visto'),
+                  child: _MiniMetric(
+                    label: 'Enviados',
+                    value: '$sentCount activos',
+                  ),
                 ),
               ],
             ),
@@ -371,6 +404,11 @@ class _ExplorePetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentPet = AppData.findPetById(pet.id) ?? pet;
+    final isSaved = AppData.savedProfiles.any(
+      (entry) => entry.pet.id == currentPet.id,
+    );
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -383,7 +421,7 @@ class _ExplorePetCard extends StatelessWidget {
                   width: 70,
                   height: 70,
                   decoration: BoxDecoration(
-                    color: Color(pet.colorHex),
+                    color: Color(currentPet.colorHex),
                     borderRadius: BorderRadius.circular(22),
                   ),
                   child: const Icon(
@@ -401,7 +439,7 @@ class _ExplorePetCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              pet.name,
+                              currentPet.name,
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                           ),
@@ -415,7 +453,7 @@ class _ExplorePetCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
-                              pet.sex,
+                              currentPet.sex,
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
                                     color: AppColors.primaryDeep,
@@ -427,12 +465,12 @@ class _ExplorePetCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${pet.species} • ${pet.breed}',
+                        '${currentPet.species} • ${currentPet.breed}',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        pet.location,
+                        currentPet.location,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.w600,
@@ -444,7 +482,10 @@ class _ExplorePetCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            Text(pet.biography, style: Theme.of(context).textTheme.bodyMedium),
+            Text(
+              currentPet.biography,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
             const SizedBox(height: 14),
             Container(
               width: double.infinity,
@@ -454,7 +495,7 @@ class _ExplorePetCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                pet.socialInterest,
+                currentPet.socialInterest,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textPrimary,
                   height: 1.45,
@@ -470,7 +511,7 @@ class _ExplorePetCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                pet.matchingPreferences.matchSummary,
+                currentPet.matchingPreferences.matchSummary,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textPrimary,
                   height: 1.45,
@@ -481,7 +522,7 @@ class _ExplorePetCard extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: pet.personalityTags
+              children: currentPet.personalityTags
                   .map((tag) => _TagChip(label: tag))
                   .toList(),
             ),
@@ -489,7 +530,7 @@ class _ExplorePetCard extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: pet.matchingPreferences.compatibilitySignals
+              children: currentPet.matchingPreferences.compatibilitySignals
                   .take(3)
                   .map((item) => _AffinityChip(label: item))
                   .toList(),
@@ -500,14 +541,14 @@ class _ExplorePetCard extends StatelessWidget {
                 Expanded(
                   child: _MetaTile(
                     label: 'Ritmo',
-                    value: pet.matchingPreferences.rhythmLabel,
+                    value: currentPet.matchingPreferences.rhythmLabel,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: _MetaTile(
                     label: 'Afinidad',
-                    value: pet.matchingPreferences.preferredBondType,
+                    value: currentPet.matchingPreferences.preferredBondType,
                   ),
                 ),
               ],
@@ -521,7 +562,7 @@ class _ExplorePetCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                pet.matchingPreferences.suggestedApproach,
+                currentPet.matchingPreferences.suggestedApproach,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textPrimary,
                   height: 1.45,
@@ -535,7 +576,7 @@ class _ExplorePetCard extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => ExpressInterestScreen(pet: pet),
+                        builder: (_) => ExpressInterestScreen(pet: currentPet),
                       ),
                     ),
                     child: const Text('Me interesa'),
@@ -546,7 +587,7 @@ class _ExplorePetCard extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => PetPublicProfileScreen(pet: pet),
+                        builder: (_) => PetPublicProfileScreen(pet: currentPet),
                       ),
                     ),
                     child: const Text('Ver perfil'),
@@ -555,8 +596,12 @@ class _ExplorePetCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => _showSavedProfileDialog(context, pet),
-                    child: const Text('Guardar'),
+                    onPressed: () async {
+                      await AppData.saveProfile(currentPet.id);
+                      if (!context.mounted) return;
+                      await _showSavedProfileDialog(context, currentPet);
+                    },
+                    child: Text(isSaved ? 'Guardado' : 'Guardar'),
                   ),
                 ),
               ],
@@ -575,7 +620,7 @@ class _SavedProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pet = entry.pet;
+    final pet = AppData.findPetById(entry.pet.id) ?? entry.pet;
 
     return Card(
       child: Padding(
@@ -943,7 +988,7 @@ Future<void> _showSavedProfileDialog(BuildContext context, Pet pet) async {
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Text(
-                  'Esta acción sigue siendo mock, pero ya evita un CTA muerto y refuerza la lógica de discovery progresivo dentro de Mascotify.',
+                  'Este guardado ya queda persistido dentro de tu cuenta y refuerza una lógica de discovery progresivo más real dentro de Mascotify.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textPrimary,
                     height: 1.5,
@@ -964,4 +1009,41 @@ Future<void> _showSavedProfileDialog(BuildContext context, Pet pet) async {
       );
     },
   );
+}
+
+class _ExploreEmptyState extends StatelessWidget {
+  const _ExploreEmptyState({
+    required this.title,
+    required this.description,
+  });
+
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 6),
+          Text(
+            description,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              height: 1.45,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

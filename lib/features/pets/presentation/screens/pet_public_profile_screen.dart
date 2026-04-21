@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../theme/app_colors.dart';
 import 'express_interest_screen.dart';
@@ -11,6 +12,7 @@ class PetPublicProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pet = AppData.findPetById(this.pet.id) ?? this.pet;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -309,6 +311,8 @@ class PetPublicProfileScreen extends StatelessWidget {
   }
 
   Future<void> _showSavedProfileDialog(BuildContext context) async {
+    await AppData.saveProfile(pet.id);
+    if (!context.mounted) return;
     await showDialog<void>(
       context: context,
       builder: (context) {
@@ -351,7 +355,7 @@ class PetPublicProfileScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
-                    'Este guardado representa favoritos mock para descubrimiento progresivo: revisar afinidades, comparar perfiles y retomar conexiones cuando quieras.',
+                    'Este guardado ya queda persistido dentro de tu cuenta para revisar afinidades, comparar perfiles y retomar conexiones cuando quieras.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       height: 1.5,
@@ -445,7 +449,7 @@ class PetPublicProfileScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
-                    'Este flujo es mock y representa cómo Mascotify podría distribuir perfiles de mascotas de forma clara, social y confiable.',
+                    'Este flujo representa cómo Mascotify puede distribuir perfiles de mascotas de forma clara, social y confiable.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       height: 1.5,

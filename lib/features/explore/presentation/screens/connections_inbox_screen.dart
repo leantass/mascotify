@@ -26,7 +26,7 @@ class ConnectionsInboxScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: [
-            const _InboxHero(),
+            _InboxHero(totalItems: inboxItems.length),
             const SizedBox(height: 20),
             _InboxSection(
               title: 'Intereses recibidos',
@@ -49,11 +49,12 @@ class ConnectionsInboxScreen extends StatelessWidget {
 }
 
 class _InboxHero extends StatelessWidget {
-  const _InboxHero();
+  const _InboxHero({required this.totalItems});
+
+  final int totalItems;
 
   @override
   Widget build(BuildContext context) {
-    final totalItems = AppData.messageThreads.length;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -94,7 +95,7 @@ class _InboxHero extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Esta bandeja mock conecta intereses, afinidades y mensajería para que la transición hacia una conversación se sienta natural y ordenada.',
+            'Esta bandeja conecta intereses, afinidades y mensajería para que la transición hacia una conversación se sienta natural y ordenada.',
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
@@ -156,12 +157,18 @@ class _InboxSection extends StatelessWidget {
             const SizedBox(height: 8),
             Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 16),
-            ...items.map(
-              (item) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _InboxCard(item: item),
+            if (items.isEmpty)
+              const _InboxEmptyState(
+                description:
+                    'Todavía no hay señales persistidas en esta bandeja para la cuenta activa.',
+              )
+            else
+              ...items.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _InboxCard(item: item),
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -313,7 +320,7 @@ class _InboxCard extends StatelessWidget {
             ),
             child: Text(
               hasThread
-                  ? 'Esta afinidad ya dio paso a una conversación mock. Si entrás al chat, el contexto del interés se mantiene visible.'
+                  ? 'Esta afinidad ya dio paso a una conversación persistida. Si entrás al chat, el contexto del interés se mantiene visible.'
                   : 'Todavía no hay chat abierto, pero la transición natural sería llevar esta afinidad a la mensajería cuando tenga sentido.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textPrimary,
@@ -532,6 +539,32 @@ class _InboxPill extends StatelessWidget {
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           color: textColor,
           fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _InboxEmptyState extends StatelessWidget {
+  const _InboxEmptyState({required this.description});
+
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Text(
+        description,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          height: 1.45,
         ),
       ),
     );

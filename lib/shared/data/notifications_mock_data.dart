@@ -10,15 +10,17 @@ List<EcosystemNotification> buildMockNotifications([
   List<Pet>? sourcePets,
   List<MessageThread>? sourceThreads,
   SightingLocationReference Function(Pet pet)? locationResolver,
+  List<SocialInboxEntry>? sourceInboxItems,
+  List<SavedProfileEntry>? sourceSavedProfiles,
 ]) {
   final pets = _resolveNotificationPets(sourcePets);
   if (pets.isEmpty) {
     return const <EcosystemNotification>[];
   }
 
-  final inboxItems = buildMockSocialInboxEntries(pets);
+  final inboxItems = sourceInboxItems ?? buildMockSocialInboxEntries(pets);
   final threads = sourceThreads ?? buildMockMessageThreads(pets);
-  final savedProfiles = buildMockSavedProfiles(pets);
+  final savedProfiles = sourceSavedProfiles ?? buildMockSavedProfiles(pets);
   final featuredContent = professionalLibraryContents.first;
   final notifications = <EcosystemNotification>[];
 
