@@ -34,272 +34,264 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final thread = _thread;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Conversación')),
+      appBar: AppBar(title: const Text('Conversacion')),
       body: SafeArea(
         child: ResponsivePageBody(
-          maxWidth: 920,
-          child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color(thread.accentColorHex),
-                      AppColors.surface,
-                      AppColors.primarySoft,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Column(
+          maxWidth: 1160,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 980;
+
+              if (!isWide) {
+                return Column(
+                  children: [
+                    Expanded(
+                      child: _buildConversationPane(
+                        context,
+                        thread,
+                        includeSummary: true,
+                      ),
+                    ),
+                    _buildComposerPanel(context, thread, compact: true),
+                  ],
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 56,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.78),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: const Icon(
-                            Icons.forum_rounded,
-                            color: AppColors.textPrimary,
-                          ),
+                    SizedBox(
+                      width: 320,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _ThreadSummaryCard(thread: thread),
+                            const SizedBox(height: 12),
+                            _ContextSummaryCard(thread: thread),
+                          ],
                         ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                thread.ownerName,
-                                style: textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                thread.relatedLabel,
-                                style: textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        _StatusPill(
-                          label: thread.status,
-                          backgroundColor: Colors.white,
-                          textColor: AppColors.textPrimary,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _InfoPill(
-                          label: thread.connectionType,
-                          backgroundColor: Colors.white,
-                        ),
-                        _InfoPill(
-                          label: thread.stageLabel,
-                          backgroundColor: AppColors.surfaceAlt,
-                        ),
-                        _InfoPill(
-                          label: thread.entryPointLabel,
-                          backgroundColor: Colors.white.withValues(alpha: 0.72),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      thread.summary,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textPrimary,
-                        height: 1.45,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.72),
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Próximo paso sugerido',
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w700,
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: _buildConversationPane(
+                                context,
+                                thread,
+                                includeSummary: false,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            thread.nextStepLabel,
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textPrimary,
-                              height: 1.45,
-                            ),
-                          ),
-                        ],
+                            _buildComposerPanel(context, thread, compact: false),
+                          ],
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConversationPane(
+    BuildContext context,
+    MessageThread thread, {
+    required bool includeSummary,
+  }) {
+    return Column(
+      children: [
+        if (includeSummary) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+            child: _ThreadSummaryCard(thread: thread),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            child: _ContextSummaryCard(thread: thread),
+          ),
+        ] else
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+            child: _ConversationHeaderBar(thread: thread),
+          ),
+        Expanded(
+          child: Container(
+            width: double.infinity,
+            margin: EdgeInsets.fromLTRB(20, includeSummary ? 0 : 0, 20, 16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            decoration: BoxDecoration(
+              color: includeSummary ? AppColors.surface : AppColors.surfaceAlt,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: AppColors.border),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: thread.contextTags
-                      .map(
-                        (tag) => _ContextChip(
-                          label: tag,
-                          backgroundColor: AppColors.surfaceAlt,
-                        ),
-                      )
-                      .toList(),
+            child: ListView.builder(
+              itemCount: thread.messages.length,
+              itemBuilder: (context, index) {
+                final message = thread.messages[index];
+                return _MessageBubble(
+                  message: message,
+                  accentColor: Color(thread.accentColorHex),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildComposerPanel(
+    BuildContext context,
+    MessageThread thread, {
+    required bool compact,
+  }) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.border)),
+        borderRadius: compact
+            ? BorderRadius.zero
+            : const BorderRadius.vertical(bottom: Radius.circular(30)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Respuestas rapidas mock',
+            style: textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: thread.autoReplies
+                .take(3)
+                .map(
+                  (reply) => ActionChip(
+                    backgroundColor: AppColors.surfaceAlt,
+                    label: Text(reply),
+                    onPressed: () {
+                      setState(() {
+                        _messageController.text = reply;
+                        _messageController.selection = TextSelection.collapsed(
+                          offset: reply.length,
+                        );
+                      });
+                    },
+                  ),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 12),
+          if (_isSimulatingReply)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceAlt,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Text(
+                '${thread.ownerName} esta escribiendo una respuesta mock...',
+                style: textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
                 ),
               ),
             ),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
-                itemCount: thread.messages.length,
-                itemBuilder: (context, index) {
-                  final message = thread.messages[index];
-                  return _MessageBubble(
-                    message: message,
-                    accentColor: Color(thread.accentColorHex),
-                  );
-                },
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceAlt,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Text(
+              'Esta mensajeria mantiene el contexto del interes original y simula un intercambio seguro entre familias dentro de Mascotify.',
+              style: textTheme.bodyMedium?.copyWith(
+                color: AppColors.textPrimary,
+                height: 1.45,
               ),
             ),
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                border: Border(top: BorderSide(color: AppColors.border)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Respuestas rápidas mock',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w700,
+          ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final stackComposer = compact || constraints.maxWidth < 560;
+
+              if (stackComposer) {
+                return Column(
+                  children: [
+                    TextField(
+                      controller: _messageController,
+                      decoration: const InputDecoration(
+                        hintText: 'Escribir mensaje dentro de Mascotify',
+                      ),
+                      minLines: 1,
+                      maxLines: 4,
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: thread.autoReplies
-                          .take(3)
-                          .map(
-                            (reply) => Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: ActionChip(
-                                backgroundColor: AppColors.surfaceAlt,
-                                label: Text(reply),
-                                onPressed: () {
-                                  setState(() {
-                                    _messageController.text = reply;
-                                    _messageController.selection =
-                                        TextSelection.collapsed(
-                                          offset: reply.length,
-                                        );
-                                  });
-                                },
-                              ),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  if (_isSimulatingReply)
-                    Container(
+                    const SizedBox(height: 10),
+                    SizedBox(
                       width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceAlt,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Text(
-                        '${thread.ownerName} está escribiendo una respuesta mock...',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: _sendMessage,
+                        child: const Text('Enviar'),
                       ),
                     ),
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceAlt,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Text(
-                      'Esta mensajería mantiene el contexto del interés original y simula un intercambio seguro entre familias dentro de Mascotify.',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textPrimary,
-                        height: 1.45,
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: const InputDecoration(
+                        hintText: 'Escribir mensaje dentro de Mascotify',
                       ),
+                      minLines: 1,
+                      maxLines: 4,
                     ),
                   ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _messageController,
-                          decoration: const InputDecoration(
-                            hintText: 'Escribir mensaje dentro de Mascotify',
-                          ),
-                          minLines: 1,
-                          maxLines: 4,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      SizedBox(
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: _sendMessage,
-                          child: const Text('Enviar'),
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: _sendMessage,
+                      child: const Text('Enviar'),
+                    ),
                   ),
                 ],
-              ),
-            ),
-          ],
+              );
+            },
           ),
-        ),
+        ],
       ),
     );
   }
@@ -337,6 +329,222 @@ class _ConversationScreenState extends State<ConversationScreen> {
   }
 }
 
+class _ThreadSummaryCard extends StatelessWidget {
+  const _ThreadSummaryCard({required this.thread});
+
+  final MessageThread thread;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(thread.accentColorHex),
+            AppColors.surface,
+            AppColors.primarySoft,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.78),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Icon(
+                  Icons.forum_rounded,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      thread.ownerName,
+                      style: textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      thread.relatedLabel,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _StatusPill(
+                label: thread.status,
+                backgroundColor: Colors.white,
+                textColor: AppColors.textPrimary,
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _InfoPill(
+                label: thread.connectionType,
+                backgroundColor: Colors.white,
+              ),
+              _InfoPill(
+                label: thread.stageLabel,
+                backgroundColor: AppColors.surfaceAlt,
+              ),
+              _InfoPill(
+                label: thread.entryPointLabel,
+                backgroundColor: Colors.white.withValues(alpha: 0.72),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            thread.summary,
+            style: textTheme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.72),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Proximo paso sugerido',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  thread.nextStepLabel,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContextSummaryCard extends StatelessWidget {
+  const _ContextSummaryCard({required this.thread});
+
+  final MessageThread thread;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Contexto asociado',
+            style: textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: thread.contextTags
+                .map(
+                  (tag) => _ContextChip(
+                    label: tag,
+                    backgroundColor: Colors.white,
+                  ),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'En browser, este bloque queda visible para no perder el hilo del interes original mientras lees o escribis mensajes.',
+            style: textTheme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              height: 1.45,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConversationHeaderBar extends StatelessWidget {
+  const _ConversationHeaderBar({required this.thread});
+
+  final MessageThread thread;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              '${thread.ownerName} - ${thread.lastActivity}',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+          const SizedBox(width: 12),
+          _StatusPill(
+            label: thread.status,
+            backgroundColor: Colors.white,
+            textColor: AppColors.textPrimary,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _MessageBubble extends StatelessWidget {
   const _MessageBubble({required this.message, required this.accentColor});
 
@@ -351,34 +559,41 @@ class _MessageBubble extends StatelessWidget {
     final bubbleColor = message.isMine ? AppColors.dark : accentColor;
     final textColor = message.isMine ? Colors.white : AppColors.textPrimary;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Column(
-        crossAxisAlignment: alignment,
-        children: [
-          Container(
-            constraints: const BoxConstraints(maxWidth: 300),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: bubbleColor,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              message.text,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: textColor, height: 1.45),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxBubbleWidth = constraints.maxWidth >= 760 ? 420.0 : 300.0;
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Column(
+            crossAxisAlignment: alignment,
+            children: [
+              Container(
+                constraints: BoxConstraints(maxWidth: maxBubbleWidth),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: bubbleColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  message.text,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: textColor,
+                    height: 1.45,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                message.timestamp,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            message.timestamp,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
