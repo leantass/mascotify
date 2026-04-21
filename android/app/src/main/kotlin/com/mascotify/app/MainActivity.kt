@@ -1,4 +1,4 @@
-package com.example.mascotify
+package com.mascotify.app
 
 import io.flutter.embedding.android.FlutterActivity
 
