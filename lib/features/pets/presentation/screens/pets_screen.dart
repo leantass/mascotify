@@ -66,19 +66,24 @@ class _PetsScreenState extends State<PetsScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            ...pets.map(
-              (pet) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: PetCard(
-                  pet: pet,
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => PetDetailScreen(pet: pet),
-                    ),
-                  ),
-                ),
+            if (pets.isEmpty)
+              _PetsEmptyState(onAddPet: _handleAddPet)
+            else
+              ResponsiveWrapGrid(
+                minItemWidth: 340,
+                children: pets
+                    .map(
+                      (pet) => PetCard(
+                        pet: pet,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => PetDetailScreen(pet: pet),
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
-            ),
             ],
           ),
         ),
@@ -101,6 +106,48 @@ class _PetsScreenState extends State<PetsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${createdPet.name} ya quedó guardado localmente.'),
+      ),
+    );
+  }
+}
+
+class _PetsEmptyState extends StatelessWidget {
+  const _PetsEmptyState({required this.onAddPet});
+
+  final VoidCallback onAddPet;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Todavía no hay mascotas cargadas',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'En browser conviene dejar clara la base operativa desde el primer paso: cuando agregues tu primera mascota, esta vista va a crecer con identidad, QR, matching y seguimiento persistido.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: onAddPet,
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Agregar primera mascota'),
+          ),
+        ],
       ),
     );
   }

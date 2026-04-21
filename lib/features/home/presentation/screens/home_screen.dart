@@ -455,57 +455,37 @@ class _EcosystemOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return ResponsiveWrapGrid(
+      minItemWidth: 240,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _OverviewTile(
-                title: 'QR activo',
-                value: '$activeQrCount listos',
-                description:
-                    '$pendingQrCount perfiles todavía esperan activación.',
-                color: AppColors.supportSoft,
-                icon: Icons.qr_code_2_rounded,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _OverviewTile(
-                title: 'Mensajes',
-                value: '$unreadMessageCount chats',
-                description:
-                    '$awaitingReplyCount conversaciones esperan tu lectura.',
-                color: AppColors.accentSoft,
-                icon: Icons.chat_bubble_outline_rounded,
-              ),
-            ),
-          ],
+        _OverviewTile(
+          title: 'QR activo',
+          value: '$activeQrCount listos',
+          description: '$pendingQrCount perfiles todavía esperan activación.',
+          color: AppColors.supportSoft,
+          icon: Icons.qr_code_2_rounded,
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _OverviewTile(
-                title: 'Matching',
-                value: '$socialPendingCount señales',
-                description:
-                    'Intereses, afinidades y conexiones con más contexto.',
-                color: AppColors.primarySoft,
-                icon: Icons.favorite_border_rounded,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _OverviewTile(
-                title: 'Guardados',
-                value: '$savedProfilesCount perfiles',
-                description: 'Perfiles listos para retomar y comparar mejor.',
-                color: AppColors.surface,
-                icon: Icons.bookmark_outline_rounded,
-              ),
-            ),
-          ],
+        _OverviewTile(
+          title: 'Mensajes',
+          value: '$unreadMessageCount chats',
+          description:
+              '$awaitingReplyCount conversaciones esperan tu lectura.',
+          color: AppColors.accentSoft,
+          icon: Icons.chat_bubble_outline_rounded,
+        ),
+        _OverviewTile(
+          title: 'Matching',
+          value: '$socialPendingCount señales',
+          description: 'Intereses, afinidades y conexiones con más contexto.',
+          color: AppColors.primarySoft,
+          icon: Icons.favorite_border_rounded,
+        ),
+        _OverviewTile(
+          title: 'Guardados',
+          value: '$savedProfilesCount perfiles',
+          description: 'Perfiles listos para retomar y comparar mejor.',
+          color: AppColors.surface,
+          icon: Icons.bookmark_outline_rounded,
         ),
       ],
     );
@@ -531,74 +511,55 @@ class _PrimaryAccessGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return ResponsiveWrapGrid(
+      minItemWidth: 330,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _PrimaryAccessCard(
-                title: 'Mascotas',
-                subtitle: primaryPet == null
-                    ? 'Agrega tu primera mascota desde la sección Mascotas para destrabar identidad, QR, matching y ficha completa.'
-                    : 'Entrá a identidad, salud, matching y ficha completa desde una sola base.',
-                icon: Icons.pets_rounded,
-                tone: AppColors.primarySoft,
-                onTap: primaryPet == null
-                    ? null
-                    : () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => PetDetailScreen(pet: primaryPet!),
-                          ),
-                        ),
-                highlight: primaryPet == null
-                    ? 'Todavía no hay perfiles cargados en esta cuenta.'
-                    : null,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _PrimaryAccessCard(
-                title: 'Mensajería',
-                subtitle:
-                    'Conversaciones nacidas desde intereses, afinidades y próximos pasos.',
-                icon: Icons.forum_rounded,
-                tone: AppColors.accentSoft,
-                onTap: onOpenMessages,
-              ),
-            ),
-          ],
+        _PrimaryAccessCard(
+          title: 'Mascotas',
+          subtitle: primaryPet == null
+              ? 'Agrega tu primera mascota desde la sección Mascotas para destrabar identidad, QR, matching y ficha completa.'
+              : 'Entrá a identidad, salud, matching y ficha completa desde una sola base.',
+          icon: Icons.pets_rounded,
+          tone: AppColors.primarySoft,
+          onTap: primaryPet == null
+              ? null
+              : () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => PetDetailScreen(pet: primaryPet!),
+                    ),
+                  ),
+          highlight: primaryPet == null
+              ? 'Todavía no hay perfiles cargados en esta cuenta.'
+              : null,
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _PrimaryAccessCard(
-                title: 'QR y seguridad',
-                subtitle: qrFocusPet == null
-                    ? 'Se habilita cuando tengas al menos una mascota cargada en la base local.'
-                    : 'Historial, contacto protegido y trazabilidad ya visible dentro del producto.',
-                icon: Icons.qr_code_2_rounded,
-                tone: AppColors.supportSoft,
-                onTap: onOpenQr,
-                highlight: qrFocusPet == null
-                    ? 'La cuenta nueva ya no hereda QR ajenos.'
-                    : null,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _PrimaryAccessCard(
-                title: 'Matching social',
-                subtitle:
-                    'Intereses, perfiles guardados y afinidades mejor explicadas.',
-                icon: Icons.favorite_border_rounded,
-                tone: AppColors.surface,
-                onTap: onOpenSocial,
-              ),
-            ),
-          ],
+        _PrimaryAccessCard(
+          title: 'Mensajería',
+          subtitle:
+              'Conversaciones nacidas desde intereses, afinidades y próximos pasos.',
+          icon: Icons.forum_rounded,
+          tone: AppColors.accentSoft,
+          onTap: onOpenMessages,
         ),
-        const SizedBox(height: 12),
+        _PrimaryAccessCard(
+          title: 'QR y seguridad',
+          subtitle: qrFocusPet == null
+              ? 'Se habilita cuando tengas al menos una mascota cargada en la base local.'
+              : 'Historial, contacto protegido y trazabilidad ya visible dentro del producto.',
+          icon: Icons.qr_code_2_rounded,
+          tone: AppColors.supportSoft,
+          onTap: onOpenQr,
+          highlight: qrFocusPet == null
+              ? 'La cuenta nueva ya no hereda QR ajenos.'
+              : null,
+        ),
+        _PrimaryAccessCard(
+          title: 'Matching social',
+          subtitle:
+              'Intereses, perfiles guardados y afinidades mejor explicadas.',
+          icon: Icons.favorite_border_rounded,
+          tone: AppColors.surface,
+          onTap: onOpenSocial,
+        ),
         _PrimaryAccessCard(
           title: 'Profesionales y contenido',
           subtitle:

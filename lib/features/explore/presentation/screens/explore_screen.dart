@@ -31,20 +31,26 @@ class ExploreScreen extends StatelessWidget {
             children: [
             const _ExploreHero(),
             const SizedBox(height: 16),
-            _ConnectionsEntryCard(
-              sentCount: sentCount,
-              receivedCount: receivedCount,
-              onOpenInbox: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const ConnectionsInboxScreen(),
+            ResponsiveWrapGrid(
+              minItemWidth: 340,
+              children: [
+                _ConnectionsEntryCard(
+                  sentCount: sentCount,
+                  receivedCount: receivedCount,
+                  onOpenInbox: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ConnectionsInboxScreen(),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _ProfessionalsEntryCard(
-              onOpenProfessionals: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ProfessionalsScreen()),
-              ),
+                _ProfessionalsEntryCard(
+                  onOpenProfessionals: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ProfessionalsScreen(),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
             const _ExploreFilters(),
@@ -66,11 +72,13 @@ class ExploreScreen extends StatelessWidget {
                     'Cuando la cuenta tenga mascotas persistidas, esta vista podrá mostrar afinidades, guardados e intereses con más contexto.',
               )
             else
-              ...pets.map(
-                (pet) => Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: _ExplorePetCard(pet: pet),
-                ),
+              ResponsiveWrapGrid(
+                minItemWidth: 360,
+                spacing: 14,
+                runSpacing: 14,
+                children: pets
+                    .map((pet) => _ExplorePetCard(pet: pet))
+                    .toList(),
               ),
             const SizedBox(height: 10),
             Text(
@@ -121,11 +129,11 @@ class ExploreScreen extends StatelessWidget {
                     'Cuando marques una mascota para revisar después, va a quedar persistida acá dentro de tu cuenta.',
               )
             else
-              ...savedProfiles.map(
-                (entry) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _SavedProfileCard(entry: entry),
-                ),
+              ResponsiveWrapGrid(
+                minItemWidth: 360,
+                children: savedProfiles
+                    .map((entry) => _SavedProfileCard(entry: entry))
+                    .toList(),
               ),
             ],
           ),

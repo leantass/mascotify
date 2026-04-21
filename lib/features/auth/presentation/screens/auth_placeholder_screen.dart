@@ -45,45 +45,99 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
   Widget build(BuildContext context) {
     final auth = AuthScope.of(context);
     final options = AppData.experienceOptions;
+    final formCard = _isLoginMode
+        ? _buildLoginCard(context, auth)
+        : _buildRegisterCard(context, auth, options);
 
     return Scaffold(
       body: SafeArea(
         child: ResponsivePageBody(
           maxWidth: 860,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-            children: [
-              _HeroCard(isBusy: auth.isBusy),
-              const SizedBox(height: 20),
-              _ModeSwitcher(
-                isLoginMode: _isLoginMode,
-                onModeChanged: (value) {
-                  setState(() {
-                    _isLoginMode = value;
-                    _errorMessage = null;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              if (_isLoginMode)
-                _buildLoginCard(context, auth)
-              else
-                _buildRegisterCard(context, auth, options),
-              const SizedBox(height: 16),
-              _DemoCard(
-                isBusy: auth.isBusy,
-                onFamilyDemo: () => _submitDemoLogin(
-                  email: LocalAuthSeedData.familyEmail,
-                ),
-                onProfessionalDemo: () => _submitDemoLogin(
-                  email: LocalAuthSeedData.professionalEmail,
-                ),
-              ),
-              if (_errorMessage != null) ...[
-                const SizedBox(height: 16),
-                _ErrorCard(message: _errorMessage!),
-              ],
-            ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 760;
+
+              if (!isWide) {
+                return ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+                  children: [
+                    _HeroCard(isBusy: auth.isBusy),
+                    const SizedBox(height: 20),
+                    _ModeSwitcher(
+                      isLoginMode: _isLoginMode,
+                      onModeChanged: (value) {
+                        setState(() {
+                          _isLoginMode = value;
+                          _errorMessage = null;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    formCard,
+                    const SizedBox(height: 16),
+                    _DemoCard(
+                      isBusy: auth.isBusy,
+                      onFamilyDemo: () => _submitDemoLogin(
+                        email: LocalAuthSeedData.familyEmail,
+                      ),
+                      onProfessionalDemo: () => _submitDemoLogin(
+                        email: LocalAuthSeedData.professionalEmail,
+                      ),
+                    ),
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: 16),
+                      _ErrorCard(message: _errorMessage!),
+                    ],
+                  ],
+                );
+              }
+
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _HeroCard(isBusy: auth.isBusy),
+                            const SizedBox(height: 20),
+                            _ModeSwitcher(
+                              isLoginMode: _isLoginMode,
+                              onModeChanged: (value) {
+                                setState(() {
+                                  _isLoginMode = value;
+                                  _errorMessage = null;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            _DemoCard(
+                              isBusy: auth.isBusy,
+                              onFamilyDemo: () => _submitDemoLogin(
+                                email: LocalAuthSeedData.familyEmail,
+                              ),
+                              onProfessionalDemo: () => _submitDemoLogin(
+                                email: LocalAuthSeedData.professionalEmail,
+                              ),
+                            ),
+                            if (_errorMessage != null) ...[
+                              const SizedBox(height: 16),
+                              _ErrorCard(message: _errorMessage!),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(flex: 4, child: formCard),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
