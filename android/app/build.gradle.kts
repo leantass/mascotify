@@ -9,11 +9,24 @@ plugins {
 
 val releaseSigningProperties = Properties()
 val releaseSigningFile = rootProject.file("key.properties")
-val hasReleaseSigning = releaseSigningFile.exists()
+val requiredReleaseSigningKeys = listOf(
+    "storeFile",
+    "storePassword",
+    "keyAlias",
+    "keyPassword",
+)
 
-if (hasReleaseSigning) {
+if (releaseSigningFile.exists()) {
     releaseSigningFile.inputStream().use(releaseSigningProperties::load)
 }
+
+val releaseStoreFilePath = releaseSigningProperties.getProperty("storeFile")
+val hasReleaseSigning = releaseSigningFile.exists() &&
+    requiredReleaseSigningKeys.all { key ->
+        !releaseSigningProperties.getProperty(key).isNullOrBlank()
+    } &&
+    !releaseStoreFilePath.isNullOrBlank() &&
+    rootProject.file(releaseStoreFilePath).exists()
 
 android {
     namespace = "com.mascotify.app"
@@ -32,10 +45,10 @@ android {
     signingConfigs {
         if (hasReleaseSigning) {
             create("release") {
-                val storeFilePath = releaseSigningProperties.getProperty("storeFile")
-                if (!storeFilePath.isNullOrBlank()) {
-                    storeFile = rootProject.file(storeFilePath)
-                }
+                // Release signing is only enabled when the local keystore and
+                // every required property exist. This avoids treating a half
+                // configured key.properties as if release signing were ready.
+                storeFile = rootProject.file(releaseStoreFilePath)
                 storePassword = releaseSigningProperties.getProperty("storePassword")
                 keyAlias = releaseSigningProperties.getProperty("keyAlias")
                 keyPassword = releaseSigningProperties.getProperty("keyPassword")
