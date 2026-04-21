@@ -30,18 +30,24 @@ class ConnectionsInboxScreen extends StatelessWidget {
           children: [
             _InboxHero(totalItems: inboxItems.length),
             const SizedBox(height: 20),
-            _InboxSection(
-              title: 'Intereses recibidos',
-              subtitle:
-                  'Señales que llegaron a tu ecosistema social para revisar con calma.',
-              items: receivedItems,
-            ),
-            const SizedBox(height: 16),
-            _InboxSection(
-              title: 'Intereses enviados',
-              subtitle:
-                  'Conexiones que iniciaste y que pueden evolucionar dentro de Mascotify.',
-              items: sentItems,
+            ResponsiveSplitColumns(
+              breakpoint: 980,
+              leadingChildren: [
+                _InboxSection(
+                  title: 'Intereses recibidos',
+                  subtitle:
+                      'Señales que llegaron a tu ecosistema social para revisar con calma.',
+                  items: receivedItems,
+                ),
+              ],
+              trailingChildren: [
+                _InboxSection(
+                  title: 'Intereses enviados',
+                  subtitle:
+                      'Conexiones que iniciaste y que pueden evolucionar dentro de Mascotify.',
+                  items: sentItems,
+                ),
+              ],
             ),
           ],
           ),
@@ -104,20 +110,16 @@ class _InboxHero extends StatelessWidget {
             ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 18),
-          Row(
+          ResponsiveWrapGrid(
+            minItemWidth: 200,
             children: [
-              Expanded(
-                child: _HeroMetric(
-                  label: 'Actividad',
-                  value: '$totalItems movimientos',
-                ),
+              _HeroMetric(
+                label: 'Actividad',
+                value: '$totalItems movimientos',
               ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: _HeroMetric(
-                  label: 'Estado',
-                  value: 'Seguimiento activo',
-                ),
+              const _HeroMetric(
+                label: 'Estado',
+                value: 'Seguimiento activo',
               ),
             ],
           ),
@@ -166,11 +168,9 @@ class _InboxSection extends StatelessWidget {
                     'Todavía no hay señales persistidas en esta bandeja para la cuenta activa.',
               )
             else
-              ...items.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _InboxCard(item: item),
-                ),
+              ResponsiveWrapGrid(
+                minItemWidth: 340,
+                children: items.map((item) => _InboxCard(item: item)).toList(),
               ),
           ],
         ),
@@ -252,18 +252,16 @@ class _InboxCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          Row(
+          ResponsiveWrapGrid(
+            minItemWidth: 180,
+            spacing: 10,
+            runSpacing: 10,
             children: [
-              Expanded(
-                child: _MiniInfoTile(
-                  label: 'Interés',
-                  value: item.interestType,
-                ),
+              _MiniInfoTile(
+                label: 'Interes',
+                value: item.interestType,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _MiniInfoTile(label: 'Estado', value: item.status),
-              ),
+              _MiniInfoTile(label: 'Estado', value: item.status),
             ],
           ),
           if (hasThread) ...[
@@ -332,46 +330,41 @@ class _InboxCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          Row(
+          ResponsiveWrapGrid(
+            minItemWidth: 180,
+            spacing: 10,
+            runSpacing: 10,
             children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => PetPublicProfileScreen(pet: item.pet),
-                    ),
+              OutlinedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => PetPublicProfileScreen(pet: item.pet),
                   ),
-                  child: const Text('Ver perfil'),
                 ),
+                child: const Text('Ver perfil'),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (!hasThread) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const MessagesInboxScreen(),
-                        ),
-                      );
-                      return;
-                    }
-
+              ElevatedButton(
+                onPressed: () {
+                  if (!hasThread) {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => ConversationScreen(thread: thread),
+                        builder: (_) => const MessagesInboxScreen(),
                       ),
                     );
-                  },
-                  child: Text(hasThread ? 'Abrir chat' : 'Ir a mensajes'),
-                ),
+                    return;
+                  }
+
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ConversationScreen(thread: thread),
+                    ),
+                  );
+                },
+                child: Text(hasThread ? 'Abrir chat' : 'Ir a mensajes'),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => _showReviewLaterDialog(context, item: item),
-                  child: const Text('Revisar luego'),
-                ),
+              OutlinedButton(
+                onPressed: () => _showReviewLaterDialog(context, item: item),
+                child: const Text('Revisar luego'),
               ),
             ],
           ),

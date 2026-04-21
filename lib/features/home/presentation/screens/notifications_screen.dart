@@ -99,33 +99,51 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ],
                     ),
                     const SizedBox(height: 18),
-                    _NotificationsSection(
-                      title: 'Nuevo y pendiente',
-                      subtitle: unreadNotifications.isEmpty
-                          ? 'No hay novedades sin leer.'
-                          : 'Lo que conviene abrir primero dentro del ecosistema.',
-                      notifications: unreadNotifications,
-                      isUnread: _isUnread,
-                      onOpen: (notification) =>
-                          _openAndMarkRead(context, notification),
-                      onMarkAsRead: _markAsRead,
-                      onDismiss: _dismiss,
-                    ),
-                    if (_showHistory) ...[
-                      const SizedBox(height: 16),
+                    if (_showHistory)
+                      ResponsiveSplitColumns(
+                        breakpoint: 980,
+                        leadingChildren: [
+                          _NotificationsSection(
+                            title: 'Nuevo y pendiente',
+                            subtitle: unreadNotifications.isEmpty
+                                ? 'No hay novedades sin leer.'
+                                : 'Lo que conviene abrir primero dentro del ecosistema.',
+                            notifications: unreadNotifications,
+                            isUnread: _isUnread,
+                            onOpen: (notification) =>
+                                _openAndMarkRead(context, notification),
+                            onMarkAsRead: _markAsRead,
+                            onDismiss: _dismiss,
+                          ),
+                        ],
+                        trailingChildren: [
+                          _NotificationsSection(
+                            title: 'Historial reciente',
+                            subtitle: historyNotifications.isEmpty
+                                ? 'No hay actividad archivada por ahora.'
+                                : 'Actividad util, ya vista o mas informativa.',
+                            notifications: historyNotifications,
+                            isUnread: _isUnread,
+                            onOpen: (notification) =>
+                                _openAndMarkRead(context, notification),
+                            onMarkAsRead: _markAsRead,
+                            onDismiss: _dismiss,
+                          ),
+                        ],
+                      )
+                    else
                       _NotificationsSection(
-                        title: 'Historial reciente',
-                        subtitle: historyNotifications.isEmpty
-                            ? 'No hay actividad archivada por ahora.'
-                            : 'Actividad útil, ya vista o más informativa.',
-                        notifications: historyNotifications,
+                        title: 'Nuevo y pendiente',
+                        subtitle: unreadNotifications.isEmpty
+                            ? 'No hay novedades sin leer.'
+                            : 'Lo que conviene abrir primero dentro del ecosistema.',
+                        notifications: unreadNotifications,
                         isUnread: _isUnread,
                         onOpen: (notification) =>
                             _openAndMarkRead(context, notification),
                         onMarkAsRead: _markAsRead,
                         onDismiss: _dismiss,
                       ),
-                    ],
                   ],
                 ),
               ),
@@ -339,27 +357,20 @@ class _NotificationsHero extends StatelessWidget {
             ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 18),
-          Row(
+          ResponsiveWrapGrid(
+            minItemWidth: 180,
             children: [
-              Expanded(
-                child: _HeroMetric(
-                  label: 'Sin leer',
-                  value: '$unreadCount activos',
-                ),
+              _HeroMetric(
+                label: 'Sin leer',
+                value: '$unreadCount activos',
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _HeroMetric(
-                  label: 'Atención',
-                  value: '$attentionCount primero',
-                ),
+              _HeroMetric(
+                label: 'Atencion',
+                value: '$attentionCount primero',
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _HeroMetric(
-                  label: 'Historial',
-                  value: '$historyCount vistos',
-                ),
+              _HeroMetric(
+                label: 'Historial',
+                value: '$historyCount vistos',
               ),
             ],
           ),

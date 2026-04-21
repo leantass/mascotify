@@ -51,11 +51,11 @@ class MessagesInboxScreen extends StatelessWidget {
                     if (threads.isEmpty)
                       const _InboxEmptyState()
                     else
-                      ...threads.map(
-                        (thread) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _ThreadCard(thread: thread),
-                        ),
+                      ResponsiveWrapGrid(
+                        minItemWidth: 360,
+                        children: threads
+                            .map((thread) => _ThreadCard(thread: thread))
+                            .toList(),
                       ),
                   ],
                 ),
@@ -127,27 +127,20 @@ class _MessagesHero extends StatelessWidget {
             ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 18),
-          Row(
+          ResponsiveWrapGrid(
+            minItemWidth: 180,
             children: [
-              Expanded(
-                child: _HeroMetric(
-                  label: 'Chats',
-                  value: '$totalThreads activos',
-                ),
+              _HeroMetric(
+                label: 'Chats',
+                value: '$totalThreads activos',
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _HeroMetric(
-                  label: 'Sin leer',
-                  value: '$unreadCount por abrir',
-                ),
+              _HeroMetric(
+                label: 'Sin leer',
+                value: '$unreadCount por abrir',
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _HeroMetric(
-                  label: 'Tu turno',
-                  value: '$awaitingMyReplyCount en seguimiento',
-                ),
+              _HeroMetric(
+                label: 'Tu turno',
+                value: '$awaitingMyReplyCount en seguimiento',
               ),
             ],
           ),
@@ -288,46 +281,42 @@ class _ThreadCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          Row(
+          ResponsiveWrapGrid(
+            minItemWidth: 220,
+            spacing: 10,
+            runSpacing: 10,
             children: [
-              Expanded(
-                child: _MiniDetailTile(
-                  label: 'Siguiente paso',
-                  value: thread.nextStepLabel,
-                ),
+              _MiniDetailTile(
+                label: 'Siguiente paso',
+                value: thread.nextStepLabel,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _MiniDetailTile(
-                  label: 'Contexto',
-                  value: thread.contextTags.join(' • '),
-                ),
+              _MiniDetailTile(
+                label: 'Contexto',
+                value: thread.contextTags.join(' • '),
               ),
             ],
           ),
           const SizedBox(height: 14),
-          Row(
+          ResponsiveWrapGrid(
+            minItemWidth: 180,
+            spacing: 10,
+            runSpacing: 10,
             children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => PetPublicProfileScreen(pet: currentPet),
-                    ),
+              OutlinedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => PetPublicProfileScreen(pet: currentPet),
                   ),
-                  child: const Text('Ver perfil'),
                 ),
+                child: const Text('Ver perfil'),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ConversationScreen(thread: thread),
-                    ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ConversationScreen(thread: thread),
                   ),
-                  child: const Text('Abrir chat'),
                 ),
+                child: const Text('Abrir chat'),
               ),
             ],
           ),

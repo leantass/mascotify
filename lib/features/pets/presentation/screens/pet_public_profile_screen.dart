@@ -96,17 +96,13 @@ class PetPublicProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 18),
-                  Row(
+                  ResponsiveWrapGrid(
+                    minItemWidth: 180,
                     children: [
-                      Expanded(
-                        child: _PublicStat(label: 'Sexo', value: pet.sex),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _PublicStat(
-                          label: 'Busca cría',
-                          value: pet.seekingBreeding ? 'Sí' : 'No',
-                        ),
+                      _PublicStat(label: 'Sexo', value: pet.sex),
+                      _PublicStat(
+                        label: 'Busca cria',
+                        value: pet.seekingBreeding ? 'Si' : 'No',
                       ),
                     ],
                   ),
@@ -130,20 +126,16 @@ class PetPublicProfileScreen extends StatelessWidget {
                       style: textTheme.bodyMedium?.copyWith(height: 1.45),
                     ),
                     const SizedBox(height: 16),
-                    Row(
+                    ResponsiveWrapGrid(
+                      minItemWidth: 180,
                       children: [
-                        Expanded(
-                          child: _PublicStat(
-                            label: 'Ritmo',
-                            value: pet.matchingPreferences.rhythmLabel,
-                          ),
+                        _PublicStat(
+                          label: 'Ritmo',
+                          value: pet.matchingPreferences.rhythmLabel,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _PublicStat(
-                            label: 'Radio',
-                            value: pet.matchingPreferences.locationRadiusLabel,
-                          ),
+                        _PublicStat(
+                          label: 'Radio',
+                          value: pet.matchingPreferences.locationRadiusLabel,
                         ),
                       ],
                     ),
@@ -246,14 +238,12 @@ class PetPublicProfileScreen extends StatelessWidget {
                     const SizedBox(height: 18),
                     Text('Momentos destacados', style: textTheme.titleMedium),
                     const SizedBox(height: 12),
-                    Column(
+                    ResponsiveWrapGrid(
+                      minItemWidth: 220,
+                      spacing: 10,
+                      runSpacing: 10,
                       children: pet.featuredMoments
-                          .map(
-                            (moment) => Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: _FeaturedMomentTile(label: moment),
-                            ),
-                          )
+                          .map((moment) => _FeaturedMomentTile(label: moment))
                           .toList(),
                     ),
                   ],
@@ -274,31 +264,26 @@ class PetPublicProfileScreen extends StatelessWidget {
                       style: textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
-                    Row(
+                    ResponsiveWrapGrid(
+                      minItemWidth: 180,
+                      spacing: 10,
+                      runSpacing: 10,
                       children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => ExpressInterestScreen(pet: pet),
-                              ),
+                        ElevatedButton(
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ExpressInterestScreen(pet: pet),
                             ),
-                            child: const Text('Me interesa'),
                           ),
+                          child: const Text('Me interesa'),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => _showSavedProfileDialog(context),
-                            child: const Text('Guardar perfil'),
-                          ),
+                        OutlinedButton(
+                          onPressed: () => _showSavedProfileDialog(context),
+                          child: const Text('Guardar perfil'),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => _showShareProfileDialog(context),
-                            child: const Text('Compartir'),
-                          ),
+                        OutlinedButton(
+                          onPressed: () => _showShareProfileDialog(context),
+                          child: const Text('Compartir'),
                         ),
                       ],
                     ),

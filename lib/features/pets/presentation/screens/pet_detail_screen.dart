@@ -163,15 +163,11 @@ class _PetHeroCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          Row(
+          ResponsiveWrapGrid(
+            minItemWidth: 180,
             children: [
-              Expanded(
-                child: _HeroStat(label: 'Edad', value: pet.ageLabel),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _HeroStat(label: 'Perfil', value: pet.profileId),
-              ),
+              _HeroStat(label: 'Edad', value: pet.ageLabel),
+              _HeroStat(label: 'Perfil', value: pet.profileId),
             ],
           ),
         ],
@@ -200,22 +196,18 @@ class _AboutPetCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(pet.biography, style: Theme.of(context).textTheme.bodyLarge),
             const SizedBox(height: 16),
-            Row(
+            ResponsiveWrapGrid(
+              minItemWidth: 220,
               children: [
-                Expanded(
-                  child: _SocialStatTile(
-                    label: 'Sexo',
-                    value: pet.sex,
-                    color: AppColors.primarySoft,
-                  ),
+                _SocialStatTile(
+                  label: 'Sexo',
+                  value: pet.sex,
+                  color: AppColors.primarySoft,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _SocialStatTile(
-                    label: 'Ubicación',
-                    value: pet.location,
-                    color: AppColors.surfaceAlt,
-                  ),
+                _SocialStatTile(
+                  label: 'Ubicacion',
+                  value: pet.location,
+                  color: AppColors.surfaceAlt,
                 ),
               ],
             ),
@@ -291,20 +283,12 @@ class _SocialProfileCard extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
-            Row(
+            ResponsiveWrapGrid(
+              minItemWidth: 180,
+              spacing: 10,
+              runSpacing: 10,
               children: pet.featuredMoments
-                  .asMap()
-                  .entries
-                  .map(
-                    (entry) => Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          right: entry.key == 2 ? 0 : 10,
-                        ),
-                        child: _MomentCard(label: entry.value),
-                      ),
-                    ),
-                  )
+                  .map((moment) => _MomentCard(label: moment))
                   .toList(),
             ),
           ],
@@ -428,22 +412,20 @@ class _MatchingProfileCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
+            ResponsiveWrapGrid(
+              minItemWidth: 220,
+              spacing: 10,
+              runSpacing: 10,
               children: [
-                Expanded(
-                  child: _MatchingKeyTile(
-                    label: 'Radio ideal',
-                    value: preferences.locationRadiusLabel,
-                    color: AppColors.surfaceAlt,
-                  ),
+                _MatchingKeyTile(
+                  label: 'Radio ideal',
+                  value: preferences.locationRadiusLabel,
+                  color: AppColors.surfaceAlt,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _MatchingKeyTile(
-                    label: 'Ritmo sugerido',
-                    value: preferences.rhythmLabel,
-                    color: AppColors.primarySoft,
-                  ),
+                _MatchingKeyTile(
+                  label: 'Ritmo sugerido',
+                  value: preferences.rhythmLabel,
+                  color: AppColors.primarySoft,
                 ),
               ],
             ),
@@ -606,24 +588,20 @@ class _QrExperienceCard extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Row(
+                  ResponsiveWrapGrid(
+                    minItemWidth: 180,
                     children: [
-                      Expanded(
-                        child: _QrStatusBadge(
-                          label: currentPet.qrEnabled ? 'Activo' : 'Pendiente',
-                          backgroundColor: currentPet.qrEnabled
-                              ? AppColors.primarySoft
-                              : AppColors.supportSoft,
-                          textColor: AppColors.textPrimary,
-                        ),
+                      _QrStatusBadge(
+                        label: currentPet.qrEnabled ? 'Activo' : 'Pendiente',
+                        backgroundColor: currentPet.qrEnabled
+                            ? AppColors.primarySoft
+                            : AppColors.supportSoft,
+                        textColor: AppColors.textPrimary,
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _QrStatusBadge(
-                          label: currentPet.qrLastUpdate,
-                          backgroundColor: Colors.white.withValues(alpha: 0.10),
-                          textColor: Colors.white,
-                        ),
+                      _QrStatusBadge(
+                        label: currentPet.qrLastUpdate,
+                        backgroundColor: Colors.white.withValues(alpha: 0.10),
+                        textColor: Colors.white,
                       ),
                     ],
                   ),
@@ -658,38 +636,34 @@ class _QrExperienceCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
+            ResponsiveWrapGrid(
+              minItemWidth: 220,
+              spacing: 10,
+              runSpacing: 10,
               children: [
-                Expanded(
-                  child: _TrackingMetricTile(
-                    label: 'Estado actual',
-                    value: snapshot.currentStatus,
-                  ),
+                _TrackingMetricTile(
+                  label: 'Estado actual',
+                  value: snapshot.currentStatus,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _TrackingMetricTile(
-                    label: 'Actividad QR',
-                    value: snapshot.totalScansLabel,
-                  ),
+                _TrackingMetricTile(
+                  label: 'Actividad QR',
+                  value: snapshot.totalScansLabel,
                 ),
               ],
             ),
             const SizedBox(height: 10),
-            Row(
+            ResponsiveWrapGrid(
+              minItemWidth: 220,
+              spacing: 10,
+              runSpacing: 10,
               children: [
-                Expanded(
-                  child: _TrackingMetricTile(
-                    label: 'Última señal',
-                    value: snapshot.lastSignalLabel,
-                  ),
+                _TrackingMetricTile(
+                  label: 'Ultima senal',
+                  value: snapshot.lastSignalLabel,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _TrackingMetricTile(
-                    label: 'Contacto protegido',
-                    value: snapshot.protectedContactState,
-                  ),
+                _TrackingMetricTile(
+                  label: 'Contacto protegido',
+                  value: snapshot.protectedContactState,
                 ),
               ],
             ),
@@ -744,28 +718,26 @@ class _QrExperienceCard extends StatelessWidget {
                 ),
               ),
             const SizedBox(height: 16),
-            Row(
+            ResponsiveWrapGrid(
+              minItemWidth: 190,
+              spacing: 12,
+              runSpacing: 12,
               children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => QrTraceabilityScreen(pet: currentPet),
-                      ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => QrTraceabilityScreen(pet: currentPet),
                     ),
-                    child: const Text('Ver historial QR'),
                   ),
+                  child: const Text('Ver historial QR'),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => QrScanPreviewScreen(pet: currentPet),
-                      ),
+                OutlinedButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => QrScanPreviewScreen(pet: currentPet),
                     ),
-                    child: const Text('Probar escaneo'),
                   ),
+                  child: const Text('Probar escaneo'),
                 ),
               ],
             ),

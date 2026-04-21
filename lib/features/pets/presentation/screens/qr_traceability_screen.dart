@@ -76,20 +76,16 @@ class QrTraceabilityScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 18),
-                  Row(
+                  ResponsiveWrapGrid(
+                    minItemWidth: 220,
                     children: [
-                      Expanded(
-                        child: _MetricTile(
-                          label: 'Estado',
-                          value: status.currentStatus,
-                        ),
+                      _MetricTile(
+                        label: 'Estado',
+                        value: status.currentStatus,
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _MetricTile(
-                          label: 'Actividad',
-                          value: status.activeWindowLabel,
-                        ),
+                      _MetricTile(
+                        label: 'Actividad',
+                        value: status.activeWindowLabel,
                       ),
                     ],
                   ),
@@ -128,20 +124,18 @@ class QrTraceabilityScreen extends StatelessWidget {
                       value: status.lastSignalDetail,
                     ),
                     const SizedBox(height: 10),
-                    Row(
+                    ResponsiveWrapGrid(
+                      minItemWidth: 220,
+                      spacing: 10,
+                      runSpacing: 10,
                       children: [
-                        Expanded(
-                          child: _InfoTile(
-                            label: 'Actividad QR',
-                            value: status.totalScansLabel,
-                          ),
+                        _InfoTile(
+                          label: 'Actividad QR',
+                          value: status.totalScansLabel,
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: _InfoTile(
-                            label: 'Ventana activa',
-                            value: status.activeWindowLabel,
-                          ),
+                        _InfoTile(
+                          label: 'Ventana activa',
+                          value: status.activeWindowLabel,
                         ),
                       ],
                     ),
