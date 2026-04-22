@@ -52,30 +52,29 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
     return Scaffold(
       body: SafeArea(
         child: ResponsivePageBody(
-          maxWidth: 860,
+          maxWidth: 1040,
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 760;
+              final isWide = constraints.maxWidth >= 780;
 
               if (!isWide) {
                 return ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
                   children: [
-                    _HeroCard(isBusy: auth.isBusy),
+                    const _HeroPanel(),
                     const SizedBox(height: 20),
                     _ModeSwitcher(
                       isLoginMode: _isLoginMode,
-                      onModeChanged: (value) {
-                        setState(() {
-                          _isLoginMode = value;
-                          _errorMessage = null;
-                        });
-                      },
+                      onModeChanged: _setMode,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     formCard,
-                    const SizedBox(height: 16),
-                    _DemoCard(
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: 14),
+                      _ErrorCard(message: _errorMessage!),
+                    ],
+                    const SizedBox(height: 18),
+                    _DemoPanel(
                       isBusy: auth.isBusy,
                       onFamilyDemo: () => _submitDemoLogin(
                         email: LocalAuthSeedData.familyEmail,
@@ -84,38 +83,38 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                         email: LocalAuthSeedData.professionalEmail,
                       ),
                     ),
-                    if (_errorMessage != null) ...[
-                      const SizedBox(height: 16),
-                      _ErrorCard(message: _errorMessage!),
-                    ],
                   ],
                 );
               }
 
               return ListView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const Expanded(
+                        flex: 6,
+                        child: _HeroPanel(),
+                      ),
+                      const SizedBox(width: 28),
                       Expanded(
                         flex: 5,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _HeroCard(isBusy: auth.isBusy),
-                            const SizedBox(height: 20),
                             _ModeSwitcher(
                               isLoginMode: _isLoginMode,
-                              onModeChanged: (value) {
-                                setState(() {
-                                  _isLoginMode = value;
-                                  _errorMessage = null;
-                                });
-                              },
+                              onModeChanged: _setMode,
                             ),
                             const SizedBox(height: 16),
-                            _DemoCard(
+                            formCard,
+                            if (_errorMessage != null) ...[
+                              const SizedBox(height: 14),
+                              _ErrorCard(message: _errorMessage!),
+                            ],
+                            const SizedBox(height: 18),
+                            _DemoPanel(
                               isBusy: auth.isBusy,
                               onFamilyDemo: () => _submitDemoLogin(
                                 email: LocalAuthSeedData.familyEmail,
@@ -124,15 +123,9 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                                 email: LocalAuthSeedData.professionalEmail,
                               ),
                             ),
-                            if (_errorMessage != null) ...[
-                              const SizedBox(height: 16),
-                              _ErrorCard(message: _errorMessage!),
-                            ],
                           ],
                         ),
                       ),
-                      const SizedBox(width: 20),
-                      Expanded(flex: 4, child: formCard),
                     ],
                   ),
                 ],
@@ -148,43 +141,44 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
     BuildContext context,
     AuthSessionController auth,
   ) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Inicia sesion',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Tu sesion queda guardada localmente para que vuelvas a entrar sin perder el perfil activo.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            _AuthField(
-              controller: _loginEmailController,
-              label: 'Email',
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 12),
-            _AuthField(
-              controller: _loginPasswordController,
-              label: 'Contrasena',
-              obscureText: true,
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: auth.isBusy ? null : _submitLogin,
-                child: Text(auth.isBusy ? 'Entrando...' : 'Entrar'),
+    return _FormShell(
+      title: 'Iniciar sesión',
+      description:
+          'Entrá a tu cuenta para continuar con tu experiencia en Mascotify.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _AuthField(
+            controller: _loginEmailController,
+            label: 'Correo electrónico',
+            keyboardType: TextInputType.emailAddress,
+          ),
+          const SizedBox(height: 12),
+          _AuthField(
+            controller: _loginPasswordController,
+            label: 'Contraseña',
+            obscureText: true,
+          ),
+          const SizedBox(height: 10),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: () => _showPasswordHelpDialog(context),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
               ),
+              child: const Text('Olvidé mi contraseña'),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: auth.isBusy ? null : _submitLogin,
+              child: Text(auth.isBusy ? 'Ingresando...' : 'Ingresar'),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -194,67 +188,63 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
     AuthSessionController auth,
     List<ExperienceOption> options,
   ) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Crea tu cuenta base',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'El registro crea una cuenta real local con un perfil inicial y deja lista la sesion persistida.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            _AuthField(controller: _registerNameController, label: 'Nombre'),
-            const SizedBox(height: 12),
-            _AuthField(controller: _registerCityController, label: 'Ciudad'),
-            const SizedBox(height: 12),
-            _AuthField(
-              controller: _registerEmailController,
-              label: 'Email',
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 12),
-            _AuthField(
-              controller: _registerPasswordController,
-              label: 'Contrasena',
-              obscureText: true,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Perfil inicial',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 10),
-            ...options.map(
-              (option) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _ExperienceChoiceCard(
-                  option: option,
-                  isSelected: _registerExperience == option.experience,
-                  onTap: () {
-                    setState(() {
-                      _registerExperience = option.experience;
-                    });
-                  },
-                ),
+    return _FormShell(
+      title: 'Crear cuenta',
+      description:
+          'Registrate para empezar a usar Mascotify y gestionar tu perfil desde web o mobile.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _AuthField(
+            controller: _registerNameController,
+            label: 'Nombre',
+          ),
+          const SizedBox(height: 12),
+          _AuthField(
+            controller: _registerCityController,
+            label: 'Ciudad',
+          ),
+          const SizedBox(height: 12),
+          _AuthField(
+            controller: _registerEmailController,
+            label: 'Correo electrónico',
+            keyboardType: TextInputType.emailAddress,
+          ),
+          const SizedBox(height: 12),
+          _AuthField(
+            controller: _registerPasswordController,
+            label: 'Contraseña',
+            obscureText: true,
+          ),
+          const SizedBox(height: 18),
+          Text(
+            'Elegí tu tipo de cuenta',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 10),
+          ...options.map(
+            (option) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _ExperienceChoiceCard(
+                option: option,
+                isSelected: _registerExperience == option.experience,
+                onTap: () {
+                  setState(() {
+                    _registerExperience = option.experience;
+                  });
+                },
               ),
             ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: auth.isBusy ? null : _submitRegister,
-                child: Text(auth.isBusy ? 'Creando cuenta...' : 'Crear cuenta'),
-              ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: auth.isBusy ? null : _submitRegister,
+              child: Text(auth.isBusy ? 'Creando cuenta...' : 'Crear cuenta'),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -293,17 +283,44 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
     _loginPasswordController.text = LocalAuthSeedData.demoPassword;
     await _submitLogin();
   }
+
+  void _setMode(bool value) {
+    setState(() {
+      _isLoginMode = value;
+      _errorMessage = null;
+    });
+  }
+
+  void _showPasswordHelpDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Recuperar acceso'),
+          content: const Text(
+            'Si necesitás ayuda para volver a entrar, podés usar el canal de soporte disponible junto con Mascotify.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Entendido'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
-class _HeroCard extends StatelessWidget {
-  const _HeroCard({required this.isBusy});
-
-  final bool isBusy;
+class _HeroPanel extends StatelessWidget {
+  const _HeroPanel();
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(26),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -314,7 +331,7 @@ class _HeroCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(30),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
@@ -323,48 +340,125 @@ class _HeroCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.dark,
+              color: Colors.white.withValues(alpha: 0.74),
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              isBusy ? 'Auth trabajando' : 'Auth real local',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white,
+              'Mascotify',
+              style: textTheme.bodyMedium?.copyWith(
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 22),
           Text(
-            'Entrar de forma real, simple y local.',
-            style: Theme.of(context).textTheme.headlineLarge,
+            'Gestioná todo lo importante de tu mascota desde un solo lugar',
+            style: textTheme.headlineLarge,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Text(
-            'Mascotify ahora arranca con registro, login, sesion persistida y recuperacion del perfil activo sin romper la arquitectura de cuenta base + perfiles.',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            'Gestioná perfiles, seguimiento, contactos y herramientas útiles desde una experiencia simple, clara y disponible desde cualquier dispositivo.',
+            style: textTheme.bodyLarge?.copyWith(
               color: AppColors.textSecondary,
+              height: 1.5,
             ),
           ),
-          const SizedBox(height: 18),
-          Row(
-            children: const [
-              Expanded(
-                child: _HeroMetric(
-                  label: 'Cuenta base',
-                  value: 'Una sola identidad',
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: _HeroMetric(
-                  label: 'Sesion',
-                  value: 'Persistida localmente',
-                ),
-              ),
-            ],
+          const SizedBox(height: 24),
+          const _BenefitItem(
+            title: 'Perfiles y datos siempre a mano',
+          ),
+          const SizedBox(height: 14),
+          const _BenefitItem(
+            title: 'Seguimiento y trazabilidad en un solo espacio',
+          ),
+          const SizedBox(height: 14),
+          const _BenefitItem(
+            title: 'Acceso simple desde cualquier dispositivo',
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _BenefitItem extends StatelessWidget {
+  const _BenefitItem({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.82),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: const Icon(
+            Icons.check_rounded,
+            color: AppColors.textPrimary,
+            size: 18,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FormShell extends StatelessWidget {
+  const _FormShell({
+    required this.title,
+    required this.description,
+    required this.child,
+  });
+
+  final String title;
+  final String description;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(22),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 18),
+            child,
+          ],
+        ),
       ),
     );
   }
@@ -392,7 +486,7 @@ class _ModeSwitcher extends StatelessWidget {
         children: [
           Expanded(
             child: _ModeButton(
-              label: 'Login',
+              label: 'Iniciar sesión',
               isActive: isLoginMode,
               onTap: () => onModeChanged(true),
             ),
@@ -400,7 +494,7 @@ class _ModeSwitcher extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: _ModeButton(
-              label: 'Registro',
+              label: 'Crear cuenta',
               isActive: !isLoginMode,
               onTap: () => onModeChanged(false),
             ),
@@ -447,8 +541,8 @@ class _ModeButton extends StatelessWidget {
   }
 }
 
-class _DemoCard extends StatelessWidget {
-  const _DemoCard({
+class _DemoPanel extends StatelessWidget {
+  const _DemoPanel({
     required this.isBusy,
     required this.onFamilyDemo,
     required this.onProfessionalDemo,
@@ -460,41 +554,76 @@ class _DemoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Transición clara desde la base demo',
-              style: Theme.of(context).textTheme.titleLarge,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Acceso demo',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Si querés recorrer la experiencia antes de usar una cuenta propia, podés entrar con uno de estos perfiles de prueba.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.45,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Mantuvimos dos cuentas demo reales y persistidas para entrar rápido sin volver al bypass inicial. Ambas usan la contraseña ${LocalAuthSeedData.demoPassword}.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: isBusy ? null : onFamilyDemo,
-                    child: const Text('Demo familia'),
+          ),
+          const SizedBox(height: 14),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final stackButtons = constraints.maxWidth < 340;
+
+              if (stackButtons) {
+                return Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: isBusy ? null : onFamilyDemo,
+                        child: const Text('Demo familia'),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: isBusy ? null : onProfessionalDemo,
+                        child: const Text('Demo profesional'),
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: isBusy ? null : onFamilyDemo,
+                      child: const Text('Demo familia'),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: isBusy ? null : onProfessionalDemo,
-                    child: const Text('Demo profesional'),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: isBusy ? null : onProfessionalDemo,
+                      child: const Text('Demo profesional'),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
+                ],
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -519,7 +648,8 @@ class _ExperienceChoiceCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? Color(option.accentColorHex) : AppColors.surfaceAlt,
+          color:
+              isSelected ? Color(option.accentColorHex) : AppColors.surfaceAlt,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: isSelected ? AppColors.dark : AppColors.border,
@@ -534,6 +664,7 @@ class _ExperienceChoiceCard extends StatelessWidget {
               option.subtitle,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
+                height: 1.4,
               ),
             ),
           ],
@@ -588,44 +719,13 @@ class _AuthField extends StatelessWidget {
       keyboardType: keyboardType,
       obscureText: obscureText,
       decoration: InputDecoration(
-        labelText: label,
+        hintText: label,
         filled: true,
         fillColor: AppColors.surfaceAlt,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
           borderSide: BorderSide.none,
         ),
-      ),
-    );
-  }
-}
-
-class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textMuted,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(value, style: Theme.of(context).textTheme.titleMedium),
-        ],
       ),
     );
   }
