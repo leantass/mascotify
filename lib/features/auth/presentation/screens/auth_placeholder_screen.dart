@@ -75,6 +75,7 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                     ],
                     const SizedBox(height: 18),
                     _DemoPanel(
+                      isCompact: false,
                       isBusy: auth.isBusy,
                       onFamilyDemo: () => _submitDemoLogin(
                         email: LocalAuthSeedData.familyEmail,
@@ -87,48 +88,85 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                 );
               }
 
-              return ListView(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Expanded(
-                        flex: 6,
-                        child: _HeroPanel(),
-                      ),
-                      const SizedBox(width: 28),
-                      Expanded(
-                        flex: 5,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _ModeSwitcher(
-                              isLoginMode: _isLoginMode,
-                              onModeChanged: _setMode,
-                            ),
-                            const SizedBox(height: 16),
-                            formCard,
-                            if (_errorMessage != null) ...[
-                              const SizedBox(height: 14),
-                              _ErrorCard(message: _errorMessage!),
+              return SizedBox(
+                height: constraints.maxHeight,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 20,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 992),
+                      child: LayoutBuilder(
+                        builder: (context, contentConstraints) {
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Expanded(
+                                flex: 6,
+                                child: _HeroPanel(),
+                              ),
+                              const SizedBox(width: 24),
+                              Expanded(
+                                flex: 5,
+                                child: SizedBox(
+                                  height: contentConstraints.maxHeight,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _ModeSwitcher(
+                                        isLoginMode: _isLoginMode,
+                                        onModeChanged: _setMode,
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Expanded(
+                                        child: SingleChildScrollView(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              formCard,
+                                              if (_errorMessage != null) ...[
+                                                const SizedBox(height: 10),
+                                                _ErrorCard(
+                                                  message: _errorMessage!,
+                                                ),
+                                              ],
+                                              const SizedBox(height: 10),
+                                              _DemoPanel(
+                                                isCompact: true,
+                                                isBusy: auth.isBusy,
+                                                onFamilyDemo: () =>
+                                                    _submitDemoLogin(
+                                                      email:
+                                                          LocalAuthSeedData
+                                                              .familyEmail,
+                                                    ),
+                                                onProfessionalDemo: () =>
+                                                    _submitDemoLogin(
+                                                      email:
+                                                          LocalAuthSeedData
+                                                              .professionalEmail,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ],
-                            const SizedBox(height: 18),
-                            _DemoPanel(
-                              isBusy: auth.isBusy,
-                              onFamilyDemo: () => _submitDemoLogin(
-                                email: LocalAuthSeedData.familyEmail,
-                              ),
-                              onProfessionalDemo: () => _submitDemoLogin(
-                                email: LocalAuthSeedData.professionalEmail,
-                              ),
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    ],
+                    ),
                   ),
-                ],
+                ),
               );
             },
           ),
@@ -159,7 +197,7 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
             label: 'Contraseña',
             obscureText: true,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton(
@@ -199,29 +237,29 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
             controller: _registerNameController,
             label: 'Nombre',
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           _AuthField(
             controller: _registerCityController,
             label: 'Ciudad',
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           _AuthField(
             controller: _registerEmailController,
             label: 'Correo electrónico',
             keyboardType: TextInputType.emailAddress,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           _AuthField(
             controller: _registerPasswordController,
             label: 'Contraseña',
             obscureText: true,
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 14),
           Text(
             'Elegí tu tipo de cuenta',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           ...options.map(
             (option) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
@@ -236,7 +274,7 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -320,7 +358,7 @@ class _HeroPanel extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.all(26),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -331,7 +369,7 @@ class _HeroPanel extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(28),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
@@ -439,7 +477,7 @@ class _FormShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(22),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -455,7 +493,7 @@ class _FormShell extends StatelessWidget {
                 height: 1.45,
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             child,
           ],
         ),
@@ -543,20 +581,36 @@ class _ModeButton extends StatelessWidget {
 
 class _DemoPanel extends StatelessWidget {
   const _DemoPanel({
+    this.isCompact = false,
     required this.isBusy,
     required this.onFamilyDemo,
     required this.onProfessionalDemo,
   });
 
+  final bool isCompact;
   final bool isBusy;
   final VoidCallback onFamilyDemo;
   final VoidCallback onProfessionalDemo;
 
   @override
   Widget build(BuildContext context) {
+    final demoButtonStyle = OutlinedButton.styleFrom(
+      padding: EdgeInsets.symmetric(vertical: isCompact ? 2 : 8),
+      minimumSize: Size(0, isCompact ? 30 : 40),
+      tapTargetSize: isCompact
+          ? MaterialTapTargetSize.shrinkWrap
+          : MaterialTapTargetSize.padded,
+      visualDensity: isCompact
+          ? const VisualDensity(horizontal: -1, vertical: -4)
+          : VisualDensity.standard,
+    );
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 8 : 14,
+        vertical: isCompact ? 6 : 14,
+      ),
       decoration: BoxDecoration(
         color: AppColors.surfaceAlt,
         borderRadius: BorderRadius.circular(24),
@@ -569,18 +623,18 @@ class _DemoPanel extends StatelessWidget {
             'Acceso demo',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: isCompact ? 3 : 8),
           Text(
             'Si querés recorrer la experiencia antes de usar una cuenta propia, podés entrar con uno de estos perfiles de prueba.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppColors.textSecondary,
-              height: 1.45,
+              height: isCompact ? 1.2 : 1.45,
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: isCompact ? 5 : 12),
           LayoutBuilder(
             builder: (context, constraints) {
-              final stackButtons = constraints.maxWidth < 340;
+              final stackButtons = !isCompact && constraints.maxWidth < 340;
 
               if (stackButtons) {
                 return Column(
@@ -588,14 +642,16 @@ class _DemoPanel extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(
+                        style: demoButtonStyle,
                         onPressed: isBusy ? null : onFamilyDemo,
                         child: const Text('Demo familia'),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: isCompact ? 4 : 10),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(
+                        style: demoButtonStyle,
                         onPressed: isBusy ? null : onProfessionalDemo,
                         child: const Text('Demo profesional'),
                       ),
@@ -608,13 +664,15 @@ class _DemoPanel extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton(
+                      style: demoButtonStyle,
                       onPressed: isBusy ? null : onFamilyDemo,
                       child: const Text('Demo familia'),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: isCompact ? 4 : 10),
                   Expanded(
                     child: OutlinedButton(
+                      style: demoButtonStyle,
                       onPressed: isBusy ? null : onProfessionalDemo,
                       child: const Text('Demo profesional'),
                     ),
