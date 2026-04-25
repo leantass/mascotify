@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
@@ -16,11 +16,10 @@ class AuthPlaceholderScreen extends StatefulWidget {
 
 class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
   final TextEditingController _loginEmailController = TextEditingController();
-  final TextEditingController _loginPasswordController = TextEditingController();
-  final TextEditingController _registerNameController =
+  final TextEditingController _loginPasswordController =
       TextEditingController();
-  final TextEditingController _registerCityController =
-      TextEditingController();
+  final TextEditingController _registerNameController = TextEditingController();
+  final TextEditingController _registerCityController = TextEditingController();
   final TextEditingController _registerEmailController =
       TextEditingController();
   final TextEditingController _registerPasswordController =
@@ -43,7 +42,6 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = AuthScope.of(context);
     final viewportWidth = MediaQuery.sizeOf(context).width;
     final pageMaxWidth = viewportWidth >= 900
         ? (viewportWidth - 24).clamp(1100.0, 1680.0).toDouble()
@@ -73,10 +71,22 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                       allowsMultiColumnLayout: allowsMultiColumnRegister,
                       isDense: useDenseDesktop,
                     );
+              final animatedFormCard = _AnimatedAuthForm(
+                isLoginMode: _isLoginMode,
+                child: formCard,
+              );
 
               if (!isWide) {
                 final horizontalPadding = isCompact ? 20.0 : 24.0;
                 final sectionSpacing = isCompact ? 18.0 : 20.0;
+                final demoPanel = _DemoPanel(
+                  isBusy: auth.isBusy,
+                  onFamilyDemo: () =>
+                      _submitDemoLogin(email: LocalAuthSeedData.familyEmail),
+                  onProfessionalDemo: () => _submitDemoLogin(
+                    email: LocalAuthSeedData.professionalEmail,
+                  ),
+                );
 
                 return ListView(
                   padding: EdgeInsets.fromLTRB(
@@ -93,21 +103,14 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                       onModeChanged: _setMode,
                     ),
                     const SizedBox(height: 14),
-                    formCard,
+                    animatedFormCard,
+                    const SizedBox(height: 14),
+                    demoPanel,
                     if (_errorMessage != null) ...[
                       const SizedBox(height: 14),
                       _ErrorCard(message: _errorMessage!),
                     ],
                     SizedBox(height: sectionSpacing),
-                    _DemoPanel(
-                      isBusy: auth.isBusy,
-                      onFamilyDemo: () => _submitDemoLogin(
-                        email: LocalAuthSeedData.familyEmail,
-                      ),
-                      onProfessionalDemo: () => _submitDemoLogin(
-                        email: LocalAuthSeedData.professionalEmail,
-                      ),
-                    ),
                   ],
                 );
               }
@@ -115,14 +118,34 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
               final isExtraWide = constraints.maxWidth >= 1440;
               final horizontalPadding = isExtraWide ? 18.0 : 22.0;
               final columnGap = isExtraWide ? 28.0 : 24.0;
-              final heroFlex = isExtraWide ? 4 : 5;
-              final authFlex = isExtraWide ? 7 : 6;
-              final authMaxWidth = isExtraWide ? 920.0 : 820.0;
               final verticalPadding = isExtraWide ? 16.0 : 18.0;
-              final demoGap = isExtraWide ? 8.0 : 10.0;
+              final mediaQuery = MediaQuery.of(context);
+              final fallbackHeight =
+                  mediaQuery.size.height - mediaQuery.padding.vertical;
+              final constrainedHeight =
+                  constraints.hasBoundedHeight && constraints.maxHeight.isFinite
+                  ? constraints.maxHeight
+                  : fallbackHeight;
+              final resolvedPageHeight =
+                  constrainedHeight.isFinite && constrainedHeight > 0
+                  ? constrainedHeight
+                  : fallbackHeight;
+              final pageHeight =
+                  resolvedPageHeight.isFinite && resolvedPageHeight > 0
+                  ? resolvedPageHeight
+                  : 1.0;
+              final demoPanel = _DemoPanel(
+                isDense: true,
+                isBusy: auth.isBusy,
+                onFamilyDemo: () =>
+                    _submitDemoLogin(email: LocalAuthSeedData.familyEmail),
+                onProfessionalDemo: () => _submitDemoLogin(
+                  email: LocalAuthSeedData.professionalEmail,
+                ),
+              );
 
               return SizedBox(
-                height: constraints.maxHeight,
+                height: pageHeight,
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
                     horizontalPadding,
@@ -130,63 +153,35 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                     horizontalPadding,
                     verticalPadding,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Flexible(
-                        fit: FlexFit.loose,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              flex: heroFlex,
-                              child: const _HeroPanel(isDense: true),
-                            ),
-                            SizedBox(width: columnGap),
-                            Expanded(
-                              flex: authFlex,
-                              child: Align(
-                                alignment: Alignment.topRight,
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    maxWidth: authMaxWidth,
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      _ModeSwitcher(
-                                        isDense: true,
-                                        isLoginMode: _isLoginMode,
-                                        onModeChanged: _setMode,
-                                      ),
-                                      const SizedBox(height: 12),
-                                      formCard,
-                                      if (_errorMessage != null) ...[
-                                        const SizedBox(height: 12),
-                                        _ErrorCard(message: _errorMessage!),
-                                      ],
-                                    ],
-                                  ),
-                                ),
+                  child: Center(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Expanded(child: _HeroPanel(isDense: true)),
+                        SizedBox(width: columnGap),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _ModeSwitcher(
+                                isDense: true,
+                                isLoginMode: _isLoginMode,
+                                onModeChanged: _setMode,
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 12),
+                              animatedFormCard,
+                              const SizedBox(height: 12),
+                              demoPanel,
+                              if (_errorMessage != null) ...[
+                                const SizedBox(height: 12),
+                                _ErrorCard(message: _errorMessage!),
+                              ],
+                            ],
+                          ),
                         ),
-                      ),
-                      SizedBox(height: demoGap),
-                      _DemoPanel(
-                        isDense: true,
-                        isBusy: auth.isBusy,
-                        onFamilyDemo: () => _submitDemoLogin(
-                          email: LocalAuthSeedData.familyEmail,
-                        ),
-                        onProfessionalDemo: () => _submitDemoLogin(
-                          email: LocalAuthSeedData.professionalEmail,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -241,8 +236,10 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
           _AuthActionBlock(
             isDense: isDense,
             showAlternative: isDense,
-            googleButtonLabel: 'Iniciar sesión con Google',
-            onGoogleTap: () => _showGoogleAuthPlaceholder(context),
+            googleButtonLabel: 'Google',
+            onGoogleTap: auth.isBusy
+                ? null
+                : () => _submitGoogleAuth(AccountExperience.family),
             primaryButton: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -381,13 +378,15 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                         ),
                       )
                       .toList(),
-              ),
+                ),
               SizedBox(height: isDense ? 6 : 8),
               _AuthActionBlock(
                 isDense: isDense,
                 showAlternative: true,
-                googleButtonLabel: 'Crear con Google',
-                onGoogleTap: () => _showGoogleAuthPlaceholder(context),
+                googleButtonLabel: 'Google',
+                onGoogleTap: auth.isBusy
+                    ? null
+                    : () => _submitGoogleAuth(_registerExperience),
                 primaryButton: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -434,6 +433,18 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
     });
   }
 
+  Future<void> _submitGoogleAuth(AccountExperience fallbackExperience) async {
+    final auth = AuthScope.of(context);
+    final error = await auth.signInWithGoogle(
+      fallbackExperience: fallbackExperience,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _errorMessage = error;
+    });
+  }
+
   Future<void> _submitDemoLogin({required String email}) async {
     _loginEmailController.text = email;
     _loginPasswordController.text = LocalAuthSeedData.demoPassword;
@@ -466,26 +477,6 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
       },
     );
   }
-
-  void _showGoogleAuthPlaceholder(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Próximamente'),
-          content: const Text(
-            'El acceso con Google estará disponible una vez que se complete la integración final del proveedor de autenticación.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Entendido'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
 
 class _AuthActionBlock extends StatelessWidget {
@@ -499,7 +490,7 @@ class _AuthActionBlock extends StatelessWidget {
 
   final Widget primaryButton;
   final String googleButtonLabel;
-  final VoidCallback onGoogleTap;
+  final VoidCallback? onGoogleTap;
   final bool showAlternative;
   final bool isDense;
 
@@ -543,39 +534,26 @@ class _AuthAlternativeSection extends StatelessWidget {
   });
 
   final String buttonLabel;
-  final VoidCallback onGoogleTap;
+  final VoidCallback? onGoogleTap;
 
   @override
   Widget build(BuildContext context) {
     final textStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: AppColors.textSecondary,
-          fontWeight: FontWeight.w500,
-        );
+      color: AppColors.textSecondary,
+      fontWeight: FontWeight.w500,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
           children: [
-            Expanded(
-              child: Divider(
-                color: AppColors.border,
-                thickness: 1,
-              ),
-            ),
+            Expanded(child: Divider(color: AppColors.border, thickness: 1)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text(
-                'o continuar con',
-                style: textStyle,
-              ),
+              child: Text('o continuar con', style: textStyle),
             ),
-            Expanded(
-              child: Divider(
-                color: AppColors.border,
-                thickness: 1,
-              ),
-            ),
+            Expanded(child: Divider(color: AppColors.border, thickness: 1)),
           ],
         ),
         const SizedBox(height: 12),
@@ -597,16 +575,15 @@ class _AuthAlternativeSection extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 26,
-                  height: 26,
+                  width: 30,
+                  height: 30,
+                  padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
                     border: Border.all(color: AppColors.border),
                   ),
-                  child: const Center(
-                    child: _GoogleLogoMark(size: 18),
-                  ),
+                  child: const Center(child: _GoogleLogoMark(size: 16)),
                 ),
                 const SizedBox(width: 10),
                 Flexible(
@@ -616,9 +593,9 @@ class _AuthAlternativeSection extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -637,10 +614,7 @@ class _GoogleLogoMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size.square(size),
-      painter: _GoogleLogoPainter(),
-    );
+    return CustomPaint(size: Size.square(size), painter: _GoogleLogoPainter());
   }
 }
 
@@ -684,13 +658,7 @@ class _GoogleLogoPainter extends CustomPainter {
     canvas.drawLine(horizontalStart, horizontalEnd, paint);
 
     paint.strokeCap = StrokeCap.round;
-    canvas.drawArc(
-      rect,
-      -0.03,
-      0.82,
-      false,
-      paint,
-    );
+    canvas.drawArc(rect, -0.03, 0.82, false, paint);
   }
 
   @override
@@ -729,6 +697,7 @@ class _HeroPanel extends StatelessWidget {
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
@@ -762,9 +731,7 @@ class _HeroPanel extends StatelessWidget {
             ),
           ),
           SizedBox(height: benefitsGap),
-          const _BenefitItem(
-            title: 'Perfiles y datos siempre a mano',
-          ),
+          const _BenefitItem(title: 'Perfiles y datos siempre a mano'),
           SizedBox(height: itemGap),
           const _BenefitItem(
             title: 'Seguimiento y trazabilidad en un solo espacio',
@@ -790,29 +757,26 @@ class _BenefitItem extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 30,
-          height: 30,
+          width: 12,
+          height: 12,
+          margin: const EdgeInsets.only(top: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.82),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: const Icon(
-            Icons.check_rounded,
-            color: AppColors.textPrimary,
-            size: 18,
+            color: AppColors.accent,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.82),
+              width: 2,
+            ),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 3),
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
-                height: 1.35,
-              ),
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+              height: 1.35,
             ),
           ),
         ),
@@ -846,10 +810,7 @@ class _FormShell extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text(title, style: Theme.of(context).textTheme.titleLarge),
             SizedBox(height: descriptionGap),
             Text(
               description,
@@ -867,6 +828,27 @@ class _FormShell extends StatelessWidget {
   }
 }
 
+class _AnimatedAuthForm extends StatelessWidget {
+  const _AnimatedAuthForm({required this.isLoginMode, required this.child});
+
+  final bool isLoginMode;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 280),
+      reverseDuration: const Duration(milliseconds: 220),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (child, animation) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+      child: KeyedSubtree(key: ValueKey<bool>(isLoginMode), child: child),
+    );
+  }
+}
+
 class _ModeSwitcher extends StatelessWidget {
   const _ModeSwitcher({
     required this.isLoginMode,
@@ -880,71 +862,113 @@ class _ModeSwitcher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(isDense ? 4 : 6),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _ModeButton(
-              label: 'Iniciar sesión',
-              isActive: isLoginMode,
-              isDense: isDense,
-              onTap: () => onModeChanged(true),
-            ),
-          ),
-          SizedBox(width: isDense ? 6 : 8),
-          Expanded(
-            child: _ModeButton(
-              label: 'Crear cuenta',
-              isActive: !isLoginMode,
-              isDense: isDense,
-              onTap: () => onModeChanged(false),
-            ),
-          ),
-        ],
+    return SizedBox(
+      width: double.infinity,
+      height: isDense ? 48 : 58,
+      child: Container(
+        padding: EdgeInsets.all(isDense ? 4 : 6),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceAlt,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final gap = isDense ? 6.0 : 8.0;
+            final buttonWidth = (constraints.maxWidth - gap) / 2;
+
+            return Stack(
+              children: [
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOutCubic,
+                  left: isLoginMode ? 0 : buttonWidth + gap,
+                  top: 0,
+                  bottom: 0,
+                  width: buttonWidth,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOutCubic,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _ModeButton(
+                        label: 'Iniciar sesión',
+                        isDense: isDense,
+                        onTap: () => onModeChanged(true),
+                      ),
+                    ),
+                    SizedBox(width: gap),
+                    Expanded(
+                      child: _ModeButton(
+                        label: 'Crear cuenta',
+                        isDense: isDense,
+                        onTap: () => onModeChanged(false),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 }
 
-class _ModeButton extends StatelessWidget {
+class _ModeButton extends StatefulWidget {
   const _ModeButton({
     required this.label,
-    required this.isActive,
     required this.onTap,
     this.isDense = false,
   });
 
   final String label;
-  final bool isActive;
   final VoidCallback onTap;
   final bool isDense;
 
   @override
+  State<_ModeButton> createState() => _ModeButtonState();
+}
+
+class _ModeButtonState extends State<_ModeButton> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(999),
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: isDense ? 12 : 14,
-          vertical: isDense ? 10 : 12,
-        ),
-        decoration: BoxDecoration(
-          color: isActive ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w700,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.symmetric(
+            horizontal: widget.isDense ? 12 : 14,
+            vertical: 0,
+          ),
+          decoration: BoxDecoration(
+            color: _isHovered
+                ? Colors.white.withValues(alpha: 0.18)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Center(
+            child: Text(
+              widget.label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ),
@@ -983,10 +1007,7 @@ class _DemoPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Acceso demo',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text('Acceso demo', style: Theme.of(context).textTheme.titleMedium),
           SizedBox(height: descriptionGap),
           Text(
             'Si querés recorrer la experiencia antes de usar una cuenta propia, podés entrar con uno de estos perfiles de prueba.',
@@ -1014,7 +1035,7 @@ class _DemoPanel extends StatelessWidget {
                               )
                             : null,
                         onPressed: isBusy ? null : onFamilyDemo,
-                        child: const Text('Demo familia'),
+                        child: const Text('Demo familiar'),
                       ),
                     ),
                     SizedBox(height: isDense ? 6 : 10),
@@ -1046,7 +1067,7 @@ class _DemoPanel extends StatelessWidget {
                             )
                           : null,
                       onPressed: isBusy ? null : onFamilyDemo,
-                      child: const Text('Demo familia'),
+                      child: const Text('Demo familiar'),
                     ),
                   ),
                   SizedBox(width: isDense ? 8 : 12),
@@ -1089,17 +1110,17 @@ class _ExperienceChoiceCard extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompactCard = constraints.maxWidth < 280;
-        final padding = isCompactCard
-            ? 12.0
-            : (isDense ? 14.0 : 16.0);
+        final padding = isCompactCard ? 12.0 : (isDense ? 14.0 : 16.0);
         final titleHeight = isCompactCard ? 1.2 : 1.3;
         final subtitleHeight = isCompactCard ? 1.25 : (isDense ? 1.32 : 1.4);
         final subtitleSpacing = isCompactCard ? 2.0 : (isDense ? 3.0 : 4.0);
+        final minCardHeight = isCompactCard ? 104.0 : (isDense ? 112.0 : 124.0);
 
         return InkWell(
           borderRadius: BorderRadius.circular(22),
           onTap: onTap,
           child: Container(
+            constraints: BoxConstraints(minHeight: minCardHeight),
             padding: EdgeInsets.all(padding),
             decoration: BoxDecoration(
               color: isSelected
@@ -1119,9 +1140,9 @@ class _ExperienceChoiceCard extends StatelessWidget {
                   overflow: isCompactCard
                       ? TextOverflow.ellipsis
                       : TextOverflow.visible,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    height: titleHeight,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(height: titleHeight),
                 ),
                 SizedBox(height: subtitleSpacing),
                 Text(
