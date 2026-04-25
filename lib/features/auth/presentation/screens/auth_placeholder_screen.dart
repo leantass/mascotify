@@ -44,7 +44,7 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
   Widget build(BuildContext context) {
     final viewportWidth = MediaQuery.sizeOf(context).width;
     final pageMaxWidth = viewportWidth >= 900
-        ? (viewportWidth - 24).clamp(1100.0, 1680.0).toDouble()
+        ? (viewportWidth - 16).clamp(1180.0, 1840.0).toDouble()
         : 1040.0;
 
     return Scaffold(
@@ -116,24 +116,22 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
               }
 
               final isExtraWide = constraints.maxWidth >= 1440;
-              final horizontalPadding = isExtraWide ? 18.0 : 22.0;
-              final columnGap = isExtraWide ? 28.0 : 24.0;
-              final verticalPadding = isExtraWide ? 16.0 : 18.0;
+              final horizontalPadding = isExtraWide ? 12.0 : 10.0;
+              final columnGap = isExtraWide ? 22.0 : 16.0;
+              final innerGap = isExtraWide ? 16.0 : 12.0;
+              final verticalPadding = isExtraWide ? 10.0 : 8.0;
               final mediaQuery = MediaQuery.of(context);
-              final fallbackHeight =
+              final availableHeight =
                   mediaQuery.size.height - mediaQuery.padding.vertical;
-              final constrainedHeight =
-                  constraints.hasBoundedHeight && constraints.maxHeight.isFinite
-                  ? constraints.maxHeight
-                  : fallbackHeight;
-              final resolvedPageHeight =
-                  constrainedHeight.isFinite && constrainedHeight > 0
-                  ? constrainedHeight
-                  : fallbackHeight;
-              final pageHeight =
-                  resolvedPageHeight.isFinite && resolvedPageHeight > 0
-                  ? resolvedPageHeight
-                  : 1.0;
+              final contentMaxHeight = availableHeight > 0
+                  ? availableHeight
+                  : mediaQuery.size.height;
+              final layoutHeight =
+                  constraints.hasBoundedHeight &&
+                      constraints.maxHeight.isFinite &&
+                      constraints.maxHeight > 0
+                  ? constraints.maxHeight.clamp(0.0, contentMaxHeight)
+                  : contentMaxHeight;
               final demoPanel = _DemoPanel(
                 isDense: true,
                 isBusy: auth.isBusy,
@@ -145,43 +143,122 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
               );
 
               return SizedBox(
-                height: pageHeight,
+                width: double.infinity,
+                height: layoutHeight,
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    horizontalPadding,
-                    verticalPadding,
-                    horizontalPadding,
-                    verticalPadding,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                    vertical: verticalPadding,
                   ),
-                  child: Center(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Expanded(child: _HeroPanel(isDense: true)),
-                        SizedBox(width: columnGap),
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _ModeSwitcher(
-                                isDense: true,
-                                isLoginMode: _isLoginMode,
-                                onModeChanged: _setMode,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const Expanded(
+                              flex: 4,
+                              child: _HeroPanel(isDense: true),
+                            ),
+                            SizedBox(width: columnGap),
+                            Expanded(
+                              flex: 8,
+                              child: LayoutBuilder(
+                                builder: (context, rightConstraints) {
+                                  final splitRightContent =
+                                      rightConstraints.maxWidth >= 820;
+
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      _ModeSwitcher(
+                                        isDense: true,
+                                        isLoginMode: _isLoginMode,
+                                        onModeChanged: _setMode,
+                                      ),
+                                      SizedBox(height: innerGap),
+                                      Expanded(
+                                        child: splitRightContent
+                                            ? Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.stretch,
+                                                children: [
+                                                  Expanded(
+                                                    flex: 7,
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .stretch,
+                                                      children: [
+                                                        Flexible(
+                                                          child:
+                                                              animatedFormCard,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  SizedBox(width: innerGap),
+                                                  Expanded(
+                                                    flex: 4,
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .stretch,
+                                                      children: [
+                                                        demoPanel,
+                                                        if (_errorMessage !=
+                                                            null) ...[
+                                                          SizedBox(
+                                                            height: innerGap,
+                                                          ),
+                                                          _ErrorCard(
+                                                            message:
+                                                                _errorMessage!,
+                                                          ),
+                                                        ],
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              )
+                                            : Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.stretch,
+                                                children: [
+                                                  Flexible(
+                                                    flex: 8,
+                                                    child: animatedFormCard,
+                                                  ),
+                                                  SizedBox(height: innerGap),
+                                                  demoPanel,
+                                                  if (_errorMessage !=
+                                                      null) ...[
+                                                    SizedBox(height: innerGap),
+                                                    _ErrorCard(
+                                                      message: _errorMessage!,
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
-                              const SizedBox(height: 12),
-                              animatedFormCard,
-                              const SizedBox(height: 12),
-                              demoPanel,
-                              if (_errorMessage != null) ...[
-                                const SizedBox(height: 12),
-                                _ErrorCard(message: _errorMessage!),
-                              ],
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -211,14 +288,14 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
             keyboardType: TextInputType.emailAddress,
             isDense: isDense,
           ),
-          SizedBox(height: isDense ? 10 : 12),
+          SizedBox(height: isDense ? 8 : 12),
           _AuthField(
             controller: _loginPasswordController,
             label: 'Contraseña',
             obscureText: true,
             isDense: isDense,
           ),
-          SizedBox(height: isDense ? 8 : 10),
+          SizedBox(height: isDense ? 6 : 10),
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton(
@@ -226,13 +303,13 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
               style: TextButton.styleFrom(
                 padding: EdgeInsets.symmetric(
                   horizontal: 0,
-                  vertical: isDense ? 4 : 6,
+                  vertical: isDense ? 2 : 6,
                 ),
               ),
               child: const Text('Olvidé mi contraseña'),
             ),
           ),
-          SizedBox(height: isDense ? 6 : 8),
+          SizedBox(height: isDense ? 4 : 8),
           _AuthActionBlock(
             isDense: isDense,
             showAlternative: isDense,
@@ -271,7 +348,7 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
               allowsMultiColumnLayout && constraints.maxWidth >= 520;
           final useChoiceWrap =
               allowsMultiColumnLayout && constraints.maxWidth >= 520;
-          final fieldSpacing = isDense ? 8.0 : (useFieldGrid ? 10.0 : 12.0);
+          final fieldSpacing = isDense ? 6.0 : (useFieldGrid ? 10.0 : 12.0);
           final fieldWidth = useFieldGrid
               ? (constraints.maxWidth - 10) / 2
               : constraints.maxWidth;
@@ -329,16 +406,16 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: isDense ? 12 : (useFieldGrid ? 16 : 18)),
+              SizedBox(height: isDense ? 8 : (useFieldGrid ? 16 : 18)),
               Text(
                 'Elegí tu tipo de cuenta',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              SizedBox(height: isDense ? 8 : 10),
+              SizedBox(height: isDense ? 6 : 10),
               if (useChoiceWrap)
                 Wrap(
                   spacing: 10,
-                  runSpacing: isDense ? 8 : 10,
+                  runSpacing: isDense ? 6 : 10,
                   children: options
                       .map(
                         (option) => SizedBox(
@@ -379,7 +456,7 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                       )
                       .toList(),
                 ),
-              SizedBox(height: isDense ? 6 : 8),
+              SizedBox(height: isDense ? 4 : 8),
               _AuthActionBlock(
                 isDense: isDense,
                 showAlternative: true,
@@ -800,9 +877,9 @@ class _FormShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shellPadding = isDense ? 14.0 : 16.0;
-    final descriptionGap = isDense ? 6.0 : 8.0;
-    final contentGap = isDense ? 12.0 : 14.0;
+    final shellPadding = isDense ? 12.0 : 16.0;
+    final descriptionGap = isDense ? 4.0 : 8.0;
+    final contentGap = isDense ? 8.0 : 14.0;
 
     return Card(
       child: Padding(
@@ -992,9 +1069,9 @@ class _DemoPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final verticalPadding = isDense ? 12.0 : 16.0;
-    final descriptionGap = isDense ? 5.0 : 8.0;
-    final buttonGap = isDense ? 8.0 : 14.0;
+    final verticalPadding = isDense ? 10.0 : 16.0;
+    final descriptionGap = isDense ? 4.0 : 8.0;
+    final buttonGap = isDense ? 6.0 : 14.0;
 
     return Container(
       width: double.infinity,
@@ -1110,11 +1187,11 @@ class _ExperienceChoiceCard extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompactCard = constraints.maxWidth < 280;
-        final padding = isCompactCard ? 12.0 : (isDense ? 14.0 : 16.0);
+        final padding = isCompactCard ? 12.0 : (isDense ? 12.0 : 16.0);
         final titleHeight = isCompactCard ? 1.2 : 1.3;
         final subtitleHeight = isCompactCard ? 1.25 : (isDense ? 1.32 : 1.4);
-        final subtitleSpacing = isCompactCard ? 2.0 : (isDense ? 3.0 : 4.0);
-        final minCardHeight = isCompactCard ? 104.0 : (isDense ? 112.0 : 124.0);
+        final subtitleSpacing = isCompactCard ? 2.0 : (isDense ? 2.0 : 4.0);
+        final minCardHeight = isCompactCard ? 104.0 : (isDense ? 96.0 : 124.0);
 
         return InkWell(
           borderRadius: BorderRadius.circular(22),
@@ -1215,7 +1292,7 @@ class _AuthField extends StatelessWidget {
         hintText: label,
         contentPadding: EdgeInsets.symmetric(
           horizontal: isDense ? 14 : 16,
-          vertical: isDense ? 11 : 16,
+          vertical: isDense ? 9 : 16,
         ),
         filled: true,
         fillColor: AppColors.surfaceAlt,

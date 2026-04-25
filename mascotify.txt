@@ -1,0 +1,8 @@
+
+pararme en la carpeta:  cd /d C:\Users\user\Desktop\mascotify
+iniciar app:  flutter run -d Chrome
+
+Actualizar la rama de GitHub:  
+git add .
+git commit -m "Descripción de los cambios realizados"
+git push 
