@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../shared/data/account_identity_mock_data.dart';
 import '../../../shared/models/account_identity_models.dart';
+import 'google_auth_service.dart';
 import 'local_auth_models.dart';
 
 class AuthOperationResult {
@@ -67,7 +68,8 @@ class LocalAuthRepository {
       return null;
     }
 
-    final resolvedExperience = account.supportsExperience(session.activeExperience)
+    final resolvedExperience =
+        account.supportsExperience(session.activeExperience)
         ? session.activeExperience
         : account.lastActiveExperience;
 
@@ -91,7 +93,9 @@ class LocalAuthRepository {
     final hashedPassword = hashPassword(password);
     final users = _loadUsers();
 
-    final account = users.where((item) => item.email == normalizedEmail).firstOrNull;
+    final account = users
+        .where((item) => item.email == normalizedEmail)
+        .firstOrNull;
     if (account == null) {
       return const AuthOperationResult.failure(
         'No encontramos una cuenta con ese email.',
@@ -209,18 +213,115 @@ class LocalAuthRepository {
     return AuthOperationResult.success(account: account, session: session);
   }
 
+  Future<AuthOperationResult> signInWithGoogle({
+    required GoogleAuthProfile profile,
+    required AccountExperience fallbackExperience,
+  }) async {
+    final normalizedEmail = normalizeEmail(profile.email);
+    final users = _loadUsers();
+    final existingIndex = users.indexWhere(
+      (item) =>
+          item.id == _googleAccountId(profile.uid) ||
+          item.email == normalizedEmail,
+    );
+
+    if (existingIndex != -1) {
+      final account = users[existingIndex];
+      final activeExperience =
+          account.supportsExperience(account.lastActiveExperience)
+          ? account.lastActiveExperience
+          : account.availableExperiences.first;
+      final session = StoredAuthSession(
+        userId: account.id,
+        activeExperience: activeExperience,
+      );
+
+      await _saveSession(session);
+      return AuthOperationResult.success(account: account, session: session);
+    }
+
+    final experience = fallbackExperience;
+    final ownerName = profile.displayName.trim().isEmpty
+        ? normalizedEmail.split('@').first
+        : profile.displayName.trim();
+    final account = StoredAuthAccount(
+      id: _googleAccountId(profile.uid),
+      ownerName: ownerName,
+      email: normalizedEmail,
+      passwordHash: hashPassword('firebase-google:${profile.uid}'),
+      planName: experience == AccountExperience.family
+          ? 'Mascotify Plus'
+          : 'Mascotify Pro',
+      city: 'Por definir',
+      memberSince: _buildMemberSinceLabel(DateTime.now()),
+      availableExperiences: <AccountExperience>[experience],
+      lastActiveExperience: experience,
+      onboardingCompleted: false,
+      familyProfile: experience == AccountExperience.family
+          ? StoredFamilyProfile(
+              householdName: 'Hogar de ${_firstName(ownerName)}',
+              petsSummaryLabel: 'Todavia no cargaste mascotas',
+              primaryGoal:
+                  'Ordenar identidad, seguridad y seguimiento de tus mascotas desde una sola base.',
+              nextSetupStep:
+                  'Completar onboarding y sumar la primera mascota cuando quieras.',
+              capabilities: const <String>[
+                'Cuenta Google vinculada',
+                'Perfil familia activo',
+                'Sesion local guardada',
+              ],
+            )
+          : null,
+      professionalProfile: experience == AccountExperience.professional
+          ? StoredProfessionalProfile(
+              businessName: ownerName,
+              category: 'Perfil profesional inicial',
+              operationLabel: 'Base local lista para crecer',
+              primaryGoal:
+                  'Ordenar presencia, servicios y una cuenta profesional que pueda escalar sin rehacer la base.',
+              nextSetupStep:
+                  'Completar onboarding y definir mejor como se presenta tu perfil.',
+              services: const <String>[
+                'Servicio principal',
+                'Orientacion',
+                'Seguimiento futuro',
+              ],
+              capabilities: const <String>[
+                'Cuenta Google vinculada',
+                'Perfil profesional activo',
+                'Sesion local guardada',
+              ],
+            )
+          : null,
+    );
+
+    final updatedUsers = <StoredAuthAccount>[...users, account];
+    final session = StoredAuthSession(
+      userId: account.id,
+      activeExperience: experience,
+    );
+
+    await _saveUsers(updatedUsers);
+    await _saveSession(session);
+
+    return AuthOperationResult.success(account: account, session: session);
+  }
+
   Future<AuthOperationResult> completeOnboarding({
     required String userId,
   }) async {
     final users = _loadUsers();
     final index = users.indexWhere((item) => item.id == userId);
     if (index == -1) {
-      return const AuthOperationResult.failure('No pudimos actualizar la cuenta.');
+      return const AuthOperationResult.failure(
+        'No pudimos actualizar la cuenta.',
+      );
     }
 
     final updatedAccount = users[index].copyWith(onboardingCompleted: true);
     final updatedUsers = [...users]..[index] = updatedAccount;
-    final session = _loadSession() ??
+    final session =
+        _loadSession() ??
         StoredAuthSession(
           userId: updatedAccount.id,
           activeExperience: updatedAccount.lastActiveExperience,
@@ -228,7 +329,10 @@ class LocalAuthRepository {
 
     await _saveUsers(updatedUsers);
     await _saveSession(session);
-    return AuthOperationResult.success(account: updatedAccount, session: session);
+    return AuthOperationResult.success(
+      account: updatedAccount,
+      session: session,
+    );
   }
 
   Future<AuthOperationResult> switchExperience({
@@ -238,7 +342,9 @@ class LocalAuthRepository {
     final users = _loadUsers();
     final index = users.indexWhere((item) => item.id == userId);
     if (index == -1) {
-      return const AuthOperationResult.failure('No encontramos la cuenta activa.');
+      return const AuthOperationResult.failure(
+        'No encontramos la cuenta activa.',
+      );
     }
 
     final account = users[index];
@@ -257,7 +363,10 @@ class LocalAuthRepository {
 
     await _saveUsers(updatedUsers);
     await _saveSession(session);
-    return AuthOperationResult.success(account: updatedAccount, session: session);
+    return AuthOperationResult.success(
+      account: updatedAccount,
+      session: session,
+    );
   }
 
   Future<void> logout() async {
@@ -292,7 +401,10 @@ class LocalAuthRepository {
     );
   }
 
-  StoredAuthAccount? _findUserById(List<StoredAuthAccount> users, String userId) {
+  StoredAuthAccount? _findUserById(
+    List<StoredAuthAccount> users,
+    String userId,
+  ) {
     for (final user in users) {
       if (user.id == userId) return user;
     }
@@ -301,7 +413,9 @@ class LocalAuthRepository {
 
   List<StoredAuthAccount> _loadUsers() {
     final rawUsers = _preferences.getString(_usersKey);
-    if (rawUsers == null || rawUsers.isEmpty) return const <StoredAuthAccount>[];
+    if (rawUsers == null || rawUsers.isEmpty) {
+      return const <StoredAuthAccount>[];
+    }
 
     final decoded = jsonDecode(rawUsers) as List<dynamic>;
     return decoded
@@ -353,6 +467,10 @@ class LocalAuthRepository {
   String _firstName(String value) {
     final parts = value.split(' ').where((item) => item.isNotEmpty);
     return parts.isEmpty ? value : parts.first;
+  }
+
+  String _googleAccountId(String uid) {
+    return 'firebase-google-$uid';
   }
 }
 

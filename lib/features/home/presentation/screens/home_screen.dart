@@ -27,14 +27,18 @@ class HomeScreen extends StatelessWidget {
     final familyProfile = account.familyProfile!;
     final pets = AppData.pets;
     final notifications = AppData.notifications;
-    final notificationCount = notifications.where((item) => item.isUnread).length;
+    final notificationCount = notifications
+        .where((item) => item.isUnread)
+        .length;
     final prioritizedNotifications = [...notifications]
       ..sort(_compareNotificationsForHome);
     final latestNotification = prioritizedNotifications.isNotEmpty
         ? prioritizedNotifications.first
         : null;
     final threads = AppData.messageThreads;
-    final unreadMessageCount = threads.where((thread) => thread.unreadCount > 0);
+    final unreadMessageCount = threads.where(
+      (thread) => thread.unreadCount > 0,
+    );
     final awaitingReplyCount = threads
         .where((thread) => thread.isAwaitingMyReply)
         .length;
@@ -59,11 +63,13 @@ class HomeScreen extends StatelessWidget {
         ? null
         : AppData.qrStatusSnapshotForPet(qrFocusPet);
     final featuredContent = AppData.professionalLibraryContents.first;
-    final activeAttentionCount = notificationCount +
+    final activeAttentionCount =
+        notificationCount +
         awaitingReplyCount +
         socialPendingCount +
         pendingQrCount;
-    final hasPriorityContent = latestNotification != null ||
+    final hasPriorityContent =
+        latestNotification != null ||
         replyThread != null ||
         qrFocusPet != null ||
         socialPendingCount > 0;
@@ -74,30 +80,15 @@ class HomeScreen extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
-            _HomeHero(
-              firstName: user.name.split(' ').first,
-              city: user.city,
-              planName: account.planName,
-              roleLabel: 'Modo familia',
-              householdName: familyProfile.householdName,
-              petCount: pets.length,
-              activeAttentionCount: activeAttentionCount,
-              notificationCount: notificationCount,
-              onOpenNotifications: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-              ),
-              onOpenMessages: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MessagesInboxScreen()),
-              ),
-            ),
-            const SizedBox(height: 20),
-            if (hasPriorityContent)
-              _PriorityCard(
-                latestNotification: latestNotification,
-                replyThread: replyThread,
-                qrFocusPet: qrFocusPet,
-                qrFocusSnapshot: qrFocusSnapshot,
-                socialPendingCount: socialPendingCount,
+              _HomeHero(
+                firstName: user.name.split(' ').first,
+                city: user.city,
+                planName: account.planName,
+                roleLabel: 'Modo familia',
+                householdName: familyProfile.householdName,
+                petCount: pets.length,
+                activeAttentionCount: activeAttentionCount,
+                notificationCount: notificationCount,
                 onOpenNotifications: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => const NotificationsScreen(),
@@ -108,6 +99,72 @@ class HomeScreen extends StatelessWidget {
                     builder: (_) => const MessagesInboxScreen(),
                   ),
                 ),
+              ),
+              const SizedBox(height: 20),
+              if (hasPriorityContent)
+                _PriorityCard(
+                  latestNotification: latestNotification,
+                  replyThread: replyThread,
+                  qrFocusPet: qrFocusPet,
+                  qrFocusSnapshot: qrFocusSnapshot,
+                  socialPendingCount: socialPendingCount,
+                  onOpenNotifications: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationsScreen(),
+                    ),
+                  ),
+                  onOpenMessages: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const MessagesInboxScreen(),
+                    ),
+                  ),
+                  onOpenSocial: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ConnectionsInboxScreen(),
+                    ),
+                  ),
+                  onOpenQr: qrFocusPet == null
+                      ? null
+                      : () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                QrTraceabilityScreen(pet: qrFocusPet),
+                          ),
+                        ),
+                )
+              else
+                const _HomeEmptyStateCard(
+                  title: 'Tu cuenta está lista para empezar',
+                  description:
+                      'Todavía no hay actividad real en esta cuenta. Cuando sumes una mascota y empieces a usar el ecosistema, acá vas a ver prioridades, QR, mensajes y señales sociales.',
+                ),
+              const SizedBox(height: 20),
+              const SectionHeader(
+                eyebrow: 'Pulso Mascotify',
+                title: 'Qué está activo hoy',
+                subtitle:
+                    'Una lectura corta para entender seguridad, social, mensajería y comunidad experta.',
+              ),
+              const SizedBox(height: 16),
+              _EcosystemOverview(
+                activeQrCount: activeQrCount,
+                pendingQrCount: pendingQrCount,
+                unreadMessageCount: unreadMessageCount.length,
+                awaitingReplyCount: awaitingReplyCount,
+                socialPendingCount: socialPendingCount,
+                savedProfilesCount: savedProfiles.length,
+              ),
+              const SizedBox(height: 20),
+              const SectionHeader(
+                eyebrow: 'Centro operativo',
+                title: 'Accesos rápidos',
+                subtitle:
+                    'Entradas más útiles para actuar desde la home sin perder contexto.',
+              ),
+              const SizedBox(height: 16),
+              _PrimaryAccessGrid(
+                primaryPet: primaryPet,
+                qrFocusPet: qrFocusPet,
                 onOpenSocial: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => const ConnectionsInboxScreen(),
@@ -116,145 +173,103 @@ class HomeScreen extends StatelessWidget {
                 onOpenQr: qrFocusPet == null
                     ? null
                     : () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => QrTraceabilityScreen(pet: qrFocusPet),
-                          ),
-                        ),
-              )
-            else
-              const _HomeEmptyStateCard(
-                title: 'Tu cuenta está lista para empezar',
-                description:
-                    'Todavía no hay actividad real en esta cuenta. Cuando sumes una mascota y empieces a usar el ecosistema, acá vas a ver prioridades, QR, mensajes y señales sociales.',
-              ),
-            const SizedBox(height: 20),
-            const SectionHeader(
-              eyebrow: 'Pulso Mascotify',
-              title: 'Qué está activo hoy',
-              subtitle:
-                  'Una lectura corta para entender seguridad, social, mensajería y comunidad experta.',
-            ),
-            const SizedBox(height: 16),
-            _EcosystemOverview(
-              activeQrCount: activeQrCount,
-              pendingQrCount: pendingQrCount,
-              unreadMessageCount: unreadMessageCount.length,
-              awaitingReplyCount: awaitingReplyCount,
-              socialPendingCount: socialPendingCount,
-              savedProfilesCount: savedProfiles.length,
-            ),
-            const SizedBox(height: 20),
-            const SectionHeader(
-              eyebrow: 'Centro operativo',
-              title: 'Accesos rápidos',
-              subtitle:
-                  'Entradas más útiles para actuar desde la home sin perder contexto.',
-            ),
-            const SizedBox(height: 16),
-            _PrimaryAccessGrid(
-              primaryPet: primaryPet,
-              qrFocusPet: qrFocusPet,
-              onOpenMessages: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MessagesInboxScreen()),
-              ),
-              onOpenSocial: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const ConnectionsInboxScreen(),
-                ),
-              ),
-              onOpenQr: qrFocusPet == null
-                  ? null
-                  : () => Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => QrTraceabilityScreen(pet: qrFocusPet),
                         ),
                       ),
-              onOpenProfessionals: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ProfessionalsScreen()),
-              ),
-            ),
-            const SizedBox(height: 24),
-            _SectionCard(
-              title: 'Lo más vivo del ecosistema',
-              subtitle:
-                  'Señales concretas para que la home resuma valor real y no solo atajos.',
-              child: Column(
-                children: [
-                  if (latestNotification != null) ...[
-                    _EcosystemFeedTile(
-                      title: latestNotification.title,
-                      subtitle: latestNotification.timeLabel,
-                      description: latestNotification.description,
-                      tone: Color(latestNotification.accentColorHex),
-                      icon: Icons.notifications_active_outlined,
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                  if (replyThread != null) ...[
-                    _EcosystemFeedTile(
-                      title: 'Mensajería con contexto activo',
-                      subtitle:
-                          '${replyThread.ownerName} • ${replyThread.status}',
-                      description:
-                          '${replyThread.lastMessage} Próximo paso: ${replyThread.nextStepLabel}',
-                      tone: Color(replyThread.accentColorHex),
-                      icon: Icons.chat_bubble_outline_rounded,
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                  _EcosystemFeedTile(
-                    title: featuredContent.title,
-                    subtitle:
-                        '${featuredContent.professional} • ${featuredContent.category}',
-                    description:
-                        '${featuredContent.summary} La vertical profesional ya puede sentirse como comunidad con posibles servicios.',
-                    tone: Color(featuredContent.accentColorHex),
-                    icon: Icons.workspace_premium_outlined,
+                onOpenProfessionals: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const ProfessionalsScreen(),
                   ),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            SectionHeader(
-              eyebrow: 'Base Mascotify',
-              title: 'Mis mascotas',
-              subtitle:
-                  'Perfiles que ya conectan identidad, matching, trazabilidad QR y seguridad.',
-              trailing: primaryPet == null
-                  ? null
-                  : TextButton(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => PetDetailScreen(pet: primaryPet),
-                        ),
+              const SizedBox(height: 24),
+              _SectionCard(
+                title: 'Lo más vivo del ecosistema',
+                subtitle:
+                    'Señales concretas para que la home resuma valor real y no solo atajos.',
+                child: Column(
+                  children: [
+                    if (latestNotification != null) ...[
+                      _EcosystemFeedTile(
+                        title: latestNotification.title,
+                        subtitle: latestNotification.timeLabel,
+                        description: latestNotification.description,
+                        tone: Color(latestNotification.accentColorHex),
+                        icon: Icons.notifications_active_outlined,
                       ),
-                      child: const Text('Ver ficha'),
+                      const SizedBox(height: 10),
+                    ],
+                    if (replyThread != null) ...[
+                      _EcosystemFeedTile(
+                        title: 'Mensajería con contexto activo',
+                        subtitle:
+                            '${replyThread.ownerName} • ${replyThread.status}',
+                        description:
+                            '${replyThread.lastMessage} Próximo paso: ${replyThread.nextStepLabel}',
+                        tone: Color(replyThread.accentColorHex),
+                        icon: Icons.chat_bubble_outline_rounded,
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                    _EcosystemFeedTile(
+                      title: featuredContent.title,
+                      subtitle:
+                          '${featuredContent.professional} • ${featuredContent.category}',
+                      description:
+                          '${featuredContent.summary} La vertical profesional ya puede sentirse como comunidad con posibles servicios.',
+                      tone: Color(featuredContent.accentColorHex),
+                      icon: Icons.workspace_premium_outlined,
                     ),
-            ),
-            const SizedBox(height: 16),
-            if (pets.isEmpty)
-              const _HomeEmptyStateCard(
-                title: 'Todavía no hay mascotas cargadas',
-                description:
-                    'La cuenta quedó válida y limpia. Cuando agregues la primera mascota desde la sección Mascotas, esta área empezará a poblarse con identidad, QR y seguimiento.',
-              )
-            else
-              ...pets.take(3).map(
-                    (pet) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: PetCard(
-                        pet: pet,
-                        compact: true,
-                        onTap: () => Navigator.of(context).push(
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              SectionHeader(
+                eyebrow: 'Base Mascotify',
+                title: 'Mis mascotas',
+                subtitle:
+                    'Perfiles que ya conectan identidad, matching, trazabilidad QR y seguridad.',
+                trailing: primaryPet == null
+                    ? null
+                    : TextButton(
+                        onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => PetDetailScreen(pet: pet),
+                            builder: (_) => PetDetailScreen(pet: primaryPet),
+                          ),
+                        ),
+                        child: const Text('Ver ficha'),
+                      ),
+              ),
+              const SizedBox(height: 16),
+              if (pets.isEmpty)
+                const _HomeEmptyStateCard(
+                  title: 'Todavía no hay mascotas cargadas',
+                  description:
+                      'La cuenta quedó válida y limpia. Cuando agregues la primera mascota desde la sección Mascotas, esta área empezará a poblarse con identidad, QR y seguimiento.',
+                )
+              else
+                ...pets
+                    .take(3)
+                    .map(
+                      (pet) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: PetCard(
+                          pet: pet,
+                          compact: true,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => PetDetailScreen(pet: pet),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-            const SizedBox(height: 24),
-            _AccountStatusCard(account: account, familyProfile: familyProfile),
+              const SizedBox(height: 24),
+              _AccountStatusCard(
+                account: account,
+                familyProfile: familyProfile,
+              ),
             ],
           ),
         ),
@@ -455,39 +470,77 @@ class _EcosystemOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveWrapGrid(
-      minItemWidth: 240,
-      children: [
-        _OverviewTile(
-          title: 'QR activo',
-          value: '$activeQrCount listos',
-          description: '$pendingQrCount perfiles todavía esperan activación.',
-          color: AppColors.supportSoft,
-          icon: Icons.qr_code_2_rounded,
-        ),
-        _OverviewTile(
-          title: 'Mensajes',
-          value: '$unreadMessageCount chats',
-          description:
-              '$awaitingReplyCount conversaciones esperan tu lectura.',
-          color: AppColors.accentSoft,
-          icon: Icons.chat_bubble_outline_rounded,
-        ),
-        _OverviewTile(
-          title: 'Matching',
-          value: '$socialPendingCount señales',
-          description: 'Intereses, afinidades y conexiones con más contexto.',
-          color: AppColors.primarySoft,
-          icon: Icons.favorite_border_rounded,
-        ),
-        _OverviewTile(
-          title: 'Guardados',
-          value: '$savedProfilesCount perfiles',
-          description: 'Perfiles listos para retomar y comparar mejor.',
-          color: AppColors.surface,
-          icon: Icons.bookmark_outline_rounded,
-        ),
-      ],
+    final metrics = [
+      _OverviewTile(
+        title: 'QR activo',
+        value: '$activeQrCount listos',
+        description: '$pendingQrCount perfiles todavía esperan activación.',
+        color: AppColors.supportSoft,
+        icon: Icons.qr_code_2_rounded,
+      ),
+      _OverviewTile(
+        title: 'Mensajes',
+        value: '$unreadMessageCount chats',
+        description: '$awaitingReplyCount conversaciones esperan tu lectura.',
+        color: AppColors.accentSoft,
+        icon: Icons.chat_bubble_outline_rounded,
+      ),
+      _OverviewTile(
+        title: 'Matching',
+        value: '$socialPendingCount señales',
+        description: 'Intereses, afinidades y conexiones con más contexto.',
+        color: AppColors.primarySoft,
+        icon: Icons.favorite_border_rounded,
+      ),
+      _OverviewTile(
+        title: 'Guardados',
+        value: '$savedProfilesCount perfiles',
+        description: 'Perfiles listos para retomar y comparar mejor.',
+        color: AppColors.surface,
+        icon: Icons.bookmark_outline_rounded,
+      ),
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final useHorizontalLayout = constraints.maxWidth >= 760;
+
+          if (!useHorizontalLayout) {
+            return Column(
+              children: [
+                for (var index = 0; index < metrics.length; index++) ...[
+                  if (index > 0)
+                    const Divider(height: 18, color: AppColors.border),
+                  metrics[index],
+                ],
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              for (var index = 0; index < metrics.length; index++) ...[
+                if (index > 0)
+                  Container(
+                    width: 1,
+                    height: 70,
+                    margin: const EdgeInsets.symmetric(horizontal: 14),
+                    color: AppColors.border,
+                  ),
+                Expanded(child: metrics[index]),
+              ],
+            ],
+          );
+        },
+      ),
     );
   }
 }
@@ -496,7 +549,6 @@ class _PrimaryAccessGrid extends StatelessWidget {
   const _PrimaryAccessGrid({
     required this.primaryPet,
     required this.qrFocusPet,
-    required this.onOpenMessages,
     required this.onOpenSocial,
     required this.onOpenQr,
     required this.onOpenProfessionals,
@@ -504,73 +556,82 @@ class _PrimaryAccessGrid extends StatelessWidget {
 
   final Pet? primaryPet;
   final Pet? qrFocusPet;
-  final VoidCallback onOpenMessages;
   final VoidCallback onOpenSocial;
   final VoidCallback? onOpenQr;
   final VoidCallback onOpenProfessionals;
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveWrapGrid(
-      minItemWidth: 330,
-      children: [
-        _PrimaryAccessCard(
-          title: 'Mascotas',
-          subtitle: primaryPet == null
-              ? 'Agrega tu primera mascota desde la sección Mascotas para destrabar identidad, QR, matching y ficha completa.'
-              : 'Entrá a identidad, salud, matching y ficha completa desde una sola base.',
-          icon: Icons.pets_rounded,
-          tone: AppColors.primarySoft,
-          onTap: primaryPet == null
-              ? null
-              : () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => PetDetailScreen(pet: primaryPet!),
-                    ),
-                  ),
-          highlight: primaryPet == null
-              ? 'Todavía no hay perfiles cargados en esta cuenta.'
-              : null,
-        ),
-        _PrimaryAccessCard(
-          title: 'Mensajería',
-          subtitle:
-              'Conversaciones nacidas desde intereses, afinidades y próximos pasos.',
-          icon: Icons.forum_rounded,
-          tone: AppColors.accentSoft,
-          onTap: onOpenMessages,
-        ),
-        _PrimaryAccessCard(
-          title: 'QR y seguridad',
-          subtitle: qrFocusPet == null
-              ? 'Se habilita cuando tengas al menos una mascota cargada en la base local.'
-              : 'Historial, contacto protegido y trazabilidad ya visible dentro del producto.',
-          icon: Icons.qr_code_2_rounded,
-          tone: AppColors.supportSoft,
-          onTap: onOpenQr,
-          highlight: qrFocusPet == null
-              ? 'La cuenta nueva ya no hereda QR ajenos.'
-              : null,
-        ),
-        _PrimaryAccessCard(
-          title: 'Matching social',
-          subtitle:
-              'Intereses, perfiles guardados y afinidades mejor explicadas.',
-          icon: Icons.favorite_border_rounded,
-          tone: AppColors.surface,
-          onTap: onOpenSocial,
-        ),
-        _PrimaryAccessCard(
-          title: 'Profesionales y contenido',
-          subtitle:
-              'La comunidad experta ya suma voces, confianza y base para futuros servicios dentro del ecosistema.',
-          icon: Icons.workspace_premium_outlined,
-          tone: AppColors.accentSoft,
-          onTap: onOpenProfessionals,
-          highlight:
-              'Una entrada más rica para contenido, confianza y futuros servicios.',
-        ),
-      ],
+    final items = [
+      _PrimaryAccessCard(
+        title: 'Mascotas',
+        subtitle: primaryPet == null
+            ? 'Agrega tu primera mascota desde la sección Mascotas para destrabar identidad, QR, matching y ficha completa.'
+            : 'Entrá a identidad, salud, matching y ficha completa desde una sola base.',
+        icon: Icons.pets_rounded,
+        tone: AppColors.primarySoft,
+        onTap: primaryPet == null
+            ? null
+            : () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => PetDetailScreen(pet: primaryPet!),
+                ),
+              ),
+        highlight: primaryPet == null
+            ? 'Todavía no hay perfiles cargados en esta cuenta.'
+            : null,
+      ),
+      _PrimaryAccessCard(
+        title: 'QR y seguridad',
+        subtitle: qrFocusPet == null
+            ? 'Se habilita cuando tengas al menos una mascota cargada en la base local.'
+            : 'Historial, contacto protegido y trazabilidad ya visible dentro del producto.',
+        icon: Icons.qr_code_2_rounded,
+        tone: AppColors.supportSoft,
+        onTap: onOpenQr,
+        highlight: qrFocusPet == null
+            ? 'La cuenta nueva ya no hereda QR ajenos.'
+            : null,
+      ),
+      _PrimaryAccessCard(
+        title: 'Matching social',
+        subtitle:
+            'Intereses, perfiles guardados y afinidades mejor explicadas.',
+        icon: Icons.favorite_border_rounded,
+        tone: AppColors.primarySoft,
+        onTap: onOpenSocial,
+      ),
+      _PrimaryAccessCard(
+        title: 'Profesionales y contenido',
+        subtitle:
+            'La comunidad experta ya suma voces, confianza y base para futuros servicios dentro del ecosistema.',
+        icon: Icons.workspace_premium_outlined,
+        tone: AppColors.accentSoft,
+        onTap: onOpenProfessionals,
+        highlight:
+            'Una entrada más rica para contenido, confianza y futuros servicios.',
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useTwoColumns = constraints.maxWidth >= 700;
+        final columnCount = useTwoColumns ? 2 : 1;
+        final itemHeight = useTwoColumns ? 244.0 : 226.0;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: items.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columnCount,
+            crossAxisSpacing: 14,
+            mainAxisSpacing: 14,
+            mainAxisExtent: itemHeight,
+          ),
+          itemBuilder: (context, index) => items[index],
+        );
+      },
     );
   }
 }
@@ -715,10 +776,7 @@ class _PriorityCard extends StatelessWidget {
 }
 
 class _HomeEmptyStateCard extends StatelessWidget {
-  const _HomeEmptyStateCard({
-    required this.title,
-    required this.description,
-  });
+  const _HomeEmptyStateCard({required this.title, required this.description});
 
   final String title;
   final String description;
@@ -1130,41 +1188,59 @@ class _OverviewTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 42,
-            height: 42,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
               color: color,
-              borderRadius: BorderRadius.circular(14),
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.border),
             ),
-            child: Icon(icon, color: AppColors.textPrimary),
+            child: Icon(icon, size: 20, color: AppColors.textPrimary),
           ),
-          const SizedBox(height: 14),
-          Text(title, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            description,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.4,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: AppColors.textMuted,
+                    height: 1.25,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -1192,20 +1268,23 @@ class _PrimaryAccessCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
+    final textTheme = Theme.of(context).textTheme;
+
+    return Card(
+      elevation: 2.5,
+      shadowColor: AppColors.primary.withValues(alpha: 0.16),
+      color: AppColors.surface,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+        side: const BorderSide(color: AppColors.border),
+      ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(24),
         onTap: onTap,
         child: Opacity(
           opacity: onTap == null ? 0.82 : 1,
-          child: Container(
+          child: Padding(
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceAlt,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.border),
-            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1218,24 +1297,28 @@ class _PrimaryAccessCard extends StatelessWidget {
                   ),
                   child: Icon(icon, color: AppColors.textPrimary),
                 ),
-                const SizedBox(height: 16),
-                Text(title, style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 14),
+                Text(title, style: textTheme.titleMedium),
                 const SizedBox(height: 6),
-                Text(
-                  subtitle,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.45,
+                Expanded(
+                  child: Text(
+                    subtitle,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
                   ),
                 ),
                 if (highlight != null) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Text(
                     highlight!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.bodyMedium?.copyWith(
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.w600,
-                      height: 1.45,
+                      height: 1.35,
                     ),
                   ),
                 ],

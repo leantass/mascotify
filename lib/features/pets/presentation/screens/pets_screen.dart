@@ -26,64 +26,64 @@ class _PetsScreenState extends State<PetsScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Column(
-                children: [
-                  SectionHeader(
-                    eyebrow: 'Centro de mascotas',
-                    title: 'Mascotas',
-                    subtitle:
-                        'Gestiona perfiles persistidos localmente y listos para crecer hacia QR, social y seguimiento.',
-                    trailing: ElevatedButton.icon(
-                      onPressed: _handleAddPet,
-                      icon: const Icon(Icons.add_rounded),
-                      label: const Text('Agregar'),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceAlt,
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: Text(
-                      '${pets.length} perfiles activos guardados en este dispositivo para la cuenta actual.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w600,
+              Container(
+                padding: const EdgeInsets.all(22),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  children: [
+                    SectionHeader(
+                      eyebrow: 'Centro de mascotas',
+                      title: 'Mascotas',
+                      subtitle:
+                          'Gestiona perfiles persistidos localmente y listos para crecer hacia QR, social y seguimiento.',
+                      trailing: ElevatedButton.icon(
+                        onPressed: _handleAddPet,
+                        icon: const Icon(Icons.add_rounded),
+                        label: const Text('Agregar'),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            if (pets.isEmpty)
-              _PetsEmptyState(onAddPet: _handleAddPet)
-            else
-              ResponsiveWrapGrid(
-                minItemWidth: 340,
-                children: pets
-                    .map(
-                      (pet) => PetCard(
-                        pet: pet,
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => PetDetailScreen(pet: pet),
-                          ),
+                    const SizedBox(height: 18),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceAlt,
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: Text(
+                        '${pets.length} perfiles activos guardados en este dispositivo para la cuenta actual.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    )
-                    .toList(),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(height: 20),
+              if (pets.isEmpty)
+                const _PetsEmptyState()
+              else
+                ResponsiveWrapGrid(
+                  minItemWidth: 340,
+                  children: pets
+                      .map(
+                        (pet) => PetCard(
+                          pet: pet,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => PetDetailScreen(pet: pet),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
             ],
           ),
         ),
@@ -112,9 +112,7 @@ class _PetsScreenState extends State<PetsScreen> {
 }
 
 class _PetsEmptyState extends StatelessWidget {
-  const _PetsEmptyState({required this.onAddPet});
-
-  final VoidCallback onAddPet;
+  const _PetsEmptyState();
 
   @override
   Widget build(BuildContext context) {
@@ -140,12 +138,6 @@ class _PetsEmptyState extends StatelessWidget {
               color: AppColors.textPrimary,
               height: 1.45,
             ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: onAddPet,
-            icon: const Icon(Icons.add_rounded),
-            label: const Text('Agregar primera mascota'),
           ),
         ],
       ),
@@ -361,11 +353,7 @@ class _AddPetDialogState extends State<_AddPetDialog> {
       qrStatus: 'QR listo para activarse cuando decidas configurarlo.',
       healthSummary:
           'Resumen inicial creado. Luego podrás sumar más contexto de salud.',
-      quickActions: const [
-        'Ver perfil',
-        'Actualizar datos',
-        'Activar QR',
-      ],
+      quickActions: const ['Ver perfil', 'Actualizar datos', 'Activar QR'],
       qrCodeLabel: 'MSC-$shortName-$profileSuffix',
       qrEnabled: false,
       qrLastUpdate: 'Creado hoy',

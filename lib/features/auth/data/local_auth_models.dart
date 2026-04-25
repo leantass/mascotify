@@ -235,6 +235,9 @@ class StoredAuthAccount {
       city: city,
       memberSince: memberSince,
       notificationsEnabled: true,
+      strategicNotificationsEnabled: true,
+      privacyLevel: 'Equilibrada',
+      securityLevel: 'Estándar',
     );
   }
 

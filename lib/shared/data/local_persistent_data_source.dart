@@ -67,6 +67,10 @@ class PersistedPetQrState {
 class PersistedLocalUserState {
   const PersistedLocalUserState({
     required this.notificationsEnabled,
+    required this.strategicNotificationsEnabled,
+    required this.planName,
+    required this.privacyLevel,
+    required this.securityLevel,
     required this.pets,
     required this.threads,
     required this.qrStates,
@@ -76,6 +80,10 @@ class PersistedLocalUserState {
   });
 
   final bool notificationsEnabled;
+  final bool strategicNotificationsEnabled;
+  final String planName;
+  final String privacyLevel;
+  final String securityLevel;
   final List<Pet> pets;
   final List<MessageThread> threads;
   final Map<String, PersistedPetQrState> qrStates;
@@ -85,6 +93,10 @@ class PersistedLocalUserState {
 
   PersistedLocalUserState copyWith({
     bool? notificationsEnabled,
+    bool? strategicNotificationsEnabled,
+    String? planName,
+    String? privacyLevel,
+    String? securityLevel,
     List<Pet>? pets,
     List<MessageThread>? threads,
     Map<String, PersistedPetQrState>? qrStates,
@@ -95,6 +107,11 @@ class PersistedLocalUserState {
   }) {
     return PersistedLocalUserState(
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      strategicNotificationsEnabled:
+          strategicNotificationsEnabled ?? this.strategicNotificationsEnabled,
+      planName: planName ?? this.planName,
+      privacyLevel: privacyLevel ?? this.privacyLevel,
+      securityLevel: securityLevel ?? this.securityLevel,
       pets: pets ?? this.pets,
       threads: threads ?? this.threads,
       qrStates: qrStates ?? this.qrStates,
@@ -109,11 +126,13 @@ class PersistedLocalUserState {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'notificationsEnabled': notificationsEnabled,
+      'strategicNotificationsEnabled': strategicNotificationsEnabled,
+      'planName': planName,
+      'privacyLevel': privacyLevel,
+      'securityLevel': securityLevel,
       'pets': pets.map((item) => item.toJson()).toList(),
       'threads': threads.map((item) => item.toJson()).toList(),
-      'qrStates': qrStates.map(
-        (key, value) => MapEntry(key, value.toJson()),
-      ),
+      'qrStates': qrStates.map((key, value) => MapEntry(key, value.toJson())),
       'socialInboxEntries': socialInboxEntries
           .map((item) => item.toJson())
           .toList(),
@@ -125,6 +144,11 @@ class PersistedLocalUserState {
   factory PersistedLocalUserState.fromJson(Map<String, dynamic> json) {
     return PersistedLocalUserState(
       notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
+      strategicNotificationsEnabled:
+          json['strategicNotificationsEnabled'] as bool? ?? true,
+      planName: json['planName'] as String? ?? 'Mascotify Plus',
+      privacyLevel: json['privacyLevel'] as String? ?? 'Equilibrada',
+      securityLevel: json['securityLevel'] as String? ?? 'Estándar',
       pets: (json['pets'] as List<dynamic>)
           .map(
             (item) => Pet.fromJson(
@@ -139,15 +163,14 @@ class PersistedLocalUserState {
             ),
           )
           .toList(),
-      qrStates: (json['qrStates'] as Map<dynamic, dynamic>? ?? const {})
-          .map(
-            (key, value) => MapEntry(
-              key as String,
-              PersistedPetQrState.fromJson(
-                Map<String, dynamic>.from(value as Map<dynamic, dynamic>),
-              ),
-            ),
+      qrStates: (json['qrStates'] as Map<dynamic, dynamic>? ?? const {}).map(
+        (key, value) => MapEntry(
+          key as String,
+          PersistedPetQrState.fromJson(
+            Map<String, dynamic>.from(value as Map<dynamic, dynamic>),
           ),
+        ),
+      ),
       socialInboxEntries:
           (json['socialInboxEntries'] as List<dynamic>? ?? const <dynamic>[])
               .map(
@@ -213,7 +236,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       id: currentAccount.id,
       ownerName: currentAccount.ownerName,
       email: currentAccount.email,
-      planName: currentAccount.planName,
+      planName: currentState.planName,
       city: currentAccount.city,
       memberSince: currentAccount.memberSince,
       baseSummary: currentAccount.baseSummary,
@@ -223,7 +246,9 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           ? null
           : FamilyAccountProfile(
               householdName: familyProfile.householdName,
-              petsSummaryLabel: _buildPetsSummaryLabel(currentState.pets.length),
+              petsSummaryLabel: _buildPetsSummaryLabel(
+                currentState.pets.length,
+              ),
               primaryGoal: familyProfile.primaryGoal,
               nextSetupStep: currentState.pets.isEmpty
                   ? 'Agregar la primera mascota para completar la base local.'
@@ -234,15 +259,18 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           ? null
           : ProfessionalAccountProfile(
               businessName: professionalProfile.businessName,
-              category: publicProfessionalProfile?.specialty ??
+              category:
+                  publicProfessionalProfile?.specialty ??
                   professionalProfile.category,
-              operationLabel: publicProfessionalProfile?.serviceAvailabilityLabel ??
+              operationLabel:
+                  publicProfessionalProfile?.serviceAvailabilityLabel ??
                   professionalProfile.operationLabel,
               primaryGoal: professionalProfile.primaryGoal,
               nextSetupStep: publicProfessionalProfile == null
                   ? 'Activar la presencia profesional para volver visible tu base operativa y tus servicios.'
                   : professionalProfile.nextSetupStep,
-              services: publicProfessionalProfile?.services ??
+              services:
+                  publicProfessionalProfile?.services ??
                   professionalProfile.services,
               capabilities: professionalProfile.capabilities,
             ),
@@ -304,10 +332,13 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       id: currentAccount.id,
       name: currentAccount.ownerName,
       email: currentAccount.email,
-      planName: currentAccount.planName,
+      planName: currentState.planName,
       city: currentAccount.city,
       memberSince: currentAccount.memberSince,
       notificationsEnabled: currentState.notificationsEnabled,
+      strategicNotificationsEnabled: currentState.strategicNotificationsEnabled,
+      privacyLevel: currentState.privacyLevel,
+      securityLevel: currentState.securityLevel,
     );
   }
 
@@ -577,30 +608,21 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     final userId = _currentUserId;
     if (userId == null) return;
 
-    final reply = thread.autoReplies[
-      thread.messages.length % thread.autoReplies.length
-    ];
+    final reply =
+        thread.autoReplies[thread.messages.length % thread.autoReplies.length];
 
-    await _updateThread(
-      userId,
-      threadId,
-      (currentThread) {
-        return currentThread.copyWith(
-          messages: <MessageEntry>[
-            ...currentThread.messages,
-            MessageEntry(
-              text: reply,
-              timestamp: 'Ahora',
-              isMine: false,
-            ),
-          ],
-          lastMessage: reply,
-          lastActivity: 'Ahora',
-          unreadCount: currentThread.unreadCount + 1,
-          isAwaitingMyReply: true,
-        );
-      },
-    );
+    await _updateThread(userId, threadId, (currentThread) {
+      return currentThread.copyWith(
+        messages: <MessageEntry>[
+          ...currentThread.messages,
+          MessageEntry(text: reply, timestamp: 'Ahora', isMine: false),
+        ],
+        lastMessage: reply,
+        lastActivity: 'Ahora',
+        unreadCount: currentThread.unreadCount + 1,
+        isAwaitingMyReply: true,
+      );
+    });
   }
 
   @override
@@ -617,11 +639,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       (currentThread) => currentThread.copyWith(
         messages: <MessageEntry>[
           ...currentThread.messages,
-          MessageEntry(
-            text: trimmedText,
-            timestamp: 'Ahora',
-            isMine: true,
-          ),
+          MessageEntry(text: trimmedText, timestamp: 'Ahora', isMine: true),
         ],
         lastMessage: trimmedText,
         lastActivity: 'Ahora',
@@ -639,29 +657,25 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     final pet = findPetById(petId);
     if (pet == null) return;
 
-    await _updateQrState(
-      userId,
-      pet,
-      (currentState) {
-        return currentState.copyWith(
-          suggestedLocation: currentState.suggestedLocation.copyWith(
-            timeReference: 'Escaneo registrado hace instantes',
+    await _updateQrState(userId, pet, (currentState) {
+      return currentState.copyWith(
+        suggestedLocation: currentState.suggestedLocation.copyWith(
+          timeReference: 'Escaneo registrado hace instantes',
+        ),
+        activity: <QrActivityEntry>[
+          QrActivityEntry(
+            title: 'Escaneo público registrado',
+            detail:
+                'Se abrió la vista pública de ${pet.name} y quedó asentada una nueva señal dentro del historial QR.',
+            timeLabel: 'Ahora',
+            statusLabel: pet.qrEnabled ? 'Escaneo válido' : 'Consulta recibida',
+            iconKey: 'qr',
+            accentColorHex: 0xFFDDF6F6,
           ),
-          activity: <QrActivityEntry>[
-            QrActivityEntry(
-              title: 'Escaneo público registrado',
-              detail:
-                  'Se abrió la vista pública de ${pet.name} y quedó asentada una nueva señal dentro del historial QR.',
-              timeLabel: 'Ahora',
-              statusLabel: pet.qrEnabled ? 'Escaneo válido' : 'Consulta recibida',
-              iconKey: 'qr',
-              accentColorHex: 0xFFDDF6F6,
-            ),
-            ...currentState.activity,
-          ],
-        );
-      },
-    );
+          ...currentState.activity,
+        ],
+      );
+    });
   }
 
   @override
@@ -670,9 +684,49 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     if (userId == null) return;
 
     final currentState = _stateForUser(userId);
+    _userStates[userId] = currentState.copyWith(notificationsEnabled: enabled);
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> setStrategicNotificationsEnabled(bool enabled) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
     _userStates[userId] = currentState.copyWith(
-      notificationsEnabled: enabled,
+      strategicNotificationsEnabled: enabled,
     );
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> setPlanName(String planName) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    _userStates[userId] = currentState.copyWith(planName: planName);
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> setPrivacyLevel(String privacyLevel) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    _userStates[userId] = currentState.copyWith(privacyLevel: privacyLevel);
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> setSecurityLevel(String securityLevel) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    _userStates[userId] = currentState.copyWith(securityLevel: securityLevel);
     await _persistUserState(userId);
   }
 
@@ -690,49 +744,45 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         : locationLabel;
     final notes = draft.notes.trim();
 
-    await _updateQrState(
-      userId,
-      pet,
-      (currentState) {
-        final nextLocation = currentState.suggestedLocation.copyWith(
-          zone: normalizedLocationLabel,
-          zoneReference: normalizedLocationLabel,
-          timeReference: 'Reporte recibido hace instantes',
-          mapLabelTop: pet.name,
-          mapLabelBottom: 'Reporte activo',
-        );
+    await _updateQrState(userId, pet, (currentState) {
+      final nextLocation = currentState.suggestedLocation.copyWith(
+        zone: normalizedLocationLabel,
+        zoneReference: normalizedLocationLabel,
+        timeReference: 'Reporte recibido hace instantes',
+        mapLabelTop: pet.name,
+        mapLabelBottom: 'Reporte activo',
+      );
 
-        final detailParts = <String>[
-          'Se recibió un aviso sobre ${pet.name} en $normalizedLocationLabel.',
-          'Estado observado: ${draft.condition}.',
-          if (notes.isNotEmpty) notes,
-          draft.allowContact
-              ? 'El flujo permite contacto posterior dentro del canal protegido.'
-              : 'El reporte quedó sin contacto posterior habilitado.',
-        ];
+      final detailParts = <String>[
+        'Se recibió un aviso sobre ${pet.name} en $normalizedLocationLabel.',
+        'Estado observado: ${draft.condition}.',
+        if (notes.isNotEmpty) notes,
+        draft.allowContact
+            ? 'El flujo permite contacto posterior dentro del canal protegido.'
+            : 'El reporte quedó sin contacto posterior habilitado.',
+      ];
 
-        return currentState.copyWith(
-          suggestedLocation: nextLocation,
-          activity: <QrActivityEntry>[
-            QrActivityEntry(
-              title: draft.condition == 'Parece lastimada'
-                  ? 'Reporte con posible alerta física'
-                  : 'Avistamiento reportado',
-              detail: detailParts.join(' '),
-              timeLabel: 'Ahora',
-              statusLabel: draft.condition == 'Parece lastimada'
-                  ? 'Requiere revisión'
-                  : 'Reporte nuevo',
-              iconKey: 'location',
-              accentColorHex: draft.condition == 'Parece lastimada'
-                  ? 0xFFFFF2C6
-                  : 0xFFFFE1EA,
-            ),
-            ...currentState.activity,
-          ],
-        );
-      },
-    );
+      return currentState.copyWith(
+        suggestedLocation: nextLocation,
+        activity: <QrActivityEntry>[
+          QrActivityEntry(
+            title: draft.condition == 'Parece lastimada'
+                ? 'Reporte con posible alerta física'
+                : 'Avistamiento reportado',
+            detail: detailParts.join(' '),
+            timeLabel: 'Ahora',
+            statusLabel: draft.condition == 'Parece lastimada'
+                ? 'Requiere revisión'
+                : 'Reporte nuevo',
+            iconKey: 'location',
+            accentColorHex: draft.condition == 'Parece lastimada'
+                ? 0xFFFFF2C6
+                : 0xFFFFE1EA,
+          ),
+          ...currentState.activity,
+        ],
+      );
+    });
   }
 
   @override
@@ -833,6 +883,10 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }) {
     return PersistedLocalUserState(
       notificationsEnabled: true,
+      strategicNotificationsEnabled: true,
+      planName: _sessionController.currentAccount?.planName ?? 'Mascotify Plus',
+      privacyLevel: 'Equilibrada',
+      securityLevel: 'Estándar',
       pets: pets,
       threads: _seedThreadsForCurrentAccount(pets),
       qrStates: _seedQrStatesForCurrentAccount(pets),
@@ -976,7 +1030,9 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     final nextJson = nextProfile.toJson();
     if (jsonEncode(previousJson) == jsonEncode(nextJson)) return;
 
-    _userStates[userId] = currentState.copyWith(professionalProfile: nextProfile);
+    _userStates[userId] = currentState.copyWith(
+      professionalProfile: nextProfile,
+    );
   }
 
   PersistedLocalUserState _normalizeUserState(
@@ -1006,11 +1062,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       return state.copyWith(
         pets: nextPets,
         threads: nextThreads,
-        qrStates: _normalizeQrStates(
-          userId,
-          nextPets,
-          state.qrStates,
-        ),
+        qrStates: _normalizeQrStates(userId, nextPets, state.qrStates),
         socialInboxEntries: nextSocialInboxEntries,
         savedProfiles: nextSavedProfiles,
       );
@@ -1019,11 +1071,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     final nextThreads = state.threads.isEmpty && state.pets.isNotEmpty
         ? _seedThreadsForCurrentAccount(state.pets)
         : state.threads;
-    final nextQrStates = _normalizeQrStates(
-      userId,
-      state.pets,
-      state.qrStates,
-    );
+    final nextQrStates = _normalizeQrStates(userId, state.pets, state.qrStates);
     final nextSocialInboxEntries = _normalizeSocialInboxEntries(
       state.pets,
       state.socialInboxEntries,
@@ -1262,7 +1310,9 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       suggestedLocation: location,
       activity: <QrActivityEntry>[
         QrActivityEntry(
-          title: pet.qrEnabled ? 'Perfil QR listo para usarse' : 'Perfil QR preparado',
+          title: pet.qrEnabled
+              ? 'Perfil QR listo para usarse'
+              : 'Perfil QR preparado',
           detail:
               'La base local de ${pet.name} ya puede empezar a registrar escaneos y reportes dentro de Mascotify.',
           timeLabel: 'Hoy',
@@ -1291,7 +1341,8 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           ? 'Contacto protegido activo'
           : 'Contacto protegido pendiente de vincular',
       lastSignalLabel: _buildLastSignalLabel(latestActivity),
-      lastSignalDetail: latestActivity?.detail ??
+      lastSignalDetail:
+          latestActivity?.detail ??
           'La ficha está lista para sumar trazabilidad cuando llegue el primer escaneo o reporte real.',
       totalScansLabel: signalCount == 0
           ? 'Sin actividad QR todavía'
@@ -1316,7 +1367,9 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           ? 'QR activo con señales recientes'
           : 'QR consultado con trazabilidad activa';
     }
-    return pet.qrEnabled ? 'QR activo con base persistida' : 'QR preparado para activación';
+    return pet.qrEnabled
+        ? 'QR activo con base persistida'
+        : 'QR preparado para activación';
   }
 
   String _buildLastSignalLabel(QrActivityEntry? latestActivity) {
@@ -1370,7 +1423,10 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       for (final currentPet in currentState.pets)
         if (currentPet.id == pet.id)
           currentPet.copyWith(
-            qrStatus: _buildQrStatusSnapshot(currentPet, nextQrState).lastSignalDetail,
+            qrStatus: _buildQrStatusSnapshot(
+              currentPet,
+              nextQrState,
+            ).lastSignalDetail,
             qrLastUpdate: _buildPetQrLastUpdateLabel(nextQrState),
           )
         else
@@ -1397,9 +1453,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     }
   }
 
-  bool _shouldExposeProfessionalProfile(
-    ProfessionalAccountProfile? profile,
-  ) {
+  bool _shouldExposeProfessionalProfile(ProfessionalAccountProfile? profile) {
     if (profile == null) return false;
 
     final businessName = profile.businessName.toLowerCase();

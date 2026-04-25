@@ -14,6 +14,9 @@ class MockData {
     city: 'Buenos Aires',
     memberSince: 'Enero 2026',
     notificationsEnabled: true,
+    strategicNotificationsEnabled: true,
+    privacyLevel: 'Equilibrada',
+    securityLevel: 'Estándar',
   );
 
   static const List<Pet> pets = [

@@ -10,15 +10,34 @@ import '../../../../theme/app_colors.dart';
 import 'connections_inbox_screen.dart';
 import 'professionals_screen.dart';
 
-class ExploreScreen extends StatelessWidget {
+class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
+
+  @override
+  State<ExploreScreen> createState() => _ExploreScreenState();
+}
+
+class _ExploreScreenState extends State<ExploreScreen> {
+  static const _allSpecies = 'Todas';
+  static const _anySex = 'Cualquiera';
+  static const _allLocations = 'Todas';
+  static const _anyBreeding = 'Indistinto';
+
+  String _selectedSpecies = _allSpecies;
+  String _selectedSex = _anySex;
+  String _selectedLocation = _allLocations;
+  String _selectedBreeding = _anyBreeding;
 
   @override
   Widget build(BuildContext context) {
     final pets = AppData.pets;
+    final filteredPets = pets.where(_matchesFilters).toList();
+    final locationOptions = _locationOptionsFor(pets);
     final savedProfiles = AppData.savedProfiles;
     final inboxItems = AppData.socialInboxEntries;
-    final sentCount = inboxItems.where((item) => item.direction == 'Enviado').length;
+    final sentCount = inboxItems
+        .where((item) => item.direction == 'Enviado')
+        .length;
     final receivedCount = inboxItems
         .where((item) => item.direction == 'Recibido')
         .length;
@@ -29,117 +48,208 @@ class ExploreScreen extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
-            const _ExploreHero(),
-            const SizedBox(height: 16),
-            ResponsiveWrapGrid(
-              minItemWidth: 340,
-              children: [
-                _ConnectionsEntryCard(
-                  sentCount: sentCount,
-                  receivedCount: receivedCount,
-                  onOpenInbox: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const ConnectionsInboxScreen(),
-                    ),
-                  ),
-                ),
-                _ProfessionalsEntryCard(
-                  onOpenProfessionals: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const ProfessionalsScreen(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const _ExploreFilters(),
-            const SizedBox(height: 20),
-            Text(
-              'Mascotas sugeridas',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Perfiles con potencial de conexión, afinidad social y futuras oportunidades de matching.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            if (pets.isEmpty)
-              const _ExploreEmptyState(
-                title: 'Todavía no hay perfiles para explorar',
-                description:
-                    'Cuando la cuenta tenga mascotas persistidas, esta vista podrá mostrar afinidades, guardados e intereses con más contexto.',
-              )
-            else
+              const _ExploreHero(),
+              const SizedBox(height: 16),
               ResponsiveWrapGrid(
-                minItemWidth: 360,
-                spacing: 14,
-                runSpacing: 14,
-                children: pets
-                    .map((pet) => _ExplorePetCard(pet: pet))
-                    .toList(),
-              ),
-            const SizedBox(height: 10),
-            Text(
-              'Perfiles guardados',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Una base persistida para volver a perfiles que te interesaron y seguir descubriendo con más calma.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.surfaceAlt, AppColors.primarySoft],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                minItemWidth: 340,
                 children: [
-                  Text(
-                    'Discovery progresivo',
-                    style: Theme.of(context).textTheme.titleMedium,
+                  _ConnectionsEntryCard(
+                    sentCount: sentCount,
+                    receivedCount: receivedCount,
+                    onOpenInbox: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ConnectionsInboxScreen(),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Mascotify también puede acompañar un descubrimiento más pausado: guardar, revisar después y retomar conexiones cuando el momento sea el indicado.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
-                      height: 1.5,
+                  _ProfessionalsEntryCard(
+                    onOpenProfessionals: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ProfessionalsScreen(),
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-            if (savedProfiles.isEmpty)
-              const _ExploreEmptyState(
-                title: 'Todavía no guardaste perfiles',
-                description:
-                    'Cuando marques una mascota para revisar después, va a quedar persistida acá dentro de tu cuenta.',
-              )
-            else
-              ResponsiveWrapGrid(
-                minItemWidth: 360,
-                children: savedProfiles
-                    .map((entry) => _SavedProfileCard(entry: entry))
-                    .toList(),
+              const SizedBox(height: 20),
+              _ExploreFilters(
+                selectedSpecies: _selectedSpecies,
+                selectedSex: _selectedSex,
+                selectedLocation: _selectedLocation,
+                selectedBreeding: _selectedBreeding,
+                locationOptions: locationOptions,
+                onSpeciesChanged: (value) =>
+                    setState(() => _selectedSpecies = value),
+                onSexChanged: (value) => setState(() => _selectedSex = value),
+                onLocationChanged: (value) =>
+                    setState(() => _selectedLocation = value),
+                onBreedingChanged: (value) =>
+                    setState(() => _selectedBreeding = value),
               ),
+              const SizedBox(height: 20),
+              Text(
+                'Mascotas sugeridas',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Perfiles con potencial de conexión, afinidad social y futuras oportunidades de matching.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              if (pets.isEmpty)
+                const _ExploreEmptyState(
+                  title: 'Todavía no hay perfiles para explorar',
+                  description:
+                      'Cuando la cuenta tenga mascotas persistidas, esta vista podrá mostrar afinidades, guardados e intereses con más contexto.',
+                )
+              else if (filteredPets.isEmpty)
+                const _ExploreEmptyState(
+                  title: 'No hay perfiles con esos filtros',
+                  description:
+                      'Probá ajustar especie, sexo, ubicación o búsqueda de cría para ampliar los resultados.',
+                )
+              else
+                ResponsiveWrapGrid(
+                  minItemWidth: 360,
+                  spacing: 14,
+                  runSpacing: 14,
+                  children: filteredPets
+                      .map((pet) => _ExplorePetCard(pet: pet))
+                      .toList(),
+                ),
+              const SizedBox(height: 10),
+              Text(
+                'Perfiles guardados',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Una base persistida para volver a perfiles que te interesaron y seguir descubriendo con más calma.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.surfaceAlt, AppColors.primarySoft],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Discovery progresivo',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Mascotify también puede acompañar un descubrimiento más pausado: guardar, revisar después y retomar conexiones cuando el momento sea el indicado.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textPrimary,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (savedProfiles.isEmpty)
+                const _ExploreEmptyState(
+                  title: 'Todavía no guardaste perfiles',
+                  description:
+                      'Cuando marques una mascota para revisar después, va a quedar persistida acá dentro de tu cuenta.',
+                )
+              else
+                ResponsiveWrapGrid(
+                  minItemWidth: 360,
+                  children: savedProfiles
+                      .map((entry) => _SavedProfileCard(entry: entry))
+                      .toList(),
+                ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  bool _matchesFilters(Pet pet) {
+    return _matchesSpecies(pet) &&
+        _matchesSex(pet) &&
+        _matchesLocation(pet) &&
+        _matchesBreeding(pet);
+  }
+
+  bool _matchesSpecies(Pet pet) {
+    if (_selectedSpecies == _allSpecies) return true;
+
+    final normalized = _normalize(pet.species);
+    return switch (_selectedSpecies) {
+      'Perro' => normalized.contains('perro'),
+      'Gato' => normalized.contains('gato') || normalized.contains('gata'),
+      'Otros' =>
+        !normalized.contains('perro') &&
+            !normalized.contains('gato') &&
+            !normalized.contains('gata'),
+      _ => true,
+    };
+  }
+
+  bool _matchesSex(Pet pet) {
+    if (_selectedSex == _anySex) return true;
+    return _normalize(pet.sex) == _normalize(_selectedSex);
+  }
+
+  bool _matchesLocation(Pet pet) {
+    if (_selectedLocation == _allLocations) return true;
+    return _normalize(pet.location).contains(_normalize(_selectedLocation));
+  }
+
+  bool _matchesBreeding(Pet pet) {
+    return switch (_selectedBreeding) {
+      'Sólo crías' => pet.seekingBreeding,
+      'Sólo adultos' => !pet.seekingBreeding,
+      _ => true,
+    };
+  }
+
+  List<String> _locationOptionsFor(List<Pet> pets) {
+    final locations = <String>{
+      _allLocations,
+      'Buenos Aires',
+      'CABA',
+      'Córdoba',
+      ...pets.map((pet) => _locationOptionFrom(pet.location)),
+    };
+
+    return [
+      _allLocations,
+      ...locations.where((location) => location != _allLocations).toList()
+        ..sort(),
+    ];
+  }
+
+  String _locationOptionFrom(String location) {
+    final parts = location.split(',');
+    return parts.length > 1 ? parts.last.trim() : location.trim();
+  }
+
+  String _normalize(String value) {
+    return value
+        .trim()
+        .toLowerCase()
+        .replaceAll('á', 'a')
+        .replaceAll('é', 'e')
+        .replaceAll('í', 'i')
+        .replaceAll('ó', 'o')
+        .replaceAll('ú', 'u');
   }
 }
 
@@ -374,7 +484,27 @@ class _ProfessionalsEntryCard extends StatelessWidget {
 }
 
 class _ExploreFilters extends StatelessWidget {
-  const _ExploreFilters();
+  const _ExploreFilters({
+    required this.selectedSpecies,
+    required this.selectedSex,
+    required this.selectedLocation,
+    required this.selectedBreeding,
+    required this.locationOptions,
+    required this.onSpeciesChanged,
+    required this.onSexChanged,
+    required this.onLocationChanged,
+    required this.onBreedingChanged,
+  });
+
+  final String selectedSpecies;
+  final String selectedSex;
+  final String selectedLocation;
+  final String selectedBreeding;
+  final List<String> locationOptions;
+  final ValueChanged<String> onSpeciesChanged;
+  final ValueChanged<String> onSexChanged;
+  final ValueChanged<String> onLocationChanged;
+  final ValueChanged<String> onBreedingChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -391,19 +521,90 @@ class _ExploreFilters extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: const [
-                _FilterChip(label: 'Especie: Todas'),
-                _FilterChip(label: 'Sexo: Cualquiera'),
-                _FilterChip(label: 'Ubicación: Buenos Aires'),
-                _FilterChip(label: 'Busca cría: Indistinto'),
+            ResponsiveWrapGrid(
+              minItemWidth: 210,
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                _FilterDropdown(
+                  label: 'Especie',
+                  value: selectedSpecies,
+                  options: const ['Todas', 'Perro', 'Gato', 'Otros'],
+                  onChanged: onSpeciesChanged,
+                ),
+                _FilterDropdown(
+                  label: 'Sexo',
+                  value: selectedSex,
+                  options: const ['Cualquiera', 'Macho', 'Hembra'],
+                  onChanged: onSexChanged,
+                ),
+                _FilterDropdown(
+                  label: 'Ubicación',
+                  value: selectedLocation,
+                  options: locationOptions,
+                  onChanged: onLocationChanged,
+                ),
+                _FilterDropdown(
+                  label: 'Busca cría',
+                  value: selectedBreeding,
+                  options: const ['Indistinto', 'Sólo crías', 'Sólo adultos'],
+                  onChanged: onBreedingChanged,
+                ),
               ],
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _FilterDropdown extends StatelessWidget {
+  const _FilterDropdown({
+    required this.label,
+    required this.value,
+    required this.options,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String value;
+  final List<String> options;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      initialValue: value,
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: AppColors.surfaceAlt,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
+      ),
+      items: options
+          .map(
+            (option) =>
+                DropdownMenuItem<String>(value: option, child: Text(option)),
+          )
+          .toList(),
+      onChanged: (value) {
+        if (value != null) {
+          onChanged(value);
+        }
+      },
     );
   }
 }
@@ -806,42 +1007,6 @@ class _MiniMetric extends StatelessWidget {
   }
 }
 
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(width: 8),
-          const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            size: 18,
-            color: AppColors.textSecondary,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _TagChip extends StatelessWidget {
   const _TagChip({required this.label});
 
@@ -1023,10 +1188,7 @@ Future<void> _showSavedProfileDialog(BuildContext context, Pet pet) async {
 }
 
 class _ExploreEmptyState extends StatelessWidget {
-  const _ExploreEmptyState({
-    required this.title,
-    required this.description,
-  });
+  const _ExploreEmptyState({required this.title, required this.description});
 
   final String title;
   final String description;

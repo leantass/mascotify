@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/models/account_identity_models.dart';
 import '../../../shared/models/app_user.dart';
+import '../data/google_auth_service.dart';
 import '../data/local_auth_models.dart';
 import '../data/local_auth_repository.dart';
 
 class AuthSessionController extends ChangeNotifier {
-  AuthSessionController({required LocalAuthRepository repository})
-    : _repository = repository;
+  AuthSessionController({
+    required LocalAuthRepository repository,
+    GoogleAuthService? googleAuthService,
+  }) : _repository = repository,
+       _googleAuthService = googleAuthService ?? GoogleAuthService();
 
   final LocalAuthRepository _repository;
+  final GoogleAuthService _googleAuthService;
 
   bool _isReady = false;
   bool _isBusy = false;
@@ -47,7 +52,9 @@ class AuthSessionController extends ChangeNotifier {
   MascotifyAccount accountFor(AccountExperience experience) {
     final account = currentAccount;
     if (account == null) {
-      throw StateError('No hay una cuenta autenticada para resolver el perfil.');
+      throw StateError(
+        'No hay una cuenta autenticada para resolver el perfil.',
+      );
     }
     // The active experience is already normalized when the session is restored
     // or switched, so the controller only exposes the current account snapshot.
@@ -81,6 +88,35 @@ class AuthSessionController extends ChangeNotifier {
     });
   }
 
+  Future<String?> signInWithGoogle({
+    required AccountExperience fallbackExperience,
+  }) async {
+    String? error;
+    await _setBusy(() async {
+      final googleResult = await _googleAuthService.signIn();
+      if (googleResult.isCancelled) return;
+
+      final profile = googleResult.profile;
+      if (profile == null) {
+        error =
+            googleResult.error ?? 'No pudimos completar el acceso con Google.';
+        return;
+      }
+
+      final result = await _repository.signInWithGoogle(
+        profile: profile,
+        fallbackExperience: fallbackExperience,
+      );
+
+      if (result.isSuccess) {
+        _applyResult(result);
+      } else {
+        error = result.error ?? 'No pudimos completar el acceso con Google.';
+      }
+    });
+    return error;
+  }
+
   Future<String?> completeOnboarding() async {
     final account = _account;
     if (account == null) return 'No hay una cuenta activa.';
@@ -105,6 +141,7 @@ class AuthSessionController extends ChangeNotifier {
 
   Future<void> logout() async {
     await _setBusy(() async {
+      await _googleAuthService.signOut();
       await _repository.logout();
       _account = null;
       _session = null;

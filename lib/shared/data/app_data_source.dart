@@ -61,6 +61,10 @@ abstract class MascotifyDataSource {
   Future<void> syncCurrentUserState();
   Future<void> addPet(Pet pet);
   Future<void> setNotificationsEnabled(bool enabled);
+  Future<void> setStrategicNotificationsEnabled(bool enabled);
+  Future<void> setPlanName(String planName);
+  Future<void> setPrivacyLevel(String privacyLevel);
+  Future<void> setSecurityLevel(String securityLevel);
 }
 
 class MockMascotifyDataSource implements MascotifyDataSource {
@@ -241,6 +245,18 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   Future<void> setNotificationsEnabled(bool enabled) async {}
 
   @override
+  Future<void> setStrategicNotificationsEnabled(bool enabled) async {}
+
+  @override
+  Future<void> setPlanName(String planName) async {}
+
+  @override
+  Future<void> setPrivacyLevel(String privacyLevel) async {}
+
+  @override
+  Future<void> setSecurityLevel(String securityLevel) async {}
+
+  @override
   Future<void> submitSightingReport(SightingReportDraft draft) async {}
 
   @override
@@ -380,5 +396,21 @@ class AppData {
 
   static Future<void> setNotificationsEnabled(bool enabled) {
     return source.setNotificationsEnabled(enabled);
+  }
+
+  static Future<void> setStrategicNotificationsEnabled(bool enabled) {
+    return source.setStrategicNotificationsEnabled(enabled);
+  }
+
+  static Future<void> setPlanName(String planName) {
+    return source.setPlanName(planName);
+  }
+
+  static Future<void> setPrivacyLevel(String privacyLevel) {
+    return source.setPrivacyLevel(privacyLevel);
+  }
+
+  static Future<void> setSecurityLevel(String securityLevel) {
+    return source.setSecurityLevel(securityLevel);
   }
 }

@@ -7,6 +7,9 @@ class AppUser {
     required this.city,
     required this.memberSince,
     required this.notificationsEnabled,
+    required this.strategicNotificationsEnabled,
+    required this.privacyLevel,
+    required this.securityLevel,
   });
 
   final String id;
@@ -16,4 +19,7 @@ class AppUser {
   final String city;
   final String memberSince;
   final bool notificationsEnabled;
+  final bool strategicNotificationsEnabled;
+  final String privacyLevel;
+  final String securityLevel;
 }
