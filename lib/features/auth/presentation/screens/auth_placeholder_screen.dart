@@ -133,7 +133,8 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Expanded(
+                      Flexible(
+                        fit: FlexFit.loose,
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -198,9 +199,9 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
 
   Widget _buildLoginCard(
     BuildContext context,
-    AuthSessionController auth,
-    {bool isDense = false}
-  ) {
+    AuthSessionController auth, {
+    bool isDense = false,
+  }) {
     return _FormShell(
       isDense: isDense,
       title: 'Iniciar sesión',
@@ -237,11 +238,17 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
             ),
           ),
           SizedBox(height: isDense ? 6 : 8),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: auth.isBusy ? null : _submitLogin,
-              child: Text(auth.isBusy ? 'Ingresando...' : 'Ingresar'),
+          _AuthActionBlock(
+            isDense: isDense,
+            showAlternative: isDense,
+            googleButtonLabel: 'Iniciar sesión con Google',
+            onGoogleTap: () => _showGoogleAuthPlaceholder(context),
+            primaryButton: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: auth.isBusy ? null : _submitLogin,
+                child: Text(auth.isBusy ? 'Ingresando...' : 'Ingresar'),
+              ),
             ),
           ),
         ],
@@ -374,14 +381,20 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                         ),
                       )
                       .toList(),
-                ),
+              ),
               SizedBox(height: isDense ? 6 : 8),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: auth.isBusy ? null : _submitRegister,
-                  child: Text(
-                    auth.isBusy ? 'Creando cuenta...' : 'Crear cuenta',
+              _AuthActionBlock(
+                isDense: isDense,
+                showAlternative: true,
+                googleButtonLabel: 'Crear con Google',
+                onGoogleTap: () => _showGoogleAuthPlaceholder(context),
+                primaryButton: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: auth.isBusy ? null : _submitRegister,
+                    child: Text(
+                      auth.isBusy ? 'Creando cuenta...' : 'Crear cuenta',
+                    ),
                   ),
                 ),
               ),
@@ -453,6 +466,235 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
       },
     );
   }
+
+  void _showGoogleAuthPlaceholder(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Próximamente'),
+          content: const Text(
+            'El acceso con Google estará disponible una vez que se complete la integración final del proveedor de autenticación.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Entendido'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _AuthActionBlock extends StatelessWidget {
+  const _AuthActionBlock({
+    required this.primaryButton,
+    required this.googleButtonLabel,
+    required this.onGoogleTap,
+    required this.showAlternative,
+    this.isDense = false,
+  });
+
+  final Widget primaryButton;
+  final String googleButtonLabel;
+  final VoidCallback onGoogleTap;
+  final bool showAlternative;
+  final bool isDense;
+
+  @override
+  Widget build(BuildContext context) {
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        primaryButton,
+        if (showAlternative) ...[
+          SizedBox(height: isDense ? 18 : 16),
+          _AuthAlternativeSection(
+            buttonLabel: googleButtonLabel,
+            onGoogleTap: onGoogleTap,
+          ),
+        ],
+      ],
+    );
+
+    if (!isDense) {
+      return content;
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: content,
+    );
+  }
+}
+
+class _AuthAlternativeSection extends StatelessWidget {
+  const _AuthAlternativeSection({
+    required this.buttonLabel,
+    required this.onGoogleTap,
+  });
+
+  final String buttonLabel;
+  final VoidCallback onGoogleTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final textStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w500,
+        );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Divider(
+                color: AppColors.border,
+                thickness: 1,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'o continuar con',
+                style: textStyle,
+              ),
+            ),
+            Expanded(
+              child: Divider(
+                color: AppColors.border,
+                thickness: 1,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.textPrimary,
+              backgroundColor: Colors.white,
+              side: BorderSide(color: AppColors.border),
+              padding: const EdgeInsets.symmetric(vertical: 13),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            onPressed: onGoogleTap,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: const Center(
+                    child: _GoogleLogoMark(size: 18),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Flexible(
+                  child: Text(
+                    buttonLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _GoogleLogoMark extends StatelessWidget {
+  const _GoogleLogoMark({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size.square(size),
+      painter: _GoogleLogoPainter(),
+    );
+  }
+}
+
+class _GoogleLogoPainter extends CustomPainter {
+  static const _blue = Color(0xFF4285F4);
+  static const _red = Color(0xFFEA4335);
+  static const _yellow = Color(0xFFFBBC05);
+  static const _green = Color(0xFF34A853);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final strokeWidth = size.width * 0.18;
+    final rect = Rect.fromLTWH(
+      strokeWidth / 2,
+      strokeWidth / 2,
+      size.width - strokeWidth,
+      size.height - strokeWidth,
+    );
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    void drawArc(Color color, double start, double sweep) {
+      paint.color = color;
+      canvas.drawArc(rect, start, sweep, false, paint);
+    }
+
+    drawArc(_blue, -0.05, 1.08);
+    drawArc(_red, -2.95, 1.35);
+    drawArc(_yellow, 2.38, 1.02);
+    drawArc(_green, 1.55, 0.95);
+
+    final centerY = size.height * 0.52;
+    final horizontalStart = Offset(size.width * 0.52, centerY);
+    final horizontalEnd = Offset(size.width * 0.92, centerY);
+
+    paint
+      ..color = _blue
+      ..strokeCap = StrokeCap.square;
+    canvas.drawLine(horizontalStart, horizontalEnd, paint);
+
+    paint.strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      rect,
+      -0.03,
+      0.82,
+      false,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _HeroPanel extends StatelessWidget {
@@ -694,14 +936,14 @@ class _ModeButton extends StatelessWidget {
           vertical: isDense ? 10 : 12,
         ),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.dark : Colors.transparent,
+          color: isActive ? AppColors.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(999),
         ),
         child: Center(
           child: Text(
             label,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: isActive ? Colors.white : AppColors.textPrimary,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
