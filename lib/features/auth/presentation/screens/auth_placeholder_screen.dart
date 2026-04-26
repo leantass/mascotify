@@ -44,7 +44,9 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
   Widget build(BuildContext context) {
     final viewportWidth = MediaQuery.sizeOf(context).width;
     final pageMaxWidth = viewportWidth >= 900
-        ? (viewportWidth - 16).clamp(1180.0, 1840.0).toDouble()
+        ? (viewportWidth - (viewportWidth >= 1440 ? 8 : 16))
+            .clamp(1180.0, 1960.0)
+            .toDouble()
         : 1040.0;
 
     return Scaffold(
@@ -115,11 +117,11 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                 );
               }
 
-              final isExtraWide = constraints.maxWidth >= 1440;
-              final horizontalPadding = isExtraWide ? 12.0 : 10.0;
-              final columnGap = isExtraWide ? 22.0 : 16.0;
-              final innerGap = isExtraWide ? 16.0 : 12.0;
-              final verticalPadding = isExtraWide ? 10.0 : 8.0;
+              final isExtraWide = constraints.maxWidth >= 1520;
+              final horizontalPadding = isExtraWide ? 8.0 : 6.0;
+              final columnGap = isExtraWide ? 28.0 : 20.0;
+              final innerGap = isExtraWide ? 18.0 : 14.0;
+              final verticalPadding = isExtraWide ? 8.0 : 6.0;
               final mediaQuery = MediaQuery.of(context);
               final availableHeight =
                   mediaQuery.size.height - mediaQuery.padding.vertical;
@@ -141,6 +143,19 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                   email: LocalAuthSeedData.professionalEmail,
                 ),
               );
+              Widget buildRightUtilityColumn() {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    demoPanel,
+                    if (_errorMessage != null) ...[
+                      SizedBox(height: innerGap),
+                      _ErrorCard(message: _errorMessage!, isDense: true),
+                    ],
+                    const Spacer(),
+                  ],
+                );
+              }
 
               return SizedBox(
                 width: double.infinity,
@@ -150,112 +165,80 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                     horizontal: horizontalPadding,
                     vertical: verticalPadding,
                   ),
-                  child: Column(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const Expanded(
+                        flex: 4,
+                        child: _HeroPanel(isDense: true),
+                      ),
+                      SizedBox(width: columnGap),
                       Expanded(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            const Expanded(
-                              flex: 4,
-                              child: _HeroPanel(isDense: true),
-                            ),
-                            SizedBox(width: columnGap),
-                            Expanded(
-                              flex: 8,
-                              child: LayoutBuilder(
-                                builder: (context, rightConstraints) {
-                                  final splitRightContent =
-                                      rightConstraints.maxWidth >= 820;
+                        flex: 9,
+                        child: LayoutBuilder(
+                          builder: (context, rightConstraints) {
+                            final splitRightContent =
+                                rightConstraints.maxWidth >= 960;
+                            final utilityPanelWidth =
+                                rightConstraints.maxWidth >= 1260
+                                ? 340.0
+                                : rightConstraints.maxWidth >= 1080
+                                ? 320.0
+                                : 300.0;
 
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      _ModeSwitcher(
-                                        isDense: true,
-                                        isLoginMode: _isLoginMode,
-                                        onModeChanged: _setMode,
-                                      ),
-                                      SizedBox(height: innerGap),
-                                      Expanded(
-                                        child: splitRightContent
-                                            ? Row(
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _ModeSwitcher(
+                                  isDense: true,
+                                  isLoginMode: _isLoginMode,
+                                  onModeChanged: _setMode,
+                                ),
+                                SizedBox(height: innerGap),
+                                Expanded(
+                                  child: splitRightContent
+                                      ? Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Expanded(
+                                              child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.stretch,
                                                 children: [
-                                                  Expanded(
-                                                    flex: 7,
-                                                    child: Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .stretch,
-                                                      children: [
-                                                        Flexible(
-                                                          child:
-                                                              animatedFormCard,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  SizedBox(width: innerGap),
-                                                  Expanded(
-                                                    flex: 4,
-                                                    child: Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .stretch,
-                                                      children: [
-                                                        demoPanel,
-                                                        if (_errorMessage !=
-                                                            null) ...[
-                                                          SizedBox(
-                                                            height: innerGap,
-                                                          ),
-                                                          _ErrorCard(
-                                                            message:
-                                                                _errorMessage!,
-                                                          ),
-                                                        ],
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              )
-                                            : Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.stretch,
-                                                children: [
-                                                  Flexible(
-                                                    flex: 8,
-                                                    child: animatedFormCard,
-                                                  ),
-                                                  SizedBox(height: innerGap),
-                                                  demoPanel,
-                                                  if (_errorMessage !=
-                                                      null) ...[
-                                                    SizedBox(height: innerGap),
-                                                    _ErrorCard(
-                                                      message: _errorMessage!,
-                                                    ),
-                                                  ],
+                                                  animatedFormCard,
+                                                  const Spacer(),
                                                 ],
                                               ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
+                                            ),
+                                            SizedBox(width: innerGap),
+                                            SizedBox(
+                                              width: utilityPanelWidth,
+                                              child: buildRightUtilityColumn(),
+                                            ),
+                                          ],
+                                        )
+                                      : Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            animatedFormCard,
+                                            SizedBox(height: innerGap),
+                                            demoPanel,
+                                            if (_errorMessage != null) ...[
+                                              SizedBox(height: innerGap),
+                                              _ErrorCard(
+                                                message: _errorMessage!,
+                                                isDense: true,
+                                              ),
+                                            ],
+                                            const Spacer(),
+                                          ],
+                                        ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -344,11 +327,14 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
           'Registrate para empezar a usar Mascotify y gestionar tu perfil desde web o mobile.',
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final desktopFieldBreakpoint = isDense ? 480.0 : 520.0;
           final useFieldGrid =
-              allowsMultiColumnLayout && constraints.maxWidth >= 520;
+              allowsMultiColumnLayout &&
+              constraints.maxWidth >= desktopFieldBreakpoint;
           final useChoiceWrap =
-              allowsMultiColumnLayout && constraints.maxWidth >= 520;
-          final fieldSpacing = isDense ? 6.0 : (useFieldGrid ? 10.0 : 12.0);
+              allowsMultiColumnLayout &&
+              constraints.maxWidth >= desktopFieldBreakpoint;
+          final fieldSpacing = isDense ? 4.0 : (useFieldGrid ? 10.0 : 12.0);
           final fieldWidth = useFieldGrid
               ? (constraints.maxWidth - 10) / 2
               : constraints.maxWidth;
@@ -361,7 +347,7 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
             children: [
               Wrap(
                 spacing: useFieldGrid ? 10 : 0,
-                runSpacing: 12,
+                runSpacing: isDense ? 8 : 12,
                 children: [
                   SizedBox(
                     width: fieldWidth,
@@ -384,7 +370,7 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
               SizedBox(height: fieldSpacing),
               Wrap(
                 spacing: useFieldGrid ? 10 : 0,
-                runSpacing: 12,
+                runSpacing: isDense ? 8 : 12,
                 children: [
                   SizedBox(
                     width: fieldWidth,
@@ -406,15 +392,15 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: isDense ? 8 : (useFieldGrid ? 16 : 18)),
+              SizedBox(height: isDense ? 6 : (useFieldGrid ? 16 : 18)),
               Text(
                 'Elegí tu tipo de cuenta',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              SizedBox(height: isDense ? 6 : 10),
+              SizedBox(height: isDense ? 4 : 10),
               if (useChoiceWrap)
                 Wrap(
-                  spacing: 10,
+                  spacing: isDense ? 8 : 10,
                   runSpacing: isDense ? 6 : 10,
                   children: options
                       .map(
@@ -578,8 +564,9 @@ class _AuthActionBlock extends StatelessWidget {
       children: [
         primaryButton,
         if (showAlternative) ...[
-          SizedBox(height: isDense ? 18 : 16),
+          SizedBox(height: isDense ? 12 : 16),
           _AuthAlternativeSection(
+            isDense: isDense,
             buttonLabel: googleButtonLabel,
             onGoogleTap: onGoogleTap,
           ),
@@ -593,7 +580,7 @@ class _AuthActionBlock extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surfaceAlt,
         borderRadius: BorderRadius.circular(22),
@@ -608,10 +595,12 @@ class _AuthAlternativeSection extends StatelessWidget {
   const _AuthAlternativeSection({
     required this.buttonLabel,
     required this.onGoogleTap,
+    this.isDense = false,
   });
 
   final String buttonLabel;
   final VoidCallback? onGoogleTap;
+  final bool isDense;
 
   @override
   Widget build(BuildContext context) {
@@ -627,13 +616,13 @@ class _AuthAlternativeSection extends StatelessWidget {
           children: [
             Expanded(child: Divider(color: AppColors.border, thickness: 1)),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.symmetric(horizontal: isDense ? 10 : 12),
               child: Text('o continuar con', style: textStyle),
             ),
             Expanded(child: Divider(color: AppColors.border, thickness: 1)),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: isDense ? 10 : 12),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(
@@ -641,7 +630,7 @@ class _AuthAlternativeSection extends StatelessWidget {
               foregroundColor: AppColors.textPrimary,
               backgroundColor: Colors.white,
               side: BorderSide(color: AppColors.border),
-              padding: const EdgeInsets.symmetric(vertical: 13),
+              padding: EdgeInsets.symmetric(vertical: isDense ? 11 : 13),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -652,17 +641,19 @@ class _AuthAlternativeSection extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 30,
-                  height: 30,
-                  padding: const EdgeInsets.all(5),
+                  width: isDense ? 28 : 30,
+                  height: isDense ? 28 : 30,
+                  padding: EdgeInsets.all(isDense ? 4.5 : 5),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
                     border: Border.all(color: AppColors.border),
                   ),
-                  child: const Center(child: _GoogleLogoMark(size: 16)),
+                  child: Center(
+                    child: _GoogleLogoMark(size: isDense ? 15 : 16),
+                  ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: isDense ? 8 : 10),
                 Flexible(
                   child: Text(
                     buttonLabel,
@@ -750,11 +741,11 @@ class _HeroPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final panelPadding = isDense ? 16.0 : 22.0;
+    final panelPadding = isDense ? 18.0 : 22.0;
     final badgeVertical = isDense ? 6.0 : 8.0;
     final badgeHorizontal = isDense ? 10.0 : 12.0;
     final titleGap = isDense ? 14.0 : 22.0;
-    final bodyGap = isDense ? 8.0 : 12.0;
+    final bodyGap = isDense ? 10.0 : 12.0;
     final benefitsGap = isDense ? 14.0 : 24.0;
     final itemGap = isDense ? 8.0 : 14.0;
 
@@ -807,7 +798,7 @@ class _HeroPanel extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          SizedBox(height: benefitsGap),
+          if (isDense) const Spacer() else SizedBox(height: benefitsGap),
           const _BenefitItem(title: 'Perfiles y datos siempre a mano'),
           SizedBox(height: itemGap),
           const _BenefitItem(
@@ -877,11 +868,12 @@ class _FormShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shellPadding = isDense ? 12.0 : 16.0;
-    final descriptionGap = isDense ? 4.0 : 8.0;
-    final contentGap = isDense ? 8.0 : 14.0;
+    final shellPadding = isDense ? 10.0 : 16.0;
+    final descriptionGap = isDense ? 3.0 : 8.0;
+    final contentGap = isDense ? 6.0 : 14.0;
 
     return Card(
+      margin: EdgeInsets.zero,
       child: Padding(
         padding: EdgeInsets.all(shellPadding),
         child: Column(
@@ -893,7 +885,7 @@ class _FormShell extends StatelessWidget {
               description,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
-                height: 1.45,
+                height: isDense ? 1.35 : 1.45,
               ),
             ),
             SizedBox(height: contentGap),
@@ -941,7 +933,7 @@ class _ModeSwitcher extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: isDense ? 48 : 58,
+      height: isDense ? 46 : 58,
       child: Container(
         padding: EdgeInsets.all(isDense ? 4 : 6),
         decoration: BoxDecoration(
@@ -1069,8 +1061,8 @@ class _DemoPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final verticalPadding = isDense ? 10.0 : 16.0;
-    final descriptionGap = isDense ? 4.0 : 8.0;
+    final verticalPadding = isDense ? 9.0 : 16.0;
+    final descriptionGap = isDense ? 3.0 : 8.0;
     final buttonGap = isDense ? 6.0 : 14.0;
 
     return Container(
@@ -1090,7 +1082,7 @@ class _DemoPanel extends StatelessWidget {
             'Si querés recorrer la experiencia antes de usar una cuenta propia, podés entrar con uno de estos perfiles de prueba.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppColors.textSecondary,
-              height: 1.45,
+              height: isDense ? 1.35 : 1.45,
             ),
           ),
           SizedBox(height: buttonGap),
@@ -1186,12 +1178,12 @@ class _ExperienceChoiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isCompactCard = constraints.maxWidth < 280;
-        final padding = isCompactCard ? 12.0 : (isDense ? 12.0 : 16.0);
-        final titleHeight = isCompactCard ? 1.2 : 1.3;
-        final subtitleHeight = isCompactCard ? 1.25 : (isDense ? 1.32 : 1.4);
+        final isCompactCard = constraints.maxWidth < (isDense ? 260 : 280);
+        final padding = isCompactCard ? 11.0 : (isDense ? 10.0 : 16.0);
+        final titleHeight = isCompactCard ? 1.18 : 1.3;
+        final subtitleHeight = isCompactCard ? 1.22 : (isDense ? 1.28 : 1.4);
         final subtitleSpacing = isCompactCard ? 2.0 : (isDense ? 2.0 : 4.0);
-        final minCardHeight = isCompactCard ? 104.0 : (isDense ? 96.0 : 124.0);
+        final minCardHeight = isCompactCard ? 92.0 : (isDense ? 84.0 : 124.0);
 
         return InkWell(
           borderRadius: BorderRadius.circular(22),
@@ -1243,14 +1235,15 @@ class _ExperienceChoiceCard extends StatelessWidget {
 }
 
 class _ErrorCard extends StatelessWidget {
-  const _ErrorCard({required this.message});
+  const _ErrorCard({required this.message, this.isDense = false});
 
   final String message;
+  final bool isDense;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isDense ? 12 : 16),
       decoration: BoxDecoration(
         color: const Color(0xFFFFE5E5),
         borderRadius: BorderRadius.circular(20),
@@ -1292,7 +1285,7 @@ class _AuthField extends StatelessWidget {
         hintText: label,
         contentPadding: EdgeInsets.symmetric(
           horizontal: isDense ? 14 : 16,
-          vertical: isDense ? 9 : 16,
+          vertical: isDense ? 8 : 16,
         ),
         filled: true,
         fillColor: AppColors.surfaceAlt,
