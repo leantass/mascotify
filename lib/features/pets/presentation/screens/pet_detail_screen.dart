@@ -20,70 +20,71 @@ class PetDetailScreen extends StatelessWidget {
       body: SafeArea(
         child: ResponsivePageBody(
           child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
-            _PetHeroCard(pet: pet),
-            const SizedBox(height: 20),
-            _AboutPetCard(pet: pet),
-            const SizedBox(height: 16),
-            _SocialProfileCard(pet: pet),
-            const SizedBox(height: 16),
-            _MatchingProfileCard(pet: pet),
-            const SizedBox(height: 16),
-            _SectionCard(
-              title: 'Identidad',
-              subtitle:
-                  'Base del perfil digital y estado general del registro.',
-              icon: Icons.badge_outlined,
-              accentColor: AppColors.primarySoft,
-              children: [
-                _DetailRow(label: 'ID de perfil', value: pet.profileId),
-                _DetailRow(label: 'Especie', value: pet.species),
-                _DetailRow(label: 'Raza', value: pet.breed),
-                _DetailRow(label: 'Edad', value: pet.ageLabel),
-                _DetailText(text: pet.identitySummary),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _SectionCard(
-              title: 'Documentación',
-              subtitle:
-                  'Preparada para vacunas, certificados e historial base.',
-              icon: Icons.description_outlined,
-              accentColor: AppColors.supportSoft,
-              children: [
-                _DetailRow(label: 'Estado', value: pet.documentStatus),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _QrExperienceCard(pet: pet),
-            const SizedBox(height: 16),
-            _SectionCard(
-              title: 'Salud',
-              subtitle: 'Resumen inicial para controles y seguimiento.',
-              icon: Icons.favorite_border_rounded,
-              accentColor: AppColors.surfaceAlt,
-              children: [
-                _DetailRow(label: 'Seguimiento', value: pet.healthSummary),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _SectionCard(
-              title: 'Acciones rápidas',
-              subtitle: 'Atajos listos para futuras operaciones del producto.',
-              icon: Icons.flash_on_outlined,
-              accentColor: AppColors.primarySoft,
-              children: [
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: pet.quickActions
-                      .map((action) => _ActionChip(label: action))
-                      .toList(),
-                ),
-              ],
-            ),
-          ],
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
+              _PetHeroCard(pet: pet),
+              const SizedBox(height: 20),
+              _AboutPetCard(pet: pet),
+              const SizedBox(height: 16),
+              _SocialProfileCard(pet: pet),
+              const SizedBox(height: 16),
+              _MatchingProfileCard(pet: pet),
+              const SizedBox(height: 16),
+              _SectionCard(
+                title: 'Identidad',
+                subtitle:
+                    'Base del perfil digital y estado general del registro.',
+                icon: Icons.badge_outlined,
+                accentColor: AppColors.primarySoft,
+                children: [
+                  _DetailRow(label: 'ID de perfil', value: pet.profileId),
+                  _DetailRow(label: 'Especie', value: pet.species),
+                  _DetailRow(label: 'Raza', value: pet.breed),
+                  _DetailRow(label: 'Edad', value: pet.ageLabel),
+                  _DetailText(text: pet.identitySummary),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _SectionCard(
+                title: 'Documentación',
+                subtitle:
+                    'Preparada para vacunas, certificados e historial base.',
+                icon: Icons.description_outlined,
+                accentColor: AppColors.supportSoft,
+                children: [
+                  _DetailRow(label: 'Estado', value: pet.documentStatus),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _QrExperienceCard(pet: pet),
+              const SizedBox(height: 16),
+              _SectionCard(
+                title: 'Salud',
+                subtitle: 'Resumen inicial para controles y seguimiento.',
+                icon: Icons.favorite_border_rounded,
+                accentColor: AppColors.surfaceAlt,
+                children: [
+                  _DetailRow(label: 'Seguimiento', value: pet.healthSummary),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _SectionCard(
+                title: 'Acciones rápidas',
+                subtitle:
+                    'Atajos listos para futuras operaciones del producto.',
+                icon: Icons.flash_on_outlined,
+                accentColor: AppColors.primarySoft,
+                children: [
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: pet.quickActions
+                        .map((action) => _ActionChip(label: action))
+                        .toList(),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -857,10 +858,7 @@ class _MomentCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text(label, style: Theme.of(context).textTheme.titleMedium),
         ],
       ),
     );

@@ -33,9 +33,7 @@ class _AppSessionGate extends StatelessWidget {
     final auth = AuthScope.of(context);
 
     if (!auth.isReady) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (!auth.isAuthenticated) {

@@ -95,7 +95,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
                                 includeSummary: false,
                               ),
                             ),
-                            _buildComposerPanel(context, thread, compact: false),
+                            _buildComposerPanel(
+                              context,
+                              thread,
+                              compact: false,
+                            ),
                           ],
                         ),
                       ),
@@ -377,10 +381,7 @@ class _ThreadSummaryCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      thread.ownerName,
-                      style: textTheme.titleMedium,
-                    ),
+                    Text(thread.ownerName, style: textTheme.titleMedium),
                     const SizedBox(height: 4),
                     Text(
                       thread.relatedLabel,
@@ -480,20 +481,15 @@ class _ContextSummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Contexto asociado',
-            style: textTheme.titleMedium,
-          ),
+          Text('Contexto asociado', style: textTheme.titleMedium),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: thread.contextTags
                 .map(
-                  (tag) => _ContextChip(
-                    label: tag,
-                    backgroundColor: Colors.white,
-                  ),
+                  (tag) =>
+                      _ContextChip(label: tag, backgroundColor: Colors.white),
                 )
                 .toList(),
           ),

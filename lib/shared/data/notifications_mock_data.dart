@@ -101,8 +101,9 @@ List<EcosystemNotification> buildMockNotifications([
 
   final primaryPetQrActivity =
       activityResolver?.call(pets.first) ?? const <QrActivityEntry>[];
-  final primaryPetLatestSignal =
-      _latestOperationalQrSignal(primaryPetQrActivity);
+  final primaryPetLatestSignal = _latestOperationalQrSignal(
+    primaryPetQrActivity,
+  );
 
   if (primaryPetLatestSignal != null) {
     notifications.add(

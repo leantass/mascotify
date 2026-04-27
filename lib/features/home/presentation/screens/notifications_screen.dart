@@ -50,105 +50,105 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: SafeArea(
         child: ResponsivePageBody(
           child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
-            _NotificationsHero(
-              totalCount: notifications.length,
-              unreadCount: unreadCount,
-              attentionCount: attentionCount,
-              actionableCount: actionableCount,
-              historyCount: historyNotifications.length,
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Feed del ecosistema',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Ordenado por lectura real: primero lo nuevo y lo importante, después el historial útil para volver cuando lo necesites.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        _ActionChip(
-                          label: unreadCount > 0
-                              ? 'Marcar todo como visto'
-                              : 'Todo al día',
-                          onTap: unreadCount > 0 ? _markAllAsRead : null,
-                        ),
-                        _ActionChip(
-                          label: _showHistory
-                              ? 'Ocultar historial'
-                              : 'Mostrar historial',
-                          onTap: () {
-                            setState(() {
-                              _showHistory = !_showHistory;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    if (_showHistory)
-                      ResponsiveSplitColumns(
-                        breakpoint: 980,
-                        leadingChildren: [
-                          _NotificationsSection(
-                            title: 'Nuevo y pendiente',
-                            subtitle: unreadNotifications.isEmpty
-                                ? 'No hay novedades sin leer.'
-                                : 'Lo que conviene abrir primero dentro del ecosistema.',
-                            notifications: unreadNotifications,
-                            isUnread: _isUnread,
-                            onOpen: (notification) =>
-                                _openAndMarkRead(context, notification),
-                            onMarkAsRead: _markAsRead,
-                            onDismiss: _dismiss,
-                          ),
-                        ],
-                        trailingChildren: [
-                          _NotificationsSection(
-                            title: 'Historial reciente',
-                            subtitle: historyNotifications.isEmpty
-                                ? 'No hay actividad archivada por ahora.'
-                                : 'Actividad util, ya vista o mas informativa.',
-                            notifications: historyNotifications,
-                            isUnread: _isUnread,
-                            onOpen: (notification) =>
-                                _openAndMarkRead(context, notification),
-                            onMarkAsRead: _markAsRead,
-                            onDismiss: _dismiss,
-                          ),
-                        ],
-                      )
-                    else
-                      _NotificationsSection(
-                        title: 'Nuevo y pendiente',
-                        subtitle: unreadNotifications.isEmpty
-                            ? 'No hay novedades sin leer.'
-                            : 'Lo que conviene abrir primero dentro del ecosistema.',
-                        notifications: unreadNotifications,
-                        isUnread: _isUnread,
-                        onOpen: (notification) =>
-                            _openAndMarkRead(context, notification),
-                        onMarkAsRead: _markAsRead,
-                        onDismiss: _dismiss,
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
+              _NotificationsHero(
+                totalCount: notifications.length,
+                unreadCount: unreadCount,
+                attentionCount: attentionCount,
+                actionableCount: actionableCount,
+                historyCount: historyNotifications.length,
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Feed del ecosistema',
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(
+                        'Ordenado por lectura real: primero lo nuevo y lo importante, después el historial útil para volver cuando lo necesites.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          _ActionChip(
+                            label: unreadCount > 0
+                                ? 'Marcar todo como visto'
+                                : 'Todo al día',
+                            onTap: unreadCount > 0 ? _markAllAsRead : null,
+                          ),
+                          _ActionChip(
+                            label: _showHistory
+                                ? 'Ocultar historial'
+                                : 'Mostrar historial',
+                            onTap: () {
+                              setState(() {
+                                _showHistory = !_showHistory;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      if (_showHistory)
+                        ResponsiveSplitColumns(
+                          breakpoint: 980,
+                          leadingChildren: [
+                            _NotificationsSection(
+                              title: 'Nuevo y pendiente',
+                              subtitle: unreadNotifications.isEmpty
+                                  ? 'No hay novedades sin leer.'
+                                  : 'Lo que conviene abrir primero dentro del ecosistema.',
+                              notifications: unreadNotifications,
+                              isUnread: _isUnread,
+                              onOpen: (notification) =>
+                                  _openAndMarkRead(context, notification),
+                              onMarkAsRead: _markAsRead,
+                              onDismiss: _dismiss,
+                            ),
+                          ],
+                          trailingChildren: [
+                            _NotificationsSection(
+                              title: 'Historial reciente',
+                              subtitle: historyNotifications.isEmpty
+                                  ? 'No hay actividad archivada por ahora.'
+                                  : 'Actividad util, ya vista o mas informativa.',
+                              notifications: historyNotifications,
+                              isUnread: _isUnread,
+                              onOpen: (notification) =>
+                                  _openAndMarkRead(context, notification),
+                              onMarkAsRead: _markAsRead,
+                              onDismiss: _dismiss,
+                            ),
+                          ],
+                        )
+                      else
+                        _NotificationsSection(
+                          title: 'Nuevo y pendiente',
+                          subtitle: unreadNotifications.isEmpty
+                              ? 'No hay novedades sin leer.'
+                              : 'Lo que conviene abrir primero dentro del ecosistema.',
+                          notifications: unreadNotifications,
+                          isUnread: _isUnread,
+                          onOpen: (notification) =>
+                              _openAndMarkRead(context, notification),
+                          onMarkAsRead: _markAsRead,
+                          onDismiss: _dismiss,
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
           ),
         ),
       ),
@@ -360,18 +360,9 @@ class _NotificationsHero extends StatelessWidget {
           ResponsiveWrapGrid(
             minItemWidth: 180,
             children: [
-              _HeroMetric(
-                label: 'Sin leer',
-                value: '$unreadCount activos',
-              ),
-              _HeroMetric(
-                label: 'Atencion',
-                value: '$attentionCount primero',
-              ),
-              _HeroMetric(
-                label: 'Historial',
-                value: '$historyCount vistos',
-              ),
+              _HeroMetric(label: 'Sin leer', value: '$unreadCount activos'),
+              _HeroMetric(label: 'Atencion', value: '$attentionCount primero'),
+              _HeroMetric(label: 'Historial', value: '$historyCount vistos'),
             ],
           ),
           const SizedBox(height: 12),

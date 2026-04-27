@@ -60,6 +60,8 @@ abstract class MascotifyDataSource {
 
   Future<void> syncCurrentUserState();
   Future<void> addPet(Pet pet);
+  Future<void> updatePet(Pet pet);
+  Future<void> deletePet(String petId);
   Future<void> setNotificationsEnabled(bool enabled);
   Future<void> setStrategicNotificationsEnabled(bool enabled);
   Future<void> setPlanName(String planName);
@@ -233,6 +235,12 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   Future<void> addPet(Pet pet) async {}
 
   @override
+  Future<void> updatePet(Pet pet) async {}
+
+  @override
+  Future<void> deletePet(String petId) async {}
+
+  @override
   Future<void> addAutomatedReply(String threadId) async {}
 
   @override
@@ -392,6 +400,14 @@ class AppData {
 
   static Future<void> addPet(Pet pet) {
     return source.addPet(pet);
+  }
+
+  static Future<void> updatePet(Pet pet) {
+    return source.updatePet(pet);
+  }
+
+  static Future<void> deletePet(String petId) {
+    return source.deletePet(petId);
   }
 
   static Future<void> setNotificationsEnabled(bool enabled) {

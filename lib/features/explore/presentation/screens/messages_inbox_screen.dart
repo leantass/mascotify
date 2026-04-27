@@ -24,44 +24,44 @@ class MessagesInboxScreen extends StatelessWidget {
       body: SafeArea(
         child: ResponsivePageBody(
           child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
-            _MessagesHero(
-              totalThreads: threads.length,
-              unreadCount: unreadCount,
-              awaitingMyReplyCount: awaitingMyReplyCount,
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Conversaciones activas',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Una bandeja con mejor lectura de contexto, estado del vínculo y próximos pasos para que la mensajería se sienta más conectada con Mascotify.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 16),
-                    if (threads.isEmpty)
-                      const _InboxEmptyState()
-                    else
-                      ResponsiveWrapGrid(
-                        minItemWidth: 360,
-                        children: threads
-                            .map((thread) => _ThreadCard(thread: thread))
-                            .toList(),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
+              _MessagesHero(
+                totalThreads: threads.length,
+                unreadCount: unreadCount,
+                awaitingMyReplyCount: awaitingMyReplyCount,
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Conversaciones activas',
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(
+                        'Una bandeja con mejor lectura de contexto, estado del vínculo y próximos pasos para que la mensajería se sienta más conectada con Mascotify.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      if (threads.isEmpty)
+                        const _InboxEmptyState()
+                      else
+                        ResponsiveWrapGrid(
+                          minItemWidth: 360,
+                          children: threads
+                              .map((thread) => _ThreadCard(thread: thread))
+                              .toList(),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
           ),
         ),
       ),
@@ -130,14 +130,8 @@ class _MessagesHero extends StatelessWidget {
           ResponsiveWrapGrid(
             minItemWidth: 180,
             children: [
-              _HeroMetric(
-                label: 'Chats',
-                value: '$totalThreads activos',
-              ),
-              _HeroMetric(
-                label: 'Sin leer',
-                value: '$unreadCount por abrir',
-              ),
+              _HeroMetric(label: 'Chats', value: '$totalThreads activos'),
+              _HeroMetric(label: 'Sin leer', value: '$unreadCount por abrir'),
               _HeroMetric(
                 label: 'Tu turno',
                 value: '$awaitingMyReplyCount en seguimiento',

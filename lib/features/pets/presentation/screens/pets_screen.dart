@@ -74,13 +74,38 @@ class _PetsScreenState extends State<PetsScreen> {
                   minItemWidth: 340,
                   children: pets
                       .map(
-                        (pet) => PetCard(
-                          pet: pet,
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => PetDetailScreen(pet: pet),
+                        (pet) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            PetCard(
+                              pet: pet,
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => PetDetailScreen(pet: pet),
+                                ),
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () => _handleEditPet(pet),
+                                    icon: const Icon(Icons.edit_outlined),
+                                    label: const Text('Editar'),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () => _handleDeletePet(pet),
+                                    icon: const Icon(Icons.delete_outline),
+                                    label: const Text('Eliminar'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       )
                       .toList(),
@@ -95,7 +120,7 @@ class _PetsScreenState extends State<PetsScreen> {
   Future<void> _handleAddPet() async {
     final createdPet = await showDialog<Pet>(
       context: context,
-      builder: (_) => const _AddPetDialog(),
+      builder: (_) => const _PetFormDialog(),
     );
 
     if (!mounted || createdPet == null) return;
@@ -109,6 +134,55 @@ class _PetsScreenState extends State<PetsScreen> {
         content: Text('${createdPet.name} ya quedó guardado localmente.'),
       ),
     );
+  }
+
+  Future<void> _handleEditPet(Pet pet) async {
+    final updatedPet = await showDialog<Pet>(
+      context: context,
+      builder: (_) => _PetFormDialog(initialPet: pet),
+    );
+
+    if (!mounted || updatedPet == null) return;
+
+    await AppData.updatePet(updatedPet);
+    if (!mounted) return;
+
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${updatedPet.name} fue actualizado.')),
+    );
+  }
+
+  Future<void> _handleDeletePet(Pet pet) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar mascota'),
+        content: Text(
+          'Vas a eliminar a ${pet.name} de esta cuenta. Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted || confirmed != true) return;
+
+    await AppData.deletePet(pet.id);
+    if (!mounted) return;
+
+    setState(() {});
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('${pet.name} fue eliminado.')));
   }
 }
 
@@ -146,26 +220,46 @@ class _PetsEmptyState extends StatelessWidget {
   }
 }
 
-class _AddPetDialog extends StatefulWidget {
-  const _AddPetDialog();
+class _PetFormDialog extends StatefulWidget {
+  const _PetFormDialog({this.initialPet});
+
+  final Pet? initialPet;
 
   @override
-  State<_AddPetDialog> createState() => _AddPetDialogState();
+  State<_PetFormDialog> createState() => _PetFormDialogState();
 }
 
-class _AddPetDialogState extends State<_AddPetDialog> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _speciesController = TextEditingController(
-    text: 'Mascota',
-  );
-  final TextEditingController _breedController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
-  final TextEditingController _biographyController = TextEditingController();
+class _PetFormDialogState extends State<_PetFormDialog> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _speciesController;
+  late final TextEditingController _breedController;
+  late final TextEditingController _ageController;
+  late final TextEditingController _locationController;
+  late final TextEditingController _biographyController;
 
   String _selectedSex = 'Macho';
   String? _errorMessage;
   bool _isSaving = false;
+  bool get _isEditing => widget.initialPet != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialPet = widget.initialPet;
+    _nameController = TextEditingController(text: initialPet?.name ?? '');
+    _speciesController = TextEditingController(
+      text: initialPet?.species ?? 'Mascota',
+    );
+    _breedController = TextEditingController(text: initialPet?.breed ?? '');
+    _ageController = TextEditingController(text: initialPet?.ageLabel ?? '');
+    _locationController = TextEditingController(
+      text: initialPet?.location ?? '',
+    );
+    _biographyController = TextEditingController(
+      text: initialPet?.biography ?? '',
+    );
+    _selectedSex = initialPet?.sex ?? 'Macho';
+  }
 
   @override
   void dispose() {
@@ -203,12 +297,14 @@ class _AddPetDialogState extends State<_AddPetDialog> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Alta de mascota',
+                _isEditing ? 'Editar mascota' : 'Alta de mascota',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 8),
               Text(
-                'Este formulario ya crea una mascota real en almacenamiento local para la cuenta actual.',
+                _isEditing
+                    ? 'Actualizá los datos principales de esta mascota sin duplicar su perfil.'
+                    : 'Este formulario ya crea una mascota real en almacenamiento local para la cuenta actual.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 18),
@@ -336,6 +432,26 @@ class _AddPetDialogState extends State<_AddPetDialog> {
       _isSaving = true;
       _errorMessage = null;
     });
+
+    final initialPet = widget.initialPet;
+    if (initialPet != null) {
+      Navigator.of(context).pop(
+        initialPet.copyWith(
+          name: name,
+          species: species,
+          breed: breed,
+          ageLabel: ageLabel,
+          colorHex: _colorForSpecies(species),
+          sex: _selectedSex,
+          location: location,
+          biography: biography.isEmpty
+              ? '$name ya tiene una base persistida y lista para seguir completándose.'
+              : biography,
+          personalityTags: _tagsForSpecies(species),
+        ),
+      );
+      return;
+    }
 
     final now = DateTime.now();
     final shortName = name

@@ -26,115 +26,65 @@ class QrTraceabilityScreen extends StatelessWidget {
       body: SafeArea(
         child: ResponsivePageBody(
           child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color(currentPet.colorHex),
-                    AppColors.surface,
-                    AppColors.primarySoft,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(32),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.dark,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      'Trazabilidad QR',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'El codigo de ${currentPet.name} ya puede leerse como una capa de seguimiento.',
-                    style: textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Este historial reune escaneos, senales publicas, estado del contacto protegido y eventos recientes persistidos para comunicar valor real del QR.',
-                    style: textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  ResponsiveWrapGrid(
-                    minItemWidth: 220,
-                    children: [
-                      _MetricTile(
-                        label: 'Estado',
-                        value: status.currentStatus,
-                      ),
-                      _MetricTile(
-                        label: 'Actividad',
-                        value: status.activeWindowLabel,
-                      ),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color(currentPet.colorHex),
+                      AppColors.surface,
+                      AppColors.primarySoft,
                     ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
+                  borderRadius: BorderRadius.circular(32),
+                  border: Border.all(color: AppColors.border),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Estado actual del perfil QR',
-                      style: textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Lectura rapida del valor operativo del QR dentro de Mascotify.',
-                      style: textTheme.bodyMedium,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.dark,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        'Trazabilidad QR',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    _InfoTile(
-                      label: 'Contacto protegido',
-                      value: status.protectedContactState,
+                    Text(
+                      'El codigo de ${currentPet.name} ya puede leerse como una capa de seguimiento.',
+                      style: textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 10),
-                    _InfoTile(
-                      label: 'Última señal',
-                      value: status.lastSignalLabel,
+                    Text(
+                      'Este historial reune escaneos, senales publicas, estado del contacto protegido y eventos recientes persistidos para comunicar valor real del QR.',
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    _InfoTile(
-                      label: 'Detalle util',
-                      value: status.lastSignalDetail,
-                    ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 18),
                     ResponsiveWrapGrid(
                       minItemWidth: 220,
-                      spacing: 10,
-                      runSpacing: 10,
                       children: [
-                        _InfoTile(
-                          label: 'Actividad QR',
-                          value: status.totalScansLabel,
+                        _MetricTile(
+                          label: 'Estado',
+                          value: status.currentStatus,
                         ),
-                        _InfoTile(
-                          label: 'Ventana activa',
+                        _MetricTile(
+                          label: 'Actividad',
                           value: status.activeWindowLabel,
                         ),
                       ],
@@ -142,35 +92,88 @@ class QrTraceabilityScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Timeline de actividad', style: textTheme.titleLarge),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Eventos persistidos que ayudan a leer que paso con el QR y en que momento.',
-                      style: textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 16),
-                    if (operationalActivity.isEmpty)
-                      const _EmptyTimelineState()
-                    else
-                      ...operationalActivity.map(
-                        (entry) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _TimelineEntry(entry: entry),
-                        ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Estado actual del perfil QR',
+                        style: textTheme.titleLarge,
                       ),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(
+                        'Lectura rapida del valor operativo del QR dentro de Mascotify.',
+                        style: textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      _InfoTile(
+                        label: 'Contacto protegido',
+                        value: status.protectedContactState,
+                      ),
+                      const SizedBox(height: 10),
+                      _InfoTile(
+                        label: 'Última señal',
+                        value: status.lastSignalLabel,
+                      ),
+                      const SizedBox(height: 10),
+                      _InfoTile(
+                        label: 'Detalle util',
+                        value: status.lastSignalDetail,
+                      ),
+                      const SizedBox(height: 10),
+                      ResponsiveWrapGrid(
+                        minItemWidth: 220,
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          _InfoTile(
+                            label: 'Actividad QR',
+                            value: status.totalScansLabel,
+                          ),
+                          _InfoTile(
+                            label: 'Ventana activa',
+                            value: status.activeWindowLabel,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Timeline de actividad',
+                        style: textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Eventos persistidos que ayudan a leer que paso con el QR y en que momento.',
+                        style: textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      if (operationalActivity.isEmpty)
+                        const _EmptyTimelineState()
+                      else
+                        ...operationalActivity.map(
+                          (entry) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _TimelineEntry(entry: entry),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

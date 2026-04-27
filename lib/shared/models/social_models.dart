@@ -131,9 +131,8 @@ class MessageThread {
           .toList(),
       messages: (json['messages'] as List<dynamic>)
           .map(
-            (item) => MessageEntry.fromJson(
-              Map<String, dynamic>.from(item as Map),
-            ),
+            (item) =>
+                MessageEntry.fromJson(Map<String, dynamic>.from(item as Map)),
           )
           .toList(),
     );
@@ -239,11 +238,7 @@ class SavedProfileEntry {
   final String savedAtLabel;
   final String reason;
 
-  SavedProfileEntry copyWith({
-    Pet? pet,
-    String? savedAtLabel,
-    String? reason,
-  }) {
+  SavedProfileEntry copyWith({Pet? pet, String? savedAtLabel, String? reason}) {
     return SavedProfileEntry(
       pet: pet ?? this.pet,
       savedAtLabel: savedAtLabel ?? this.savedAtLabel,

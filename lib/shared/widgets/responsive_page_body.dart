@@ -49,11 +49,7 @@ class ResponsiveSplitColumns extends StatelessWidget {
     if (!isWide) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: _mergeForColumn(
-          leadingChildren,
-          trailingChildren,
-          spacing,
-        ),
+        children: _mergeForColumn(leadingChildren, trailingChildren, spacing),
       );
     }
 
@@ -131,7 +127,7 @@ class ResponsiveWrapGrid extends StatelessWidget {
         final itemWidth = columnCount == 1
             ? constraints.maxWidth
             : (constraints.maxWidth - (spacing * (columnCount - 1))) /
-                columnCount;
+                  columnCount;
 
         return Wrap(
           spacing: spacing,

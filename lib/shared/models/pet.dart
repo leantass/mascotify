@@ -172,11 +172,13 @@ class Pet {
       sex: json['sex'] as String,
       location: json['location'] as String,
       biography: json['biography'] as String,
-      personalityTags: (json['personalityTags'] as List<dynamic>).cast<String>(),
+      personalityTags: (json['personalityTags'] as List<dynamic>)
+          .cast<String>(),
       seekingBreeding: json['seekingBreeding'] as bool,
       socialInterest: json['socialInterest'] as String,
       socialProfileStatus: json['socialProfileStatus'] as String,
-      featuredMoments: (json['featuredMoments'] as List<dynamic>).cast<String>(),
+      featuredMoments: (json['featuredMoments'] as List<dynamic>)
+          .cast<String>(),
       matchingPreferences: PetMatchingPreferences.fromJson(
         Map<String, dynamic>.from(
           json['matchingPreferences'] as Map<dynamic, dynamic>,
@@ -236,10 +238,10 @@ class PetMatchingPreferences {
       rhythmLabel: json['rhythmLabel'] as String,
       locationRadiusLabel: json['locationRadiusLabel'] as String,
       acceptsGradualMeet: json['acceptsGradualMeet'] as bool,
-      compatibilitySignals:
-          (json['compatibilitySignals'] as List<dynamic>).cast<String>(),
-      desiredCompatibilities:
-          (json['desiredCompatibilities'] as List<dynamic>).cast<String>(),
+      compatibilitySignals: (json['compatibilitySignals'] as List<dynamic>)
+          .cast<String>(),
+      desiredCompatibilities: (json['desiredCompatibilities'] as List<dynamic>)
+          .cast<String>(),
       softLimits: (json['softLimits'] as List<dynamic>).cast<String>(),
       idealContext: json['idealContext'] as String,
       importantNotes: json['importantNotes'] as String,

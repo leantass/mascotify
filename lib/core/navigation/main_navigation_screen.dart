@@ -156,10 +156,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 }
 
 class _RailHeader extends StatelessWidget {
-  const _RailHeader({
-    required this.experience,
-    required this.isExtended,
-  });
+  const _RailHeader({required this.experience, required this.isExtended});
 
   final AccountExperience experience;
   final bool isExtended;
@@ -190,10 +187,7 @@ class _RailHeader extends StatelessWidget {
                       color: AppColors.dark,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(
-                      Icons.pets_rounded,
-                      color: Colors.white,
-                    ),
+                    child: const Icon(Icons.pets_rounded, color: Colors.white),
                   ),
                   const SizedBox(width: 12),
                   Flexible(
@@ -207,9 +201,8 @@ class _RailHeader extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           roleLabel,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: AppColors.textSecondary),
                         ),
                       ],
                     ),

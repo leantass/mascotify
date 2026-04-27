@@ -26,30 +26,30 @@ class ConnectionsInboxScreen extends StatelessWidget {
       body: SafeArea(
         child: ResponsivePageBody(
           child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
-            _InboxHero(totalItems: inboxItems.length),
-            const SizedBox(height: 20),
-            ResponsiveSplitColumns(
-              breakpoint: 980,
-              leadingChildren: [
-                _InboxSection(
-                  title: 'Intereses recibidos',
-                  subtitle:
-                      'Señales que llegaron a tu ecosistema social para revisar con calma.',
-                  items: receivedItems,
-                ),
-              ],
-              trailingChildren: [
-                _InboxSection(
-                  title: 'Intereses enviados',
-                  subtitle:
-                      'Conexiones que iniciaste y que pueden evolucionar dentro de Mascotify.',
-                  items: sentItems,
-                ),
-              ],
-            ),
-          ],
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
+              _InboxHero(totalItems: inboxItems.length),
+              const SizedBox(height: 20),
+              ResponsiveSplitColumns(
+                breakpoint: 980,
+                leadingChildren: [
+                  _InboxSection(
+                    title: 'Intereses recibidos',
+                    subtitle:
+                        'Señales que llegaron a tu ecosistema social para revisar con calma.',
+                    items: receivedItems,
+                  ),
+                ],
+                trailingChildren: [
+                  _InboxSection(
+                    title: 'Intereses enviados',
+                    subtitle:
+                        'Conexiones que iniciaste y que pueden evolucionar dentro de Mascotify.',
+                    items: sentItems,
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -64,7 +64,6 @@ class _InboxHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -113,14 +112,8 @@ class _InboxHero extends StatelessWidget {
           ResponsiveWrapGrid(
             minItemWidth: 200,
             children: [
-              _HeroMetric(
-                label: 'Actividad',
-                value: '$totalItems movimientos',
-              ),
-              const _HeroMetric(
-                label: 'Estado',
-                value: 'Seguimiento activo',
-              ),
+              _HeroMetric(label: 'Actividad', value: '$totalItems movimientos'),
+              const _HeroMetric(label: 'Estado', value: 'Seguimiento activo'),
             ],
           ),
           const SizedBox(height: 16),
@@ -257,10 +250,7 @@ class _InboxCard extends StatelessWidget {
             spacing: 10,
             runSpacing: 10,
             children: [
-              _MiniInfoTile(
-                label: 'Interes',
-                value: item.interestType,
-              ),
+              _MiniInfoTile(label: 'Interes', value: item.interestType),
               _MiniInfoTile(label: 'Estado', value: item.status),
             ],
           ),

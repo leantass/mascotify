@@ -601,6 +601,90 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  Future<void> updatePet(Pet pet) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    final existingIndex = currentState.pets.indexWhere(
+      (item) => item.id == pet.id,
+    );
+    if (existingIndex == -1) return;
+
+    final previousPet = currentState.pets[existingIndex];
+    final qrState =
+        currentState.qrStates[pet.id] ?? _buildInitialQrStateForPet(pet);
+    final normalizedPet = pet.copyWith(
+      qrStatus: _buildQrStatusSnapshot(pet, qrState).lastSignalDetail,
+      qrLastUpdate: _buildPetQrLastUpdateLabel(qrState),
+    );
+    final updatedPets = <Pet>[...currentState.pets]
+      ..[existingIndex] = normalizedPet;
+    final updatedThreads = currentState.threads
+        .map(
+          (thread) => thread.pet.id == pet.id
+              ? thread.copyWith(pet: normalizedPet)
+              : thread,
+        )
+        .toList();
+    final updatedSocialInboxEntries = currentState.socialInboxEntries
+        .map(
+          (entry) => entry.pet.id == pet.id
+              ? entry.copyWith(pet: normalizedPet)
+              : entry,
+        )
+        .toList();
+    final updatedSavedProfiles = currentState.savedProfiles
+        .map(
+          (entry) => entry.pet.id == pet.id
+              ? entry.copyWith(
+                  pet: normalizedPet,
+                  reason: normalizedPet.matchingPreferences.matchSummary,
+                )
+              : entry,
+        )
+        .toList();
+
+    _userStates[userId] = currentState.copyWith(
+      pets: updatedPets,
+      threads: updatedThreads,
+      socialInboxEntries: updatedSocialInboxEntries,
+      savedProfiles: updatedSavedProfiles,
+      qrStates: <String, PersistedPetQrState>{
+        ...currentState.qrStates,
+        previousPet.id: qrState,
+      },
+    );
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> deletePet(String petId) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    final updatedQrStates = <String, PersistedPetQrState>{
+      ...currentState.qrStates,
+    }..remove(petId);
+
+    _userStates[userId] = currentState.copyWith(
+      pets: currentState.pets.where((pet) => pet.id != petId).toList(),
+      threads: currentState.threads
+          .where((thread) => thread.pet.id != petId)
+          .toList(),
+      socialInboxEntries: currentState.socialInboxEntries
+          .where((entry) => entry.pet.id != petId)
+          .toList(),
+      savedProfiles: currentState.savedProfiles
+          .where((entry) => entry.pet.id != petId)
+          .toList(),
+      qrStates: updatedQrStates,
+    );
+    await _persistUserState(userId);
+  }
+
+  @override
   Future<void> addAutomatedReply(String threadId) async {
     final thread = findMessageThreadById(threadId);
     if (thread == null || thread.autoReplies.isEmpty) return;
