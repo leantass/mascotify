@@ -2,13 +2,7 @@ name: Flutter CI
 
 on:
   push:
-    branches:
-      - main
-      - juagotecica7/mascotify-web-test
   pull_request:
-    branches:
-      - main
-      - juagotecica7/mascotify-web-test
 
 jobs:
   analyze-and-test:
