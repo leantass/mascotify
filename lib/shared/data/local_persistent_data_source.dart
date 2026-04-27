@@ -67,10 +67,16 @@ class PersistedPetQrState {
 class PersistedLocalUserState {
   const PersistedLocalUserState({
     required this.notificationsEnabled,
+    required this.messagesNotificationsEnabled,
+    required this.petActivityNotificationsEnabled,
+    required this.ecosystemUpdatesNotificationsEnabled,
     required this.strategicNotificationsEnabled,
     required this.planName,
     required this.privacyLevel,
     required this.securityLevel,
+    required this.publicProfileEnabled,
+    required this.showBasicInfoOnPublicProfile,
+    required this.ecosystemSuggestionsEnabled,
     required this.pets,
     required this.threads,
     required this.qrStates,
@@ -80,10 +86,16 @@ class PersistedLocalUserState {
   });
 
   final bool notificationsEnabled;
+  final bool messagesNotificationsEnabled;
+  final bool petActivityNotificationsEnabled;
+  final bool ecosystemUpdatesNotificationsEnabled;
   final bool strategicNotificationsEnabled;
   final String planName;
   final String privacyLevel;
   final String securityLevel;
+  final bool publicProfileEnabled;
+  final bool showBasicInfoOnPublicProfile;
+  final bool ecosystemSuggestionsEnabled;
   final List<Pet> pets;
   final List<MessageThread> threads;
   final Map<String, PersistedPetQrState> qrStates;
@@ -93,10 +105,16 @@ class PersistedLocalUserState {
 
   PersistedLocalUserState copyWith({
     bool? notificationsEnabled,
+    bool? messagesNotificationsEnabled,
+    bool? petActivityNotificationsEnabled,
+    bool? ecosystemUpdatesNotificationsEnabled,
     bool? strategicNotificationsEnabled,
     String? planName,
     String? privacyLevel,
     String? securityLevel,
+    bool? publicProfileEnabled,
+    bool? showBasicInfoOnPublicProfile,
+    bool? ecosystemSuggestionsEnabled,
     List<Pet>? pets,
     List<MessageThread>? threads,
     Map<String, PersistedPetQrState>? qrStates,
@@ -107,11 +125,24 @@ class PersistedLocalUserState {
   }) {
     return PersistedLocalUserState(
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      messagesNotificationsEnabled:
+          messagesNotificationsEnabled ?? this.messagesNotificationsEnabled,
+      petActivityNotificationsEnabled:
+          petActivityNotificationsEnabled ??
+          this.petActivityNotificationsEnabled,
+      ecosystemUpdatesNotificationsEnabled:
+          ecosystemUpdatesNotificationsEnabled ??
+          this.ecosystemUpdatesNotificationsEnabled,
       strategicNotificationsEnabled:
           strategicNotificationsEnabled ?? this.strategicNotificationsEnabled,
       planName: planName ?? this.planName,
       privacyLevel: privacyLevel ?? this.privacyLevel,
       securityLevel: securityLevel ?? this.securityLevel,
+      publicProfileEnabled: publicProfileEnabled ?? this.publicProfileEnabled,
+      showBasicInfoOnPublicProfile:
+          showBasicInfoOnPublicProfile ?? this.showBasicInfoOnPublicProfile,
+      ecosystemSuggestionsEnabled:
+          ecosystemSuggestionsEnabled ?? this.ecosystemSuggestionsEnabled,
       pets: pets ?? this.pets,
       threads: threads ?? this.threads,
       qrStates: qrStates ?? this.qrStates,
@@ -126,10 +157,17 @@ class PersistedLocalUserState {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'notificationsEnabled': notificationsEnabled,
+      'messagesNotificationsEnabled': messagesNotificationsEnabled,
+      'petActivityNotificationsEnabled': petActivityNotificationsEnabled,
+      'ecosystemUpdatesNotificationsEnabled':
+          ecosystemUpdatesNotificationsEnabled,
       'strategicNotificationsEnabled': strategicNotificationsEnabled,
       'planName': planName,
       'privacyLevel': privacyLevel,
       'securityLevel': securityLevel,
+      'publicProfileEnabled': publicProfileEnabled,
+      'showBasicInfoOnPublicProfile': showBasicInfoOnPublicProfile,
+      'ecosystemSuggestionsEnabled': ecosystemSuggestionsEnabled,
       'pets': pets.map((item) => item.toJson()).toList(),
       'threads': threads.map((item) => item.toJson()).toList(),
       'qrStates': qrStates.map((key, value) => MapEntry(key, value.toJson())),
@@ -142,13 +180,29 @@ class PersistedLocalUserState {
   }
 
   factory PersistedLocalUserState.fromJson(Map<String, dynamic> json) {
+    final notificationsEnabled = json['notificationsEnabled'] as bool? ?? true;
+    final strategicNotificationsEnabled =
+        json['strategicNotificationsEnabled'] as bool? ?? true;
+
     return PersistedLocalUserState(
-      notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
-      strategicNotificationsEnabled:
-          json['strategicNotificationsEnabled'] as bool? ?? true,
+      notificationsEnabled: notificationsEnabled,
+      messagesNotificationsEnabled:
+          json['messagesNotificationsEnabled'] as bool? ?? notificationsEnabled,
+      petActivityNotificationsEnabled:
+          json['petActivityNotificationsEnabled'] as bool? ??
+          notificationsEnabled,
+      ecosystemUpdatesNotificationsEnabled:
+          json['ecosystemUpdatesNotificationsEnabled'] as bool? ??
+          strategicNotificationsEnabled,
+      strategicNotificationsEnabled: strategicNotificationsEnabled,
       planName: json['planName'] as String? ?? 'Mascotify Plus',
       privacyLevel: json['privacyLevel'] as String? ?? 'Equilibrada',
       securityLevel: json['securityLevel'] as String? ?? 'Estándar',
+      publicProfileEnabled: json['publicProfileEnabled'] as bool? ?? true,
+      showBasicInfoOnPublicProfile:
+          json['showBasicInfoOnPublicProfile'] as bool? ?? true,
+      ecosystemSuggestionsEnabled:
+          json['ecosystemSuggestionsEnabled'] as bool? ?? true,
       pets: (json['pets'] as List<dynamic>)
           .map(
             (item) => Pet.fromJson(
@@ -336,9 +390,17 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       city: currentAccount.city,
       memberSince: currentAccount.memberSince,
       notificationsEnabled: currentState.notificationsEnabled,
+      messagesNotificationsEnabled: currentState.messagesNotificationsEnabled,
+      petActivityNotificationsEnabled:
+          currentState.petActivityNotificationsEnabled,
+      ecosystemUpdatesNotificationsEnabled:
+          currentState.ecosystemUpdatesNotificationsEnabled,
       strategicNotificationsEnabled: currentState.strategicNotificationsEnabled,
       privacyLevel: currentState.privacyLevel,
       securityLevel: currentState.securityLevel,
+      publicProfileEnabled: currentState.publicProfileEnabled,
+      showBasicInfoOnPublicProfile: currentState.showBasicInfoOnPublicProfile,
+      ecosystemSuggestionsEnabled: currentState.ecosystemSuggestionsEnabled,
     );
   }
 
@@ -773,6 +835,42 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  Future<void> setMessagesNotificationsEnabled(bool enabled) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    _userStates[userId] = currentState.copyWith(
+      messagesNotificationsEnabled: enabled,
+    );
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> setPetActivityNotificationsEnabled(bool enabled) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    _userStates[userId] = currentState.copyWith(
+      petActivityNotificationsEnabled: enabled,
+    );
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> setEcosystemUpdatesNotificationsEnabled(bool enabled) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    _userStates[userId] = currentState.copyWith(
+      ecosystemUpdatesNotificationsEnabled: enabled,
+    );
+    await _persistUserState(userId);
+  }
+
+  @override
   Future<void> setStrategicNotificationsEnabled(bool enabled) async {
     final userId = _currentUserId;
     if (userId == null) return;
@@ -811,6 +909,40 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
     final currentState = _stateForUser(userId);
     _userStates[userId] = currentState.copyWith(securityLevel: securityLevel);
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> setPublicProfileEnabled(bool enabled) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    _userStates[userId] = currentState.copyWith(publicProfileEnabled: enabled);
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> setShowBasicInfoOnPublicProfile(bool enabled) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    _userStates[userId] = currentState.copyWith(
+      showBasicInfoOnPublicProfile: enabled,
+    );
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> setEcosystemSuggestionsEnabled(bool enabled) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    _userStates[userId] = currentState.copyWith(
+      ecosystemSuggestionsEnabled: enabled,
+    );
     await _persistUserState(userId);
   }
 
@@ -967,10 +1099,16 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }) {
     return PersistedLocalUserState(
       notificationsEnabled: true,
+      messagesNotificationsEnabled: true,
+      petActivityNotificationsEnabled: true,
+      ecosystemUpdatesNotificationsEnabled: true,
       strategicNotificationsEnabled: true,
       planName: _sessionController.currentAccount?.planName ?? 'Mascotify Plus',
       privacyLevel: 'Equilibrada',
       securityLevel: 'Estándar',
+      publicProfileEnabled: true,
+      showBasicInfoOnPublicProfile: true,
+      ecosystemSuggestionsEnabled: true,
       pets: pets,
       threads: _seedThreadsForCurrentAccount(pets),
       qrStates: _seedQrStatesForCurrentAccount(pets),

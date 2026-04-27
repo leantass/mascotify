@@ -18,7 +18,7 @@ void main() {
 
     await tester.tap(find.text('Perfil'));
     await tester.pumpAndSettle();
-    await tester.drag(find.byType(Scrollable).last, const Offset(0, -1200));
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -3000));
     await tester.pumpAndSettle();
     final logoutButton = find.widgetWithText(OutlinedButton, 'Cerrar sesión');
     await tester.ensureVisible(logoutButton);

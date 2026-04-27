@@ -63,10 +63,16 @@ abstract class MascotifyDataSource {
   Future<void> updatePet(Pet pet);
   Future<void> deletePet(String petId);
   Future<void> setNotificationsEnabled(bool enabled);
+  Future<void> setMessagesNotificationsEnabled(bool enabled);
+  Future<void> setPetActivityNotificationsEnabled(bool enabled);
+  Future<void> setEcosystemUpdatesNotificationsEnabled(bool enabled);
   Future<void> setStrategicNotificationsEnabled(bool enabled);
   Future<void> setPlanName(String planName);
   Future<void> setPrivacyLevel(String privacyLevel);
   Future<void> setSecurityLevel(String securityLevel);
+  Future<void> setPublicProfileEnabled(bool enabled);
+  Future<void> setShowBasicInfoOnPublicProfile(bool enabled);
+  Future<void> setEcosystemSuggestionsEnabled(bool enabled);
 }
 
 class MockMascotifyDataSource implements MascotifyDataSource {
@@ -253,6 +259,15 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   Future<void> setNotificationsEnabled(bool enabled) async {}
 
   @override
+  Future<void> setMessagesNotificationsEnabled(bool enabled) async {}
+
+  @override
+  Future<void> setPetActivityNotificationsEnabled(bool enabled) async {}
+
+  @override
+  Future<void> setEcosystemUpdatesNotificationsEnabled(bool enabled) async {}
+
+  @override
   Future<void> setStrategicNotificationsEnabled(bool enabled) async {}
 
   @override
@@ -263,6 +278,15 @@ class MockMascotifyDataSource implements MascotifyDataSource {
 
   @override
   Future<void> setSecurityLevel(String securityLevel) async {}
+
+  @override
+  Future<void> setPublicProfileEnabled(bool enabled) async {}
+
+  @override
+  Future<void> setShowBasicInfoOnPublicProfile(bool enabled) async {}
+
+  @override
+  Future<void> setEcosystemSuggestionsEnabled(bool enabled) async {}
 
   @override
   Future<void> submitSightingReport(SightingReportDraft draft) async {}
@@ -414,6 +438,18 @@ class AppData {
     return source.setNotificationsEnabled(enabled);
   }
 
+  static Future<void> setMessagesNotificationsEnabled(bool enabled) {
+    return source.setMessagesNotificationsEnabled(enabled);
+  }
+
+  static Future<void> setPetActivityNotificationsEnabled(bool enabled) {
+    return source.setPetActivityNotificationsEnabled(enabled);
+  }
+
+  static Future<void> setEcosystemUpdatesNotificationsEnabled(bool enabled) {
+    return source.setEcosystemUpdatesNotificationsEnabled(enabled);
+  }
+
   static Future<void> setStrategicNotificationsEnabled(bool enabled) {
     return source.setStrategicNotificationsEnabled(enabled);
   }
@@ -428,5 +464,17 @@ class AppData {
 
   static Future<void> setSecurityLevel(String securityLevel) {
     return source.setSecurityLevel(securityLevel);
+  }
+
+  static Future<void> setPublicProfileEnabled(bool enabled) {
+    return source.setPublicProfileEnabled(enabled);
+  }
+
+  static Future<void> setShowBasicInfoOnPublicProfile(bool enabled) {
+    return source.setShowBasicInfoOnPublicProfile(enabled);
+  }
+
+  static Future<void> setEcosystemSuggestionsEnabled(bool enabled) {
+    return source.setEcosystemSuggestionsEnabled(enabled);
   }
 }

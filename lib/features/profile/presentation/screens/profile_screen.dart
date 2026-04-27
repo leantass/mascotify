@@ -31,6 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: SafeArea(
         child: ResponsivePageBody(
           child: ListView(
+            cacheExtent: 5000,
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
               Container(
@@ -283,6 +284,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ? 'Notificaciones activadas.'
                       : 'Notificaciones desactivadas.',
                 ),
+                onMessagesNotificationsChanged: (value) => _updatePreference(
+                  AppData.setMessagesNotificationsEnabled(value),
+                  value
+                      ? 'Notificaciones de mensajes activadas.'
+                      : 'Notificaciones de mensajes desactivadas.',
+                ),
+                onPetActivityNotificationsChanged: (value) => _updatePreference(
+                  AppData.setPetActivityNotificationsEnabled(value),
+                  value
+                      ? 'Avisos de mascotas activados.'
+                      : 'Avisos de mascotas desactivados.',
+                ),
+                onEcosystemUpdatesNotificationsChanged: (value) =>
+                    _updatePreference(
+                      AppData.setEcosystemUpdatesNotificationsEnabled(value),
+                      value
+                          ? 'Novedades del ecosistema activadas.'
+                          : 'Novedades del ecosistema desactivadas.',
+                    ),
                 onPrivacyChanged: (value) => _updatePreference(
                   AppData.setPrivacyLevel(value),
                   'Privacidad actualizada a $value.',
@@ -296,6 +316,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   value
                       ? 'Notificaciones estratégicas activadas.'
                       : 'Notificaciones estratégicas desactivadas.',
+                ),
+                onPublicProfileChanged: (value) => _updatePreference(
+                  AppData.setPublicProfileEnabled(value),
+                  value
+                      ? 'Presencia pÃºblica activada.'
+                      : 'Presencia pÃºblica desactivada.',
+                ),
+                onShowBasicInfoChanged: (value) => _updatePreference(
+                  AppData.setShowBasicInfoOnPublicProfile(value),
+                  value
+                      ? 'Datos bÃ¡sicos visibles.'
+                      : 'Datos bÃ¡sicos ocultos.',
+                ),
+                onEcosystemSuggestionsChanged: (value) => _updatePreference(
+                  AppData.setEcosystemSuggestionsEnabled(value),
+                  value
+                      ? 'Sugerencias del ecosistema activadas.'
+                      : 'Sugerencias del ecosistema desactivadas.',
                 ),
                 onAccountSettingsRequested: _showAccountSettingsNotice,
               ),
@@ -365,9 +403,15 @@ class _PreferencesAndPlanCard extends StatelessWidget {
     required this.isBusy,
     required this.onPlanChanged,
     required this.onNotificationsChanged,
+    required this.onMessagesNotificationsChanged,
+    required this.onPetActivityNotificationsChanged,
+    required this.onEcosystemUpdatesNotificationsChanged,
     required this.onPrivacyChanged,
     required this.onSecurityChanged,
     required this.onStrategicNotificationsChanged,
+    required this.onPublicProfileChanged,
+    required this.onShowBasicInfoChanged,
+    required this.onEcosystemSuggestionsChanged,
     required this.onAccountSettingsRequested,
   });
 
@@ -375,9 +419,15 @@ class _PreferencesAndPlanCard extends StatelessWidget {
   final bool isBusy;
   final ValueChanged<String> onPlanChanged;
   final ValueChanged<bool> onNotificationsChanged;
+  final ValueChanged<bool> onMessagesNotificationsChanged;
+  final ValueChanged<bool> onPetActivityNotificationsChanged;
+  final ValueChanged<bool> onEcosystemUpdatesNotificationsChanged;
   final ValueChanged<String> onPrivacyChanged;
   final ValueChanged<String> onSecurityChanged;
   final ValueChanged<bool> onStrategicNotificationsChanged;
+  final ValueChanged<bool> onPublicProfileChanged;
+  final ValueChanged<bool> onShowBasicInfoChanged;
+  final ValueChanged<bool> onEcosystemSuggestionsChanged;
   final VoidCallback onAccountSettingsRequested;
 
   @override
@@ -396,7 +446,6 @@ class _PreferencesAndPlanCard extends StatelessWidget {
                 children: [
                   TabBar(
                     controller: tabController,
-                    isScrollable: true,
                     labelColor: AppColors.primaryDeep,
                     unselectedLabelColor: AppColors.textSecondary,
                     indicatorColor: AppColors.primary,
@@ -422,6 +471,12 @@ class _PreferencesAndPlanCard extends StatelessWidget {
                             user: user,
                             isBusy: isBusy,
                             onNotificationsChanged: onNotificationsChanged,
+                            onMessagesNotificationsChanged:
+                                onMessagesNotificationsChanged,
+                            onPetActivityNotificationsChanged:
+                                onPetActivityNotificationsChanged,
+                            onEcosystemUpdatesNotificationsChanged:
+                                onEcosystemUpdatesNotificationsChanged,
                             onStrategicNotificationsChanged:
                                 onStrategicNotificationsChanged,
                           ),
@@ -430,6 +485,10 @@ class _PreferencesAndPlanCard extends StatelessWidget {
                             isBusy: isBusy,
                             onPrivacyChanged: onPrivacyChanged,
                             onSecurityChanged: onSecurityChanged,
+                            onPublicProfileChanged: onPublicProfileChanged,
+                            onShowBasicInfoChanged: onShowBasicInfoChanged,
+                            onEcosystemSuggestionsChanged:
+                                onEcosystemSuggestionsChanged,
                             onAccountSettingsRequested:
                                 onAccountSettingsRequested,
                           ),
@@ -463,6 +522,7 @@ class _SubscriptionTab extends StatelessWidget {
     return Column(
       children: [
         _SettingsDropdown(
+          fieldKey: const ValueKey('subscription-plan-dropdown'),
           title: 'Plan actual',
           subtitle: 'Ver o cambiar el plan asociado a esta cuenta.',
           icon: Icons.workspace_premium_outlined,
@@ -487,12 +547,18 @@ class _NotificationsTab extends StatelessWidget {
     required this.user,
     required this.isBusy,
     required this.onNotificationsChanged,
+    required this.onMessagesNotificationsChanged,
+    required this.onPetActivityNotificationsChanged,
+    required this.onEcosystemUpdatesNotificationsChanged,
     required this.onStrategicNotificationsChanged,
   });
 
   final AppUser user;
   final bool isBusy;
   final ValueChanged<bool> onNotificationsChanged;
+  final ValueChanged<bool> onMessagesNotificationsChanged;
+  final ValueChanged<bool> onPetActivityNotificationsChanged;
+  final ValueChanged<bool> onEcosystemUpdatesNotificationsChanged;
   final ValueChanged<bool> onStrategicNotificationsChanged;
 
   @override
@@ -500,14 +566,45 @@ class _NotificationsTab extends StatelessWidget {
     return Column(
       children: [
         _SettingsSwitch(
-          title: 'Notificaciones',
-          subtitle: 'Activa o pausa las alertas generales de la cuenta.',
+          switchKey: const ValueKey('notifications-general-switch'),
+          title: 'Notificaciones generales',
+          subtitle: 'Activa o pausa la capa local de alertas de la cuenta.',
           icon: Icons.notifications_none_rounded,
           value: user.notificationsEnabled,
           onChanged: isBusy ? null : onNotificationsChanged,
         ),
         const SizedBox(height: 14),
         _SettingsSwitch(
+          switchKey: const ValueKey('notifications-messages-switch'),
+          title: 'Notificaciones de mensajes',
+          subtitle: 'Recibe avisos locales cuando haya conversaciones nuevas.',
+          icon: Icons.mark_chat_unread_outlined,
+          value: user.messagesNotificationsEnabled,
+          onChanged: isBusy ? null : onMessagesNotificationsChanged,
+        ),
+        const SizedBox(height: 14),
+        _SettingsSwitch(
+          switchKey: const ValueKey('notifications-pet-activity-switch'),
+          title: 'Avisos de mascotas y QR',
+          subtitle:
+              'Mantiene visibles señales locales sobre actividad, QR y seguimiento.',
+          icon: Icons.pets_outlined,
+          value: user.petActivityNotificationsEnabled,
+          onChanged: isBusy ? null : onPetActivityNotificationsChanged,
+        ),
+        const SizedBox(height: 14),
+        _SettingsSwitch(
+          switchKey: const ValueKey('notifications-ecosystem-updates-switch'),
+          title: 'Recomendaciones y novedades',
+          subtitle:
+              'Habilita recomendaciones locales y novedades del ecosistema.',
+          icon: Icons.auto_awesome_outlined,
+          value: user.ecosystemUpdatesNotificationsEnabled,
+          onChanged: isBusy ? null : onEcosystemUpdatesNotificationsChanged,
+        ),
+        const SizedBox(height: 14),
+        _SettingsSwitch(
+          switchKey: const ValueKey('notifications-strategic-switch'),
           title: 'Notificaciones estratégicas',
           subtitle:
               'Recibe señales recomendadas sobre actividad, QR y oportunidades relevantes.',
@@ -526,6 +623,9 @@ class _ConfigurationTab extends StatelessWidget {
     required this.isBusy,
     required this.onPrivacyChanged,
     required this.onSecurityChanged,
+    required this.onPublicProfileChanged,
+    required this.onShowBasicInfoChanged,
+    required this.onEcosystemSuggestionsChanged,
     required this.onAccountSettingsRequested,
   });
 
@@ -533,6 +633,9 @@ class _ConfigurationTab extends StatelessWidget {
   final bool isBusy;
   final ValueChanged<String> onPrivacyChanged;
   final ValueChanged<String> onSecurityChanged;
+  final ValueChanged<bool> onPublicProfileChanged;
+  final ValueChanged<bool> onShowBasicInfoChanged;
+  final ValueChanged<bool> onEcosystemSuggestionsChanged;
   final VoidCallback onAccountSettingsRequested;
 
   @override
@@ -557,6 +660,34 @@ class _ConfigurationTab extends StatelessWidget {
           onChanged: isBusy ? null : onSecurityChanged,
         ),
         const SizedBox(height: 14),
+        _SettingsSwitch(
+          switchKey: const ValueKey('config-public-profile-switch'),
+          title: 'Perfil visible',
+          subtitle: 'Activa la presencia pÃºblica local de la cuenta.',
+          icon: Icons.visibility_outlined,
+          value: user.publicProfileEnabled,
+          onChanged: isBusy ? null : onPublicProfileChanged,
+        ),
+        const SizedBox(height: 14),
+        _SettingsSwitch(
+          switchKey: const ValueKey('config-basic-info-switch'),
+          title: 'Datos bÃ¡sicos en perfil pÃºblico',
+          subtitle: 'Permite mostrar nombre, ciudad y plan dentro del perfil.',
+          icon: Icons.badge_outlined,
+          value: user.showBasicInfoOnPublicProfile,
+          onChanged: isBusy ? null : onShowBasicInfoChanged,
+        ),
+        const SizedBox(height: 14),
+        _SettingsSwitch(
+          switchKey: const ValueKey('config-ecosystem-suggestions-switch'),
+          title: 'Sugerencias del ecosistema',
+          subtitle:
+              'Recibe sugerencias locales para completar o mejorar la experiencia.',
+          icon: Icons.tips_and_updates_outlined,
+          value: user.ecosystemSuggestionsEnabled,
+          onChanged: isBusy ? null : onEcosystemSuggestionsChanged,
+        ),
+        const SizedBox(height: 14),
         _SettingsAction(
           title: 'Correo electrónico',
           subtitle: user.email,
@@ -579,6 +710,7 @@ class _ConfigurationTab extends StatelessWidget {
 
 class _SettingsDropdown extends StatelessWidget {
   const _SettingsDropdown({
+    this.fieldKey,
     required this.title,
     required this.subtitle,
     required this.icon,
@@ -587,6 +719,7 @@ class _SettingsDropdown extends StatelessWidget {
     required this.onChanged,
   });
 
+  final Key? fieldKey;
   final String title;
   final String subtitle;
   final IconData icon;
@@ -603,6 +736,7 @@ class _SettingsDropdown extends StatelessWidget {
       trailing: SizedBox(
         width: 210,
         child: DropdownButtonFormField<String>(
+          key: fieldKey,
           initialValue: options.contains(value) ? value : options.first,
           isExpanded: true,
           decoration: _fieldDecoration(),
@@ -629,6 +763,7 @@ class _SettingsDropdown extends StatelessWidget {
 
 class _SettingsSwitch extends StatelessWidget {
   const _SettingsSwitch({
+    this.switchKey,
     required this.title,
     required this.subtitle,
     required this.icon,
@@ -636,6 +771,7 @@ class _SettingsSwitch extends StatelessWidget {
     required this.onChanged,
   });
 
+  final Key? switchKey;
   final String title;
   final String subtitle;
   final IconData icon;
@@ -649,6 +785,7 @@ class _SettingsSwitch extends StatelessWidget {
       subtitle: subtitle,
       icon: icon,
       trailing: Switch(
+        key: switchKey,
         value: value,
         onChanged: onChanged,
         activeThumbColor: AppColors.accent,
