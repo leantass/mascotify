@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
@@ -155,7 +156,7 @@ class _AddPetDialog extends StatefulWidget {
 class _AddPetDialogState extends State<_AddPetDialog> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _speciesController = TextEditingController(
-    text: 'Perro',
+    text: 'Mascota',
   );
   final TextEditingController _breedController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
@@ -221,6 +222,8 @@ class _AddPetDialogState extends State<_AddPetDialog> {
                 controller: _ageController,
                 label: 'Edad',
                 hintText: 'Ej: 2 años',
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
               const SizedBox(height: 12),
               _PetField(
@@ -318,6 +321,13 @@ class _AddPetDialogState extends State<_AddPetDialog> {
       setState(() {
         _errorMessage =
             'Completa al menos nombre, especie, raza, edad y ubicación.';
+      });
+      return;
+    }
+
+    if (int.tryParse(ageLabel) == null) {
+      setState(() {
+        _errorMessage = 'La edad debe ser un valor numérico.';
       });
       return;
     }
@@ -433,18 +443,24 @@ class _PetField extends StatelessWidget {
     required this.label,
     this.hintText,
     this.maxLines = 1,
+    this.keyboardType,
+    this.inputFormatters,
   });
 
   final TextEditingController controller;
   final String label;
   final String? hintText;
   final int maxLines;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
       maxLines: maxLines,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,

@@ -39,12 +39,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   gradient: LinearGradient(
                     colors: isFamily
                         ? const [AppColors.surface, AppColors.primarySoft]
-                        : const [AppColors.surface, AppColors.accentSoft],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                        : const [
+                            AppColors.accentSoft,
+                            AppColors.surface,
+                            Color(0xFFEAFBFF),
+                          ],
+                    begin: isFamily ? Alignment.topLeft : Alignment.centerLeft,
+                    end: isFamily
+                        ? Alignment.bottomRight
+                        : Alignment.centerRight,
                   ),
                   borderRadius: BorderRadius.circular(32),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(
+                    color: isFamily
+                        ? AppColors.border
+                        : const Color(0xFFCFEFF5),
+                  ),
                 ),
                 child: Row(
                   children: [

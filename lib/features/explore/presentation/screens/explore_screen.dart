@@ -262,16 +262,12 @@ class _ExploreHero extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            AppColors.primarySoft,
-            AppColors.surface,
-            AppColors.accentSoft,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          colors: [AppColors.accentSoft, AppColors.surface, Color(0xFFEAFBFF)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: Color(0xFFCFEFF5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

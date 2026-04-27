@@ -28,9 +28,6 @@ class AccountOnboardingScreen extends StatelessWidget {
     final accentColor = experience == AccountExperience.family
         ? AppColors.primaryDeep
         : AppColors.accentDeep;
-    final complementarySoft = experience == AccountExperience.family
-        ? AppColors.accentSoft
-        : AppColors.primarySoft;
     final icon = experience == AccountExperience.family
         ? Icons.family_restroom_rounded
         : Icons.work_rounded;
@@ -43,26 +40,26 @@ class AccountOnboardingScreen extends StatelessWidget {
             'Como queda pensada la cuenta',
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          SizedBox(height: isDense ? 6 : 8),
+          SizedBox(height: isDense ? 4 : 8),
           Text(
             account.baseSummary,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          SizedBox(height: isDense ? 12 : 16),
+          SizedBox(height: isDense ? 6 : 16),
           _InfoTile(
             label: 'Cuenta base',
             value: '${account.ownerName} - ${account.email}',
             accentColor: accentColor,
             isDense: isDense,
           ),
-          SizedBox(height: isDense ? 8 : 10),
+          SizedBox(height: isDense ? 4 : 10),
           _InfoTile(
             label: 'Escalabilidad futura',
             value: account.linkedProfilesSummary,
             accentColor: accentColor,
             isDense: isDense,
           ),
-          SizedBox(height: isDense ? 8 : 10),
+          SizedBox(height: isDense ? 4 : 10),
           _InfoTile(
             label: 'Plan activo',
             value: '${account.planName} - ${account.city}',
@@ -81,18 +78,18 @@ class AccountOnboardingScreen extends StatelessWidget {
             'Secuencia inicial',
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          SizedBox(height: isDense ? 6 : 8),
+          SizedBox(height: isDense ? 4 : 8),
           Text(
             track.architectureNote,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          SizedBox(height: isDense ? 12 : 16),
+          SizedBox(height: isDense ? 6 : 16),
           ...track.steps.asMap().entries.map(
             (entry) => Padding(
               padding: EdgeInsets.only(
                 bottom: entry.key == track.steps.length - 1
                     ? 0
-                    : (isDense ? 8 : 12),
+                    : (isDense ? 4 : 12),
               ),
               child: _OnboardingStepTile(
                 index: entry.key + 1,
@@ -115,10 +112,10 @@ class AccountOnboardingScreen extends StatelessWidget {
             'Senales del perfil elegido',
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          SizedBox(height: isDense ? 8 : 12),
+          SizedBox(height: isDense ? 6 : 12),
           Wrap(
-            spacing: isDense ? 8 : 10,
-            runSpacing: isDense ? 8 : 10,
+            spacing: isDense ? 6 : 10,
+            runSpacing: isDense ? 6 : 10,
             children: track.supportingHighlights
                 .map(
                   (item) => _HighlightChip(
@@ -132,19 +129,18 @@ class AccountOnboardingScreen extends StatelessWidget {
           ),
           if (experience == AccountExperience.professional &&
               account.professionalProfile != null) ...[
-            SizedBox(height: isDense ? 12 : 16),
+            SizedBox(height: isDense ? 6 : 16),
             Text(
               'Servicios contemplados',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            SizedBox(height: isDense ? 8 : 10),
+            SizedBox(height: isDense ? 6 : 10),
             Wrap(
-              spacing: isDense ? 8 : 10,
-              runSpacing: isDense ? 8 : 10,
+              spacing: isDense ? 6 : 10,
+              runSpacing: isDense ? 6 : 10,
               children: account.professionalProfile!.services
                   .map(
-                    (service) =>
-                        _ServiceChip(label: service, isDense: isDense),
+                    (service) => _ServiceChip(label: service, isDense: isDense),
                   )
                   .toList(),
             ),
@@ -152,20 +148,43 @@ class AccountOnboardingScreen extends StatelessWidget {
         ],
       ),
     );
+    final heroIcon = Container(
+      width: useWideLayout ? 36 : 56,
+      height: useWideLayout ? 36 : 56,
+      decoration: BoxDecoration(
+        color: accentColor,
+        borderRadius: BorderRadius.circular(useWideLayout ? 14 : 18),
+      ),
+      child: Icon(icon, color: Colors.white),
+    );
+    final heroCopy = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(track.title, style: Theme.of(context).textTheme.headlineMedium),
+        SizedBox(height: useWideLayout ? 4 : 10),
+        Text(
+          'La cuenta ${account.ownerName} ya quedo creada y la sesion esta guardada. Este paso solo termina de alinear el perfil activo con la navegacion actual.',
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            color: AppColors.textSecondary,
+            height: useWideLayout ? 1.24 : 1.5,
+          ),
+        ),
+      ],
+    );
     final heroSection = Container(
-      padding: EdgeInsets.all(useWideLayout ? 20 : 24),
+      padding: EdgeInsets.all(useWideLayout ? 10 : 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
+          colors: const [
+            AppColors.accentSoft,
             AppColors.surface,
-            softAccent,
-            complementarySoft.withValues(alpha: 0.72),
+            Color(0xFFEAFBFF),
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(useWideLayout ? 24 : 32),
+        border: Border.all(color: const Color(0xFFCFEFF5)),
         boxShadow: [
           BoxShadow(
             color: accentColor.withValues(alpha: 0.08),
@@ -174,37 +193,31 @@ class AccountOnboardingScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: useWideLayout ? 52 : 56,
-            height: useWideLayout ? 52 : 56,
-            decoration: BoxDecoration(
-              color: accentColor,
-              borderRadius: BorderRadius.circular(18),
+      child: useWideLayout
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                heroIcon,
+                const SizedBox(width: 10),
+                Expanded(child: heroCopy),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [heroIcon, const SizedBox(height: 16), heroCopy],
             ),
-            child: Icon(icon, color: Colors.white),
-          ),
-          SizedBox(height: useWideLayout ? 12 : 16),
-          Text(
-            track.title,
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          SizedBox(height: useWideLayout ? 8 : 10),
-          Text(
-            'La cuenta ${account.ownerName} ya quedo creada y la sesion esta guardada. Este paso solo termina de alinear el perfil activo con la navegacion actual.',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.textSecondary,
-              height: useWideLayout ? 1.4 : 1.5,
-            ),
-          ),
-        ],
-      ),
     );
     final ctaButton = SizedBox(
       width: useWideLayout ? 360 : double.infinity,
       child: ElevatedButton(
+        style: useWideLayout
+            ? ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+              )
+            : null,
         onPressed: auth.isBusy
             ? null
             : () async {
@@ -240,67 +253,51 @@ class AccountOnboardingScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     signalsSection,
                     const SizedBox(height: 16),
-                    Align(
-                      alignment: Alignment.center,
-                      child: ctaButton,
-                    ),
+                    Align(alignment: Alignment.center, child: ctaButton),
                   ],
                 );
               }
 
-              final layoutHeight =
-                  constraints.hasBoundedHeight &&
-                          constraints.maxHeight.isFinite &&
-                          constraints.maxHeight > 0
-                      ? constraints.maxHeight
-                      : MediaQuery.sizeOf(context).height;
+              final desktopChildren = <Widget>[
+                heroSection,
+                const SizedBox(height: 6),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 5, child: accountSection),
+                    const SizedBox(width: 14),
+                    Expanded(flex: 7, child: sequenceSection),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(child: signalsSection),
+                    const SizedBox(width: 14),
+                    Align(alignment: Alignment.bottomRight, child: ctaButton),
+                  ],
+                ),
+              ];
 
-              return SizedBox(
-                width: double.infinity,
-                height: layoutHeight,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      heroSection,
-                      const SizedBox(height: 14),
-                      Expanded(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              flex: 5,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  accountSection,
-                                  const SizedBox(height: 14),
-                                  signalsSection,
-                                  const Spacer(),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 18),
-                            Expanded(
-                              flex: 7,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Expanded(child: sequenceSection),
-                                  const SizedBox(height: 14),
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: ctaButton,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+              const desktopPadding = EdgeInsets.fromLTRB(14, 4, 14, 4);
+              final hasNormalDesktopHeight =
+                  constraints.hasBoundedHeight &&
+                  constraints.maxHeight.isFinite &&
+                  constraints.maxHeight >= 660;
+
+              if (!hasNormalDesktopHeight) {
+                return ListView(
+                  padding: desktopPadding,
+                  children: desktopChildren,
+                );
+              }
+
+              return Padding(
+                padding: desktopPadding,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: desktopChildren,
                 ),
               );
             },
@@ -322,10 +319,7 @@ class _OnboardingSectionCard extends StatelessWidget {
     return Card(
       color: AppColors.surface,
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: EdgeInsets.all(isDense ? 16 : 20),
-        child: child,
-      ),
+      child: Padding(padding: EdgeInsets.all(isDense ? 8 : 20), child: child),
     );
   }
 }
@@ -347,7 +341,7 @@ class _InfoTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(isDense ? 12 : 14),
+      padding: EdgeInsets.all(isDense ? 7 : 14),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(18),
@@ -363,13 +357,13 @@ class _InfoTile extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: isDense ? 4 : 6),
+          SizedBox(height: isDense ? 3 : 6),
           Text(
             value,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.w600,
-              height: isDense ? 1.35 : 1.45,
+              height: isDense ? 1.22 : 1.45,
             ),
           ),
         ],
@@ -397,7 +391,7 @@ class _OnboardingStepTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(isDense ? 14 : 16),
+      padding: EdgeInsets.all(isDense ? 7 : 16),
       decoration: BoxDecoration(
         color: softColor.withValues(alpha: 0.42),
         borderRadius: BorderRadius.circular(20),
@@ -407,11 +401,11 @@ class _OnboardingStepTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: isDense ? 30 : 34,
-            height: isDense ? 30 : 34,
+            width: isDense ? 26 : 34,
+            height: isDense ? 26 : 34,
             decoration: BoxDecoration(
               color: accentColor,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(isDense ? 8 : 10),
             ),
             child: Center(
               child: Text(
@@ -422,7 +416,7 @@ class _OnboardingStepTile extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: isDense ? 10 : 12),
+          SizedBox(width: isDense ? 8 : 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -431,12 +425,12 @@ class _OnboardingStepTile extends StatelessWidget {
                   step.title,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                SizedBox(height: isDense ? 3 : 4),
+                SizedBox(height: isDense ? 2 : 4),
                 Text(
                   step.description,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textPrimary,
-                    height: isDense ? 1.35 : 1.45,
+                    height: isDense ? 1.22 : 1.45,
                   ),
                 ),
               ],
@@ -465,8 +459,8 @@ class _HighlightChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: isDense ? 12 : 14,
-        vertical: isDense ? 8 : 10,
+        horizontal: isDense ? 9 : 14,
+        vertical: isDense ? 5 : 10,
       ),
       decoration: BoxDecoration(
         color: backgroundColor,
@@ -494,8 +488,8 @@ class _ServiceChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: isDense ? 12 : 14,
-        vertical: isDense ? 8 : 10,
+        horizontal: isDense ? 9 : 14,
+        vertical: isDense ? 5 : 10,
       ),
       decoration: BoxDecoration(
         color: AppColors.accentSoft,

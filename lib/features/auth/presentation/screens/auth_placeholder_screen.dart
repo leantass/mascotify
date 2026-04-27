@@ -45,8 +45,8 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
     final viewportWidth = MediaQuery.sizeOf(context).width;
     final pageMaxWidth = viewportWidth >= 900
         ? (viewportWidth - (viewportWidth >= 1440 ? 8 : 16))
-            .clamp(1180.0, 1960.0)
-            .toDouble()
+              .clamp(1180.0, 1960.0)
+              .toDouble()
         : 1040.0;
 
     return Scaffold(
@@ -168,10 +168,7 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Expanded(
-                        flex: 4,
-                        child: _HeroPanel(isDense: true),
-                      ),
+                      const Expanded(flex: 4, child: _HeroPanel(isDense: true)),
                       SizedBox(width: columnGap),
                       Expanded(
                         flex: 9,
@@ -202,13 +199,8 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                                               CrossAxisAlignment.stretch,
                                           children: [
                                             Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.stretch,
-                                                children: [
-                                                  animatedFormCard,
-                                                  const Spacer(),
-                                                ],
+                                              child: SingleChildScrollView(
+                                                child: animatedFormCard,
                                               ),
                                             ),
                                             SizedBox(width: innerGap),
@@ -218,22 +210,23 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                                             ),
                                           ],
                                         )
-                                      : Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: [
-                                            animatedFormCard,
-                                            SizedBox(height: innerGap),
-                                            demoPanel,
-                                            if (_errorMessage != null) ...[
+                                      : SingleChildScrollView(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
+                                              animatedFormCard,
                                               SizedBox(height: innerGap),
-                                              _ErrorCard(
-                                                message: _errorMessage!,
-                                                isDense: true,
-                                              ),
+                                              demoPanel,
+                                              if (_errorMessage != null) ...[
+                                                SizedBox(height: innerGap),
+                                                _ErrorCard(
+                                                  message: _errorMessage!,
+                                                  isDense: true,
+                                                ),
+                                              ],
                                             ],
-                                            const Spacer(),
-                                          ],
+                                          ),
                                         ),
                                 ),
                               ],
@@ -749,22 +742,8 @@ class _HeroPanel extends StatelessWidget {
     final benefitsGap = isDense ? 14.0 : 24.0;
     final itemGap = isDense ? 8.0 : 14.0;
 
-    return Container(
-      padding: EdgeInsets.all(panelPadding),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            AppColors.surface,
-            AppColors.primarySoft,
-            AppColors.accentSoft,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
+    Widget buildContent({required bool pinBenefitsToBottom}) {
+      return Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -798,7 +777,10 @@ class _HeroPanel extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          if (isDense) const Spacer() else SizedBox(height: benefitsGap),
+          if (pinBenefitsToBottom)
+            const Spacer()
+          else
+            SizedBox(height: benefitsGap),
           const _BenefitItem(title: 'Perfiles y datos siempre a mano'),
           SizedBox(height: itemGap),
           const _BenefitItem(
@@ -809,7 +791,29 @@ class _HeroPanel extends StatelessWidget {
             title: 'Acceso simple desde cualquier dispositivo',
           ),
         ],
+      );
+    }
+
+    return Container(
+      padding: EdgeInsets.all(panelPadding),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            AppColors.surface,
+            AppColors.primarySoft,
+            AppColors.accentSoft,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: AppColors.border),
       ),
+      child: isDense
+          ? SingleChildScrollView(
+              child: buildContent(pinBenefitsToBottom: false),
+            )
+          : buildContent(pinBenefitsToBottom: false),
     );
   }
 }
