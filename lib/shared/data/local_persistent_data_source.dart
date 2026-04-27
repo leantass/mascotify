@@ -600,9 +600,16 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         (entry) => entry.pet.id != petId || entry.direction != 'Enviado',
       ),
     ];
+    final updatedThreads = _upsertThreadForInterest(
+      currentState.threads,
+      pet: pet,
+      interestType: interestType,
+      message: interestMessage,
+    );
 
     _userStates[userId] = currentState.copyWith(
       socialInboxEntries: updatedEntries,
+      threads: updatedThreads,
     );
     await _persistUserState(userId);
   }
@@ -1440,6 +1447,79 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     updatedThreads[threadIndex] = transform(updatedThreads[threadIndex]);
     _userStates[userId] = currentState.copyWith(threads: updatedThreads);
     await _persistUserState(userId);
+  }
+
+  List<MessageThread> _upsertThreadForInterest(
+    List<MessageThread> threads, {
+    required Pet pet,
+    required String interestType,
+    required String message,
+  }) {
+    final existingIndex = threads.indexWhere(
+      (thread) => thread.pet.id == pet.id,
+    );
+    final threadId = 'local-thread-${pet.id}';
+    final entryPointLabel =
+        'Nace desde una intención enviada en la bandeja social';
+    final nextStepLabel =
+        'Seguir la conversación dentro de Mascotify antes de definir un siguiente paso.';
+
+    if (existingIndex == -1) {
+      final thread = MessageThread(
+        id: threadId,
+        ownerName: 'Contacto por ${pet.name}',
+        pet: pet,
+        relatedLabel: 'Conversación sobre ${pet.name}',
+        lastMessage: message,
+        status: 'Abierto',
+        lastActivity: 'Ahora',
+        summary:
+            'Hilo local persistido para ordenar la intención y continuar el intercambio sin salir de la cuenta.',
+        accentColorHex: _accentColorForInterestType(interestType),
+        connectionType: interestType,
+        stageLabel: 'Primer contacto',
+        entryPointLabel: entryPointLabel,
+        nextStepLabel: nextStepLabel,
+        contextTags: <String>[
+          interestType,
+          pet.species,
+          pet.location,
+        ].where((item) => item.trim().isNotEmpty).toList(),
+        unreadCount: 0,
+        isAwaitingMyReply: false,
+        autoReplies: const <String>[],
+        messages: <MessageEntry>[
+          MessageEntry(text: message, timestamp: 'Ahora', isMine: true),
+        ],
+      );
+      return <MessageThread>[thread, ...threads];
+    }
+
+    final updatedThreads = <MessageThread>[...threads];
+    final existingThread = updatedThreads[existingIndex];
+    updatedThreads[existingIndex] = existingThread.copyWith(
+      pet: pet,
+      lastMessage: message,
+      lastActivity: 'Ahora',
+      status: 'Abierto',
+      connectionType: interestType,
+      stageLabel: existingThread.stageLabel.trim().isEmpty
+          ? 'Primer contacto'
+          : existingThread.stageLabel,
+      entryPointLabel: existingThread.entryPointLabel.trim().isEmpty
+          ? entryPointLabel
+          : existingThread.entryPointLabel,
+      nextStepLabel: existingThread.nextStepLabel.trim().isEmpty
+          ? nextStepLabel
+          : existingThread.nextStepLabel,
+      unreadCount: 0,
+      isAwaitingMyReply: false,
+      messages: <MessageEntry>[
+        ...existingThread.messages,
+        MessageEntry(text: message, timestamp: 'Ahora', isMine: true),
+      ],
+    );
+    return updatedThreads;
   }
 
   List<SocialInboxEntry> _socialInboxEntriesWithCurrentPets() {

@@ -7,9 +7,14 @@ import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import 'conversation_screen.dart';
 
-class MessagesInboxScreen extends StatelessWidget {
+class MessagesInboxScreen extends StatefulWidget {
   const MessagesInboxScreen({super.key});
 
+  @override
+  State<MessagesInboxScreen> createState() => _MessagesInboxScreenState();
+}
+
+class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
   @override
   Widget build(BuildContext context) {
     final threads = AppData.messageThreads;
@@ -54,7 +59,12 @@ class MessagesInboxScreen extends StatelessWidget {
                         ResponsiveWrapGrid(
                           minItemWidth: 360,
                           children: threads
-                              .map((thread) => _ThreadCard(thread: thread))
+                              .map(
+                                (thread) => _ThreadCard(
+                                  thread: thread,
+                                  onOpenThread: _openThread,
+                                ),
+                              )
                               .toList(),
                         ),
                     ],
@@ -66,6 +76,14 @@ class MessagesInboxScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openThread(MessageThread thread) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ConversationScreen(thread: thread)),
+    );
+    if (!mounted) return;
+    setState(() {});
   }
 }
 
@@ -145,9 +163,10 @@ class _MessagesHero extends StatelessWidget {
 }
 
 class _ThreadCard extends StatelessWidget {
-  const _ThreadCard({required this.thread});
+  const _ThreadCard({required this.thread, required this.onOpenThread});
 
   final MessageThread thread;
+  final Future<void> Function(MessageThread thread) onOpenThread;
 
   @override
   Widget build(BuildContext context) {
@@ -305,11 +324,7 @@ class _ThreadCard extends StatelessWidget {
                 child: const Text('Ver perfil'),
               ),
               ElevatedButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ConversationScreen(thread: thread),
-                  ),
-                ),
+                onPressed: () => onOpenThread(thread),
                 child: const Text('Abrir chat'),
               ),
             ],
