@@ -42,8 +42,9 @@ if errorlevel 1 (
 echo [save_phase] Estado antes de commitear:
 git status --short --branch
 
-call :has_changes
-if errorlevel 1 (
+set "HAS_CHANGES="
+for /f "delims=" %%A in ('git status --porcelain') do set "HAS_CHANGES=1"
+if not defined HAS_CHANGES (
   echo [save_phase] No hay cambios para commitear.
   git status --short --branch
   popd >nul
@@ -56,6 +57,14 @@ if errorlevel 1 (
   echo [save_phase] ERROR: git add fallo.
   popd >nul
   exit /b 1
+)
+
+git diff --cached --quiet
+if not errorlevel 1 (
+  echo [save_phase] No hay cambios staged para commitear despues de git add.
+  git status --short --branch
+  popd >nul
+  exit /b 0
 )
 
 echo [save_phase] Creando commit...
@@ -78,9 +87,3 @@ echo [save_phase] Estado final:
 git status --short --branch
 popd >nul
 exit /b 0
-
-:has_changes
-set "DIRTY="
-for /f "delims=" %%A in ('git status --porcelain') do set "DIRTY=1"
-if defined DIRTY exit /b 0
-exit /b 1
