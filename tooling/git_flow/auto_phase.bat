@@ -53,9 +53,10 @@ if errorlevel 1 (
 )
 
 echo [auto_phase] B. Guardar fase
-call :has_changes
-if errorlevel 1 (
-  echo [auto_phase] No hay cambios para commitear.
+set "HAS_CHANGES="
+for /f "delims=" %%A in ('git status --porcelain') do set "HAS_CHANGES=1"
+if not defined HAS_CHANGES (
+  echo [auto_phase] No hay cambios para commitear. Se continua con el merge a main.
   git ls-remote --exit-code --heads origin "%BRANCH%" >nul 2>nul
   if errorlevel 1 (
     echo [auto_phase] ERROR: No hay cambios y la rama no existe remotamente.
@@ -69,6 +70,18 @@ if errorlevel 1 (
     echo [auto_phase] ERROR: git add fallo.
     popd >nul
     exit /b 1
+  )
+
+  git diff --cached --quiet
+  if not errorlevel 1 (
+    echo [auto_phase] No hay cambios staged para commitear despues de git add. Se continua con el merge a main.
+    git ls-remote --exit-code --heads origin "%BRANCH%" >nul 2>nul
+    if errorlevel 1 (
+      echo [auto_phase] ERROR: No hay cambios staged y la rama no existe remotamente.
+      popd >nul
+      exit /b 1
+    )
+    goto merge_to_main
   )
 
   echo [auto_phase] Creando commit...
@@ -88,6 +101,7 @@ if errorlevel 1 (
   )
 )
 
+:merge_to_main
 echo [auto_phase] C. Merge seguro a main
 git checkout main
 if errorlevel 1 (
@@ -129,9 +143,3 @@ echo [auto_phase] D. Flujo terminado correctamente
 git status --short --branch
 popd >nul
 exit /b 0
-
-:has_changes
-set "DIRTY="
-for /f "delims=" %%A in ('git status --porcelain') do set "DIRTY=1"
-if defined DIRTY exit /b 0
-exit /b 1
