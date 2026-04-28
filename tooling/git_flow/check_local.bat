@@ -34,5 +34,14 @@ if errorlevel 1 (
 )
 echo [check_local] TESTS OK
 
+echo [check_local] Ejecutando flutter build web...
+call "%FLUTTER%" build web
+if errorlevel 1 (
+  echo [check_local] ERROR: flutter build web fallo.
+  popd >nul
+  exit /b 1
+)
+echo [check_local] BUILD WEB OK
+
 popd >nul
 exit /b 0
