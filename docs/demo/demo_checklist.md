@@ -6,7 +6,7 @@ Preparar una corrida local presentable de Mascotify para mostrar el ecosistema a
 
 ## Rama recomendada
 
-- `juagotecica7/mascotify-demo-release`
+- `juagotecica7/mascotify-demo-paquete-web`
 
 ## Comandos utiles
 
@@ -27,12 +27,37 @@ Para servir una build web local sin `flutter run -d chrome`, ver:
 docs/demo/demo_web_local.md
 ```
 
+Para generar un zip entregable local de la demo web:
+
+```bat
+tooling\demo\package_web_demo.bat
+```
+
+El paquete queda en:
+
+```text
+dist\demo\mascotify-demo-web.zip
+```
+
+Es un paquete estatico de demo web. No es deploy productivo y requiere servidor estatico despues de descomprimirlo, por ejemplo:
+
+```bat
+python -m http.server 8080
+```
+
+O:
+
+```bat
+py -m http.server 8080
+```
+
 ## Validar Antes De Mostrar
 
 - La app abre en Chrome sin pantalla blanca.
 - `flutter analyze` pasa sin issues.
 - `flutter test` pasa completo.
 - `flutter build web` termina OK.
+- `tooling\demo\package_web_demo.bat` genera `dist\demo\mascotify-demo-web.zip`.
 - El flujo demo familia permite navegar Inicio, Mascotas, Actividad, Explorar y Perfil.
 - El flujo demo profesional permite navegar Inicio, Servicios, Actividad, Explorar y Perfil.
 - El logout vuelve a Auth y oculta datos privados.

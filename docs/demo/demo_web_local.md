@@ -52,6 +52,28 @@ El archivo principal esperado es:
 build\web\index.html
 ```
 
+## Generar Paquete Zip De Demo
+
+Para generar un paquete entregable local de la demo web:
+
+```bat
+tooling\demo\package_web_demo.bat
+```
+
+El script:
+
+- Ejecuta `C:\src\flutter\bin\flutter.bat build web`.
+- Verifica que exista `build\web\index.html`.
+- Crea la carpeta `dist\demo`.
+- Reemplaza el zip anterior si ya existia.
+- Comprime el contenido de `build\web` en:
+
+```text
+dist\demo\mascotify-demo-web.zip
+```
+
+Este zip es un paquete estatico de demo web. No es deploy productivo, no publica GitHub Pages, no usa Firebase Hosting y no sube nada a ningun servidor.
+
 ## Servir La Demo Local
 
 Primero generar el build web. Despues ejecutar:
@@ -85,6 +107,28 @@ Luego abrir:
 ```text
 http://localhost:8080
 ```
+
+## Servir Despues De Descomprimir El Zip
+
+Descomprimir `dist\demo\mascotify-demo-web.zip` en una carpeta local. Desde esa carpeta, ejecutar:
+
+```bat
+python -m http.server 8080
+```
+
+Si el comando `python` no existe, probar:
+
+```bat
+py -m http.server 8080
+```
+
+Luego abrir:
+
+```text
+http://localhost:8080
+```
+
+La demo web requiere un servidor estatico para verse correctamente. Evitar abrir `index.html` directamente con doble click si aparecen problemas de rutas, carga o pantalla blanca.
 
 ## Si Falla El Build
 
@@ -120,4 +164,16 @@ Despues abrir:
 
 ```text
 http://localhost:8080
+```
+
+## Flujo Recomendado Para Paquete Entregable
+
+```bat
+tooling\demo\package_web_demo.bat
+```
+
+El archivo final queda en:
+
+```text
+dist\demo\mascotify-demo-web.zip
 ```
