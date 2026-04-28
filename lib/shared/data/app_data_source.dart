@@ -2,6 +2,7 @@ import '../models/account_identity_models.dart';
 import '../models/app_user.dart';
 import '../models/notification_models.dart';
 import '../models/pet.dart';
+import '../models/pet_activity_event.dart';
 import '../models/profile_option_item.dart';
 import '../models/professional_models.dart';
 import '../models/report_models.dart';
@@ -17,6 +18,7 @@ abstract class MascotifyDataSource {
   AppUser getCurrentUser();
   List<Pet> getPets();
   Pet? findPetById(String id);
+  List<PetActivityEvent> getPetActivityEvents(String petId);
   List<ProfileOptionItem> getProfileOptions();
 
   MascotifyAccount accountFor(AccountExperience experience);
@@ -65,6 +67,7 @@ abstract class MascotifyDataSource {
   Future<void> addPet(Pet pet);
   Future<void> updatePet(Pet pet);
   Future<void> deletePet(String petId);
+  Future<void> addPetActivityEvent(PetActivityEvent event);
   Future<void> setNotificationsEnabled(bool enabled);
   Future<void> setMessagesNotificationsEnabled(bool enabled);
   Future<void> setPetActivityNotificationsEnabled(bool enabled);
@@ -118,6 +121,11 @@ class MockMascotifyDataSource implements MascotifyDataSource {
       if (pet.id == id) return pet;
     }
     return null;
+  }
+
+  @override
+  List<PetActivityEvent> getPetActivityEvents(String petId) {
+    return const <PetActivityEvent>[];
   }
 
   @override
@@ -261,6 +269,9 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   Future<void> deletePet(String petId) async {}
 
   @override
+  Future<void> addPetActivityEvent(PetActivityEvent event) async {}
+
+  @override
   Future<void> addAutomatedReply(String threadId) async {}
 
   @override
@@ -322,6 +333,10 @@ class AppData {
   static List<Pet> get pets => source.getPets();
 
   static Pet? findPetById(String id) => source.findPetById(id);
+
+  static List<PetActivityEvent> petActivityEventsForPet(String petId) {
+    return source.getPetActivityEvents(petId);
+  }
 
   static List<ProfileOptionItem> get profileOptions =>
       source.getProfileOptions();
@@ -457,6 +472,10 @@ class AppData {
 
   static Future<void> deletePet(String petId) {
     return source.deletePet(petId);
+  }
+
+  static Future<void> addPetActivityEvent(PetActivityEvent event) {
+    return source.addPetActivityEvent(event);
   }
 
   static Future<void> setNotificationsEnabled(bool enabled) {

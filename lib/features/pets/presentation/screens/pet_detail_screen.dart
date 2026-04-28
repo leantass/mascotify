@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
+import '../../../../shared/models/pet_activity_event.dart';
 import '../../../../shared/models/report_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
@@ -57,6 +58,8 @@ class PetDetailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _QrExperienceCard(pet: pet),
+              const SizedBox(height: 16),
+              _PetActivityHistoryCard(pet: pet),
               const SizedBox(height: 16),
               _SectionCard(
                 title: 'Salud',
@@ -1215,6 +1218,186 @@ class _QrTimelinePreviewTile extends StatelessWidget {
       default:
         return Icons.qr_code_2_rounded;
     }
+  }
+}
+
+class _PetActivityHistoryCard extends StatelessWidget {
+  const _PetActivityHistoryCard({required this.pet});
+
+  final Pet pet;
+
+  @override
+  Widget build(BuildContext context) {
+    final currentPet = AppData.findPetById(pet.id) ?? pet;
+    final events = AppData.petActivityEventsForPet(currentPet.id).take(6);
+    final textTheme = Theme.of(context).textTheme;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.supportSoft,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.history_rounded,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Historial de actividad',
+                        style: textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Linea de tiempo local de acciones importantes vinculadas a ${currentPet.name}.',
+                        style: textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            if (events.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceAlt,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Text(
+                  'Todavia no hay actividad registrada para esta mascota.',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    height: 1.45,
+                  ),
+                ),
+              )
+            else
+              ...events.map(
+                (event) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _PetActivityTile(event: event),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PetActivityTile extends StatelessWidget {
+  const _PetActivityTile({required this.event});
+
+  final PetActivityEvent event;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: _colorFor(event.type),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(_iconFor(event.type), color: AppColors.textPrimary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${event.title} - ${_timeLabel(event.createdAt)}',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  event.description,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _iconFor(PetActivityEventType type) {
+    switch (type) {
+      case PetActivityEventType.created:
+        return Icons.add_circle_outline_rounded;
+      case PetActivityEventType.updated:
+        return Icons.edit_outlined;
+      case PetActivityEventType.socialInterest:
+        return Icons.favorite_border_rounded;
+      case PetActivityEventType.message:
+        return Icons.forum_outlined;
+      case PetActivityEventType.qr:
+        return Icons.qr_code_2_rounded;
+      case PetActivityEventType.deleted:
+        return Icons.delete_outline;
+      case PetActivityEventType.notification:
+        return Icons.notifications_none_rounded;
+    }
+  }
+
+  Color _colorFor(PetActivityEventType type) {
+    switch (type) {
+      case PetActivityEventType.socialInterest:
+      case PetActivityEventType.message:
+        return AppColors.accentSoft;
+      case PetActivityEventType.qr:
+        return AppColors.primarySoft;
+      case PetActivityEventType.deleted:
+        return AppColors.supportSoft;
+      case PetActivityEventType.created:
+      case PetActivityEventType.updated:
+      case PetActivityEventType.notification:
+        return AppColors.surface;
+    }
+  }
+
+  String _timeLabel(DateTime createdAt) {
+    final now = DateTime.now();
+    final difference = now.difference(createdAt);
+    if (difference.inMinutes < 1) return 'Ahora';
+    if (difference.inHours < 1) return 'Hace ${difference.inMinutes} min';
+    if (difference.inDays < 1) return 'Hoy';
+    if (difference.inDays == 1) return 'Ayer';
+    return 'Hace ${difference.inDays} dias';
   }
 }
 

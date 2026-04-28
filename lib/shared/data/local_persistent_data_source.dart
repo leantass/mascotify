@@ -8,6 +8,7 @@ import '../models/account_identity_models.dart';
 import '../models/app_user.dart';
 import '../models/notification_models.dart';
 import '../models/pet.dart';
+import '../models/pet_activity_event.dart';
 import '../models/profile_option_item.dart';
 import '../models/professional_models.dart';
 import '../models/report_models.dart';
@@ -83,6 +84,7 @@ class PersistedLocalUserState {
     required this.socialInboxEntries,
     required this.savedProfiles,
     required this.notifications,
+    required this.petActivityEvents,
     required this.professionalProfile,
   });
 
@@ -103,6 +105,7 @@ class PersistedLocalUserState {
   final List<SocialInboxEntry> socialInboxEntries;
   final List<SavedProfileEntry> savedProfiles;
   final List<EcosystemNotification> notifications;
+  final List<PetActivityEvent> petActivityEvents;
   final ProfessionalProfile? professionalProfile;
 
   PersistedLocalUserState copyWith({
@@ -123,6 +126,7 @@ class PersistedLocalUserState {
     List<SocialInboxEntry>? socialInboxEntries,
     List<SavedProfileEntry>? savedProfiles,
     List<EcosystemNotification>? notifications,
+    List<PetActivityEvent>? petActivityEvents,
     ProfessionalProfile? professionalProfile,
     bool clearProfessionalProfile = false,
   }) {
@@ -152,6 +156,7 @@ class PersistedLocalUserState {
       socialInboxEntries: socialInboxEntries ?? this.socialInboxEntries,
       savedProfiles: savedProfiles ?? this.savedProfiles,
       notifications: notifications ?? this.notifications,
+      petActivityEvents: petActivityEvents ?? this.petActivityEvents,
       professionalProfile: clearProfessionalProfile
           ? null
           : professionalProfile ?? this.professionalProfile,
@@ -180,6 +185,9 @@ class PersistedLocalUserState {
           .toList(),
       'savedProfiles': savedProfiles.map((item) => item.toJson()).toList(),
       'notifications': notifications.map((item) => item.toJson()).toList(),
+      'petActivityEvents': petActivityEvents
+          .map((item) => item.toJson())
+          .toList(),
       'professionalProfile': professionalProfile?.toJson(),
     };
   }
@@ -250,6 +258,14 @@ class PersistedLocalUserState {
           (json['notifications'] as List<dynamic>? ?? const <dynamic>[])
               .map(
                 (item) => EcosystemNotification.fromJson(
+                  Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+                ),
+              )
+              .toList(),
+      petActivityEvents:
+          (json['petActivityEvents'] as List<dynamic>? ?? const <dynamic>[])
+              .map(
+                (item) => PetActivityEvent.fromJson(
                   Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
                 ),
               )
@@ -473,6 +489,19 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  List<PetActivityEvent> getPetActivityEvents(String petId) {
+    final userId = _currentUserId;
+    if (userId == null) return const <PetActivityEvent>[];
+
+    final events =
+        _stateForUser(userId).petActivityEvents
+            .where((event) => event.accountId == userId && event.petId == petId)
+            .toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return List.unmodifiable(events);
+  }
+
+  @override
   List<ProfessionalLibraryContent> getProfessionalLibraryContents() {
     final currentProfessionalProfile = getCurrentProfessionalProfile();
     final currentProfileContents = currentProfessionalProfile == null
@@ -683,6 +712,19 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           petId: pet.id,
         ),
       ),
+      petActivityEvents: _prependPetActivityEvent(
+        currentState.petActivityEvents,
+        _buildPetActivityEvent(
+          userId: userId,
+          petId: pet.id,
+          type: PetActivityEventType.socialInterest,
+          title: 'Interes social registrado',
+          description:
+              'Se envio una intencion de tipo $interestType vinculada a ${pet.name}.',
+          relatedEntityId: 'local-thread-${pet.id}',
+          relatedEntityType: 'messageThread',
+        ),
+      ),
     );
     await _persistUserState(userId);
   }
@@ -752,6 +794,19 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           actionLabel: 'Ver mascota',
           action: EcosystemNotificationAction.openPetDetail,
           petId: normalizedPet.id,
+        ),
+      ),
+      petActivityEvents: _prependPetActivityEvent(
+        currentState.petActivityEvents,
+        _buildPetActivityEvent(
+          userId: userId,
+          petId: normalizedPet.id,
+          type: PetActivityEventType.created,
+          title: 'Mascota creada',
+          description:
+              'Se creo la ficha local de ${normalizedPet.name} para esta cuenta.',
+          relatedEntityId: normalizedPet.id,
+          relatedEntityType: 'pet',
         ),
       ),
     );
@@ -826,6 +881,19 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           petId: normalizedPet.id,
         ),
       ),
+      petActivityEvents: _prependPetActivityEvent(
+        currentState.petActivityEvents,
+        _buildPetActivityEvent(
+          userId: userId,
+          petId: normalizedPet.id,
+          type: PetActivityEventType.updated,
+          title: 'Perfil actualizado',
+          description:
+              'Se guardaron cambios en la ficha local de ${normalizedPet.name}.',
+          relatedEntityId: normalizedPet.id,
+          relatedEntityType: 'pet',
+        ),
+      ),
       qrStates: <String, PersistedPetQrState>{
         ...currentState.qrStates,
         previousPet.id: qrState,
@@ -856,6 +924,9 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       savedProfiles: currentState.savedProfiles
           .where((entry) => entry.pet.id != petId)
           .toList(),
+      petActivityEvents: currentState.petActivityEvents
+          .where((event) => event.petId != petId)
+          .toList(),
       notifications: deletedPet == null
           ? currentState.notifications
           : _prependNotification(
@@ -876,6 +947,21 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
               ),
             ),
       qrStates: updatedQrStates,
+    );
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> addPetActivityEvent(PetActivityEvent event) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    _userStates[userId] = currentState.copyWith(
+      petActivityEvents: _prependPetActivityEvent(
+        currentState.petActivityEvents,
+        event,
+      ),
     );
     await _persistUserState(userId);
   }
@@ -913,20 +999,41 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     final userId = _currentUserId;
     if (userId == null) return;
 
-    await _updateThread(
-      userId,
-      threadId,
-      (currentThread) => currentThread.copyWith(
-        messages: <MessageEntry>[
-          ...currentThread.messages,
-          MessageEntry(text: trimmedText, timestamp: 'Ahora', isMine: true),
-        ],
-        lastMessage: trimmedText,
-        lastActivity: 'Ahora',
-        unreadCount: 0,
-        isAwaitingMyReply: false,
+    final currentState = _stateForUser(userId);
+    final threadIndex = currentState.threads.indexWhere(
+      (thread) => thread.id == threadId,
+    );
+    if (threadIndex == -1) return;
+
+    final currentThread = currentState.threads[threadIndex];
+    final updatedThreads = <MessageThread>[...currentState.threads];
+    updatedThreads[threadIndex] = currentThread.copyWith(
+      messages: <MessageEntry>[
+        ...currentThread.messages,
+        MessageEntry(text: trimmedText, timestamp: 'Ahora', isMine: true),
+      ],
+      lastMessage: trimmedText,
+      lastActivity: 'Ahora',
+      unreadCount: 0,
+      isAwaitingMyReply: false,
+    );
+    _userStates[userId] = currentState.copyWith(
+      threads: updatedThreads,
+      petActivityEvents: _prependPetActivityEvent(
+        currentState.petActivityEvents,
+        _buildPetActivityEvent(
+          userId: userId,
+          petId: currentThread.pet.id,
+          type: PetActivityEventType.message,
+          title: 'Mensaje enviado',
+          description:
+              'Se envio un mensaje en la conversacion vinculada a ${currentThread.pet.name}.',
+          relatedEntityId: threadId,
+          relatedEntityType: 'messageThread',
+        ),
       ),
     );
+    await _persistUserState(userId);
   }
 
   @override
@@ -956,6 +1063,17 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         ],
       );
     });
+    await addPetActivityEvent(
+      _buildPetActivityEvent(
+        userId: userId,
+        petId: pet.id,
+        type: PetActivityEventType.qr,
+        title: 'QR revisado',
+        description: 'Se abrio la vista publica QR de ${pet.name}.',
+        relatedEntityId: pet.qrCodeLabel,
+        relatedEntityType: 'qr',
+      ),
+    );
   }
 
   @override
@@ -1133,6 +1251,17 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         ],
       );
     });
+    await addPetActivityEvent(
+      _buildPetActivityEvent(
+        userId: userId,
+        petId: pet.id,
+        type: PetActivityEventType.qr,
+        title: 'Reporte QR registrado',
+        description: 'Se registro un reporte de trazabilidad para ${pet.name}.',
+        relatedEntityId: normalizedLocationLabel,
+        relatedEntityType: 'qrReport',
+      ),
+    );
   }
 
   @override
@@ -1259,6 +1388,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         socialInboxEntries,
         savedProfiles,
       ),
+      petActivityEvents: const <PetActivityEvent>[],
       professionalProfile: professionalProfile,
     );
   }
@@ -1458,6 +1588,11 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         socialInboxEntries: nextSocialInboxEntries,
         savedProfiles: nextSavedProfiles,
       );
+      final nextPetActivityEvents = _normalizePetActivityEvents(
+        userId,
+        nextPets,
+        state.petActivityEvents,
+      );
       return state.copyWith(
         pets: nextPets,
         threads: nextThreads,
@@ -1465,6 +1600,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         socialInboxEntries: nextSocialInboxEntries,
         savedProfiles: nextSavedProfiles,
         notifications: nextNotifications,
+        petActivityEvents: nextPetActivityEvents,
       );
     }
 
@@ -1490,17 +1626,24 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       socialInboxEntries: nextSocialInboxEntries,
       savedProfiles: nextSavedProfiles,
     );
+    final nextPetActivityEvents = _normalizePetActivityEvents(
+      userId,
+      state.pets,
+      state.petActivityEvents,
+    );
     if (nextThreads != state.threads ||
         nextQrStates != state.qrStates ||
         nextSocialInboxEntries != state.socialInboxEntries ||
         nextSavedProfiles != state.savedProfiles ||
-        nextNotifications != state.notifications) {
+        nextNotifications != state.notifications ||
+        nextPetActivityEvents != state.petActivityEvents) {
       return state.copyWith(
         threads: nextThreads,
         qrStates: nextQrStates,
         socialInboxEntries: nextSocialInboxEntries,
         savedProfiles: nextSavedProfiles,
         notifications: nextNotifications,
+        petActivityEvents: nextPetActivityEvents,
       );
     }
 
@@ -1582,6 +1725,21 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
     }
 
     return normalized;
+  }
+
+  List<PetActivityEvent> _normalizePetActivityEvents(
+    String userId,
+    List<Pet> pets,
+    List<PetActivityEvent> events,
+  ) {
+    if (pets.isEmpty) return const <PetActivityEvent>[];
+
+    final petIds = pets.map((pet) => pet.id).toSet();
+    return events
+        .where(
+          (event) => event.accountId == userId && petIds.contains(event.petId),
+        )
+        .toList();
   }
 
   List<SavedProfileEntry> _normalizeSavedProfiles(
@@ -1680,6 +1838,39 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       notification,
       ...notifications,
     ].take(50).toList();
+  }
+
+  List<PetActivityEvent> _prependPetActivityEvent(
+    List<PetActivityEvent> events,
+    PetActivityEvent event,
+  ) {
+    return <PetActivityEvent>[
+      event,
+      ...events.where((item) => item.id != event.id),
+    ].take(120).toList();
+  }
+
+  PetActivityEvent _buildPetActivityEvent({
+    required String userId,
+    required String petId,
+    required PetActivityEventType type,
+    required String title,
+    required String description,
+    String? relatedEntityId,
+    String? relatedEntityType,
+  }) {
+    final now = DateTime.now();
+    return PetActivityEvent(
+      id: 'pet-activity-${type.name}-$petId-${now.microsecondsSinceEpoch}',
+      petId: petId,
+      accountId: userId,
+      type: type,
+      title: title,
+      description: description,
+      createdAt: now,
+      relatedEntityId: relatedEntityId,
+      relatedEntityType: relatedEntityType,
+    );
   }
 
   String _notificationId(String prefix) {
