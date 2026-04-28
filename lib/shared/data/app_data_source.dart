@@ -24,6 +24,9 @@ abstract class MascotifyDataSource {
   OnboardingTrack trackFor(AccountExperience experience);
 
   List<EcosystemNotification> getNotifications();
+  int getUnreadNotificationsCount();
+  Future<void> markNotificationRead(String notificationId);
+  Future<void> markAllNotificationsRead();
 
   List<MessageThread> getMessageThreads();
   MessageThread? findMessageThreadById(String id);
@@ -150,6 +153,11 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  int getUnreadNotificationsCount() {
+    return getNotifications().where((item) => item.isUnread).length;
+  }
+
+  @override
   List<MessageThread> getMessageThreads() {
     return List.unmodifiable(buildMockMessageThreads(MockData.pets));
   }
@@ -176,6 +184,12 @@ class MockMascotifyDataSource implements MascotifyDataSource {
 
   @override
   Future<void> activateCurrentProfessionalProfile() async {}
+
+  @override
+  Future<void> markAllNotificationsRead() async {}
+
+  @override
+  Future<void> markNotificationRead(String notificationId) async {}
 
   @override
   List<ProfessionalRecommendation> getProfessionalRecommendations() {
@@ -325,6 +339,17 @@ class AppData {
 
   static List<EcosystemNotification> get notifications =>
       source.getNotifications();
+
+  static int get unreadNotificationsCount =>
+      source.getUnreadNotificationsCount();
+
+  static Future<void> markNotificationRead(String notificationId) {
+    return source.markNotificationRead(notificationId);
+  }
+
+  static Future<void> markAllNotificationsRead() {
+    return source.markAllNotificationsRead();
+  }
 
   static List<MessageThread> get messageThreads => source.getMessageThreads();
 

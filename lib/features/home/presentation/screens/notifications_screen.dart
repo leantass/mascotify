@@ -21,7 +21,6 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  final Set<String> _readIds = <String>{};
   final Set<String> _dismissedIds = <String>{};
   bool _showHistory = true;
 
@@ -84,7 +83,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             label: unreadCount > 0
                                 ? 'Marcar todo como visto'
                                 : 'Todo al día',
-                            onTap: unreadCount > 0 ? _markAllAsRead : null,
+                            onTap: unreadCount > 0
+                                ? () {
+                                    _markAllAsRead();
+                                  }
+                                : null,
                           ),
                           _ActionChip(
                             label: _showHistory
@@ -112,7 +115,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               isUnread: _isUnread,
                               onOpen: (notification) =>
                                   _openAndMarkRead(context, notification),
-                              onMarkAsRead: _markAsRead,
+                              onMarkAsRead: (id) {
+                                _markAsRead(id);
+                              },
                               onDismiss: _dismiss,
                             ),
                           ],
@@ -126,7 +131,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               isUnread: _isUnread,
                               onOpen: (notification) =>
                                   _openAndMarkRead(context, notification),
-                              onMarkAsRead: _markAsRead,
+                              onMarkAsRead: (id) {
+                                _markAsRead(id);
+                              },
                               onDismiss: _dismiss,
                             ),
                           ],
@@ -141,7 +148,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           isUnread: _isUnread,
                           onOpen: (notification) =>
                               _openAndMarkRead(context, notification),
-                          onMarkAsRead: _markAsRead,
+                          onMarkAsRead: (id) {
+                            _markAsRead(id);
+                          },
                           onDismiss: _dismiss,
                         ),
                     ],
@@ -156,7 +165,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   bool _isUnread(EcosystemNotification notification) {
-    return notification.isUnread && !_readIds.contains(notification.id);
+    return notification.isUnread;
   }
 
   List<EcosystemNotification> _sortedNotifications(
@@ -193,20 +202,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
-  void _markAsRead(String id) {
-    setState(() {
-      _readIds.add(id);
-    });
+  Future<void> _markAsRead(String id) async {
+    await AppData.markNotificationRead(id);
+    if (!mounted) return;
+    setState(() {});
   }
 
-  void _markAllAsRead() {
-    setState(() {
-      _readIds.addAll(
-        AppData.notifications
-            .where((item) => !_dismissedIds.contains(item.id) && item.isUnread)
-            .map((item) => item.id),
-      );
-    });
+  Future<void> _markAllAsRead() async {
+    await AppData.markAllNotificationsRead();
+    if (!mounted) return;
+    setState(() {});
   }
 
   void _dismiss(String id) {
@@ -219,7 +224,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     BuildContext context,
     EcosystemNotification notification,
   ) async {
-    _markAsRead(notification.id);
+    await _markAsRead(notification.id);
+    if (!context.mounted) return;
     await _handleNotificationAction(context, notification);
   }
 
