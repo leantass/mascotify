@@ -32,7 +32,7 @@ SightingLocationReference buildSuggestedLocationForPet(Pet pet) {
         shortReference: 'Punto aproximado B4',
         timeReference: 'Referencia lista para compartir',
         mapLabelTop: 'Eje principal',
-        mapLabelBottom: 'Área tranquila',
+        mapLabelBottom: 'Area tranquila',
         horizontalFactor: 0.58,
         verticalFactor: 0.30,
       );
@@ -45,30 +45,30 @@ QrStatusSnapshot buildQrStatusSnapshotForPet(Pet pet) {
       return const QrStatusSnapshot(
         currentStatus: 'QR activo y visible',
         protectedContactState: 'Contacto protegido listo para derivar',
-        lastSignalLabel: 'Último escaneo público hace 2 días',
+        lastSignalLabel: 'Ultimo escaneo publico hace 2 dias',
         lastSignalDetail:
-            'Se abrió la vista pública del perfil y el responsable habría podido seguir el evento sin exponer datos directos.',
-        totalScansLabel: '4 escaneos mock',
+            'Se abrio la vista publica del perfil y el responsable habria podido seguir el evento sin exponer datos directos.',
+        totalScansLabel: '4 escaneos locales',
         activeWindowLabel: 'Actividad estable esta semana',
       );
     case 'pet-02':
       return const QrStatusSnapshot(
-        currentStatus: 'QR preparado para activación',
+        currentStatus: 'QR preparado para activacion',
         protectedContactState: 'Contacto protegido pendiente de vincular',
-        lastSignalLabel: 'Sin escaneos todavía',
+        lastSignalLabel: 'Sin escaneos todavia',
         lastSignalDetail:
-            'La ficha está lista para sumar trazabilidad cuando la placa quede asociada.',
-        totalScansLabel: '0 escaneos mock',
-        activeWindowLabel: 'Esperando activación',
+            'La ficha esta lista para sumar trazabilidad cuando la placa quede asociada.',
+        totalScansLabel: '0 escaneos locales',
+        activeWindowLabel: 'Esperando activacion',
       );
     default:
       return const QrStatusSnapshot(
         currentStatus: 'QR configurado con señales recientes',
         protectedContactState: 'Contacto protegido activo',
-        lastSignalLabel: 'Último avistamiento hace 18 min',
+        lastSignalLabel: 'Ultimo avistamiento hace 18 min',
         lastSignalDetail:
-            'El sistema ya puede mostrar referencias de zona, reportes y un historial básico de actividad QR.',
-        totalScansLabel: '7 escaneos mock',
+            'El sistema ya puede mostrar referencias de zona, reportes y un historial basico de actividad QR.',
+        totalScansLabel: '7 escaneos locales',
         activeWindowLabel: 'Actividad alta hoy',
       );
   }
@@ -79,10 +79,10 @@ List<QrActivityEntry> buildQrActivityEntriesForPet(Pet pet) {
     case 'pet-01':
       return const [
         QrActivityEntry(
-          title: 'Escaneo público registrado',
+          title: 'Escaneo publico registrado',
           detail:
-              'Se abrió el perfil QR y quedó asentada una consulta pública del código.',
-          timeLabel: 'Hace 2 días',
+              'Se abrio el perfil QR y quedo asentada una consulta publica del codigo.',
+          timeLabel: 'Hace 2 dias',
           statusLabel: 'Consulta segura',
           iconKey: 'qr',
           accentColorHex: 0xFFDDF6F6,
@@ -90,16 +90,16 @@ List<QrActivityEntry> buildQrActivityEntriesForPet(Pet pet) {
         QrActivityEntry(
           title: 'Contacto protegido disponible',
           detail:
-              'La capa de contacto quedó lista para derivar información sin mostrar datos privados.',
-          timeLabel: 'Hace 5 días',
-          statusLabel: 'Protección activa',
+              'La capa de contacto quedo lista para derivar informacion sin mostrar datos privados.',
+          timeLabel: 'Hace 5 dias',
+          statusLabel: 'Proteccion activa',
           iconKey: 'shield',
           accentColorHex: 0xFFFFF2C6,
         ),
         QrActivityEntry(
           title: 'Perfil QR actualizado',
           detail:
-              'Se confirmó el estado del código y el acceso al perfil interno de la mascota.',
+              'Se confirmo el estado del codigo y el acceso al perfil interno de la mascota.',
           timeLabel: 'Hace 1 semana',
           statusLabel: 'Perfil sincronizado',
           iconKey: 'history',
@@ -111,7 +111,7 @@ List<QrActivityEntry> buildQrActivityEntriesForPet(Pet pet) {
         QrActivityEntry(
           title: 'Placa pendiente de asociar',
           detail:
-              'El perfil ya admite trazabilidad, pero el código todavía no fue activado para uso público.',
+              'El perfil ya admite trazabilidad, pero el codigo todavia no fue activado para uso publico.',
           timeLabel: 'Hoy',
           statusLabel: 'Pendiente',
           iconKey: 'pending',
@@ -120,8 +120,8 @@ List<QrActivityEntry> buildQrActivityEntriesForPet(Pet pet) {
         QrActivityEntry(
           title: 'Ficha QR preparada',
           detail:
-              'Quedó lista la identidad básica que va a acompañar al código una vez activo.',
-          timeLabel: 'Hace 3 días',
+              'Quedo lista la identidad basica que va a acompañar al codigo una vez activo.',
+          timeLabel: 'Hace 3 dias',
           statusLabel: 'Base lista',
           iconKey: 'badge',
           accentColorHex: 0xFFDDF6F6,
@@ -132,25 +132,25 @@ List<QrActivityEntry> buildQrActivityEntriesForPet(Pet pet) {
         const QrActivityEntry(
           title: 'Avistamiento QR recibido',
           detail:
-              'Se cargó una referencia aproximada para seguimiento del responsable.',
+              'Se cargo una referencia aproximada para seguimiento del responsable.',
           timeLabel: 'Hace 18 min',
           statusLabel: 'Reporte nuevo',
           iconKey: 'location',
           accentColorHex: 0xFFFFF2C6,
         ),
         const QrActivityEntry(
-          title: 'Escaneo público confirmado',
+          title: 'Escaneo publico confirmado',
           detail:
-              'El perfil QR se abrió y dejó una señal de actividad dentro del historial.',
+              'El perfil QR se abrio y dejo una señal de actividad dentro del historial.',
           timeLabel: 'Hoy',
-          statusLabel: 'Escaneo válido',
+          statusLabel: 'Escaneo valido',
           iconKey: 'qr',
           accentColorHex: 0xFFDDF6F6,
         ),
         QrActivityEntry(
           title: 'Zona sugerida disponible',
           detail:
-              'La referencia ${buildSuggestedLocationForPet(pet).shortReference} quedó lista para compartir dentro del flujo seguro.',
+              'La referencia ${buildSuggestedLocationForPet(pet).shortReference} quedo lista para compartir dentro del flujo seguro.',
           timeLabel: 'Hoy',
           statusLabel: 'Trazabilidad activa',
           iconKey: 'history',
