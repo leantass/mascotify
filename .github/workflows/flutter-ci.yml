@@ -27,13 +27,55 @@ jobs:
         run: flutter --version
 
       - name: Install dependencies
+        id: pub_get
         run: flutter pub get
 
       - name: Analyze project
+        id: analyze
         run: flutter analyze
 
       - name: Run tests
+        id: test
         run: flutter test
 
       - name: Build web
+        id: build_web
         run: flutter build web
+
+      - name: Write GitHub Actions summary
+        if: always()
+        run: |
+          status() {
+            case "$1" in
+              success) echo "OK" ;;
+              failure) echo "ERROR" ;;
+              cancelled) echo "CANCELADO" ;;
+              skipped) echo "OMITIDO" ;;
+              *) echo "$1" ;;
+            esac
+          }
+
+          PUB_GET_RESULT="$(status "${{ steps.pub_get.outcome }}")"
+          ANALYZE_RESULT="$(status "${{ steps.analyze.outcome }}")"
+          TEST_RESULT="$(status "${{ steps.test.outcome }}")"
+          BUILD_WEB_RESULT="$(status "${{ steps.build_web.outcome }}")"
+
+          {
+            echo "# Mascotify Flutter CI"
+            echo ""
+            echo "| Validacion | Resultado |"
+            echo "|---|---|"
+            echo "| flutter pub get | ${PUB_GET_RESULT} |"
+            echo "| flutter analyze | ${ANALYZE_RESULT} |"
+            echo "| flutter test | ${TEST_RESULT} |"
+            echo "| flutter build web | ${BUILD_WEB_RESULT} |"
+            echo ""
+            echo "## Contexto"
+            echo ""
+            echo "- Rama: ${{ github.ref_name }}"
+            echo "- Commit: ${{ github.sha }}"
+            echo "- Evento: ${{ github.event_name }}"
+            echo "- Workflow: ${{ github.workflow }}"
+            echo "- Fecha/hora: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+            echo "- Tests esperados: 57"
+          } >> "$GITHUB_STEP_SUMMARY"
