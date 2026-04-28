@@ -62,6 +62,7 @@ abstract class MascotifyDataSource {
   SightingLocationReference getSuggestedLocationForPet(Pet pet);
   QrStatusSnapshot getQrStatusSnapshotForPet(Pet pet);
   List<QrActivityEntry> getQrActivityEntriesForPet(Pet pet);
+  Future<void> registerQrTraceabilityReview(String petId);
   Future<void> registerQrScan(String petId);
   Future<void> submitSightingReport(SightingReportDraft draft);
 
@@ -238,6 +239,9 @@ class MockMascotifyDataSource implements MascotifyDataSource {
 
   @override
   Future<void> registerQrScan(String petId) async {}
+
+  @override
+  Future<void> registerQrTraceabilityReview(String petId) async {}
 
   @override
   List<SavedProfileEntry> getSavedProfiles() {
@@ -462,6 +466,10 @@ class AppData {
 
   static Future<void> registerQrScan(String petId) {
     return source.registerQrScan(petId);
+  }
+
+  static Future<void> registerQrTraceabilityReview(String petId) {
+    return source.registerQrTraceabilityReview(petId);
   }
 
   static Future<void> submitSightingReport(SightingReportDraft draft) {

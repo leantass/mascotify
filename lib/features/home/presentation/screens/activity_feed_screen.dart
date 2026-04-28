@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../features/explore/presentation/screens/conversation_screen.dart';
 import '../../../../features/pets/presentation/screens/pet_detail_screen.dart';
+import '../../../../features/pets/presentation/screens/qr_traceability_screen.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/ecosystem_activity_feed_item.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
@@ -166,6 +167,13 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
     if (petId != null) {
       final pet = AppData.findPetById(petId);
       if (pet != null && mounted) {
+        if (item.type == EcosystemActivityFeedType.qr) {
+          await Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => QrTraceabilityScreen(pet: pet)),
+          );
+          if (mounted) setState(() {});
+          return;
+        }
         await Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => PetDetailScreen(pet: pet)));

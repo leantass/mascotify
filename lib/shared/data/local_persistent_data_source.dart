@@ -1155,6 +1155,43 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  Future<void> registerQrTraceabilityReview(String petId) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final pet = findPetById(petId);
+    if (pet == null) return;
+
+    await _updateQrState(userId, pet, (currentState) {
+      return currentState.copyWith(
+        activity: <QrActivityEntry>[
+          QrActivityEntry(
+            title: 'Historial QR revisado',
+            detail:
+                'Se revisó la trazabilidad QR de ${pet.name} desde la cuenta y quedó asentada como una consulta local.',
+            timeLabel: 'Ahora',
+            statusLabel: 'Revisión local',
+            iconKey: 'qr',
+            accentColorHex: 0xFFDDF6F6,
+          ),
+          ...currentState.activity,
+        ],
+      );
+    });
+    await addPetActivityEvent(
+      _buildPetActivityEvent(
+        userId: userId,
+        petId: pet.id,
+        type: PetActivityEventType.qr,
+        title: 'Historial QR revisado',
+        description: 'Se revisó la trazabilidad QR de ${pet.name}.',
+        relatedEntityId: pet.qrCodeLabel,
+        relatedEntityType: 'qr',
+      ),
+    );
+  }
+
+  @override
   Future<void> registerQrScan(String petId) async {
     final userId = _currentUserId;
     if (userId == null) return;
@@ -1380,6 +1417,27 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         relatedEntityType: 'qrReport',
       ),
     );
+    final latestState = _stateForUser(userId);
+    _userStates[userId] = latestState.copyWith(
+      notifications: _prependNotification(
+        latestState.notifications,
+        EcosystemNotification(
+          id: _notificationId('notif-qr-report-${pet.id}'),
+          type: EcosystemNotificationType.qrReport,
+          title: 'Avistamiento QR registrado para ${pet.name}',
+          description:
+              'El reporte quedó guardado en la trazabilidad local y puede revisarse desde el historial QR.',
+          timeLabel: 'Ahora',
+          accentColorHex: pet.colorHex,
+          priority: EcosystemNotificationPriority.attention,
+          isUnread: true,
+          actionLabel: 'Ver historial QR',
+          action: EcosystemNotificationAction.openPetQrTraceability,
+          petId: pet.id,
+        ),
+      ),
+    );
+    await _persistUserState(userId);
   }
 
   @override

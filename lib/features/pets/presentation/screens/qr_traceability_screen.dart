@@ -6,14 +6,25 @@ import '../../../../shared/models/report_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 
-class QrTraceabilityScreen extends StatelessWidget {
+class QrTraceabilityScreen extends StatefulWidget {
   const QrTraceabilityScreen({super.key, required this.pet});
 
   final Pet pet;
 
   @override
+  State<QrTraceabilityScreen> createState() => _QrTraceabilityScreenState();
+}
+
+class _QrTraceabilityScreenState extends State<QrTraceabilityScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _registerTraceabilityReview();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final currentPet = AppData.findPetById(pet.id) ?? pet;
+    final currentPet = AppData.findPetById(widget.pet.id) ?? widget.pet;
     final status = AppData.qrStatusSnapshotForPet(currentPet);
     final activity = AppData.qrActivityEntriesForPet(currentPet);
     final operationalActivity = activity
@@ -178,6 +189,12 @@ class QrTraceabilityScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _registerTraceabilityReview() async {
+    await AppData.registerQrTraceabilityReview(widget.pet.id);
+    if (!mounted) return;
+    setState(() {});
   }
 }
 
