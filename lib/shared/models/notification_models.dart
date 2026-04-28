@@ -31,6 +31,7 @@ class EcosystemNotification {
     this.actionLabel,
     this.action,
     this.petId,
+    this.threadId,
     this.professionalName,
     this.contentTitle,
   });
@@ -47,6 +48,7 @@ class EcosystemNotification {
   final String? actionLabel;
   final EcosystemNotificationAction? action;
   final String? petId;
+  final String? threadId;
   final String? professionalName;
   final String? contentTitle;
 
@@ -63,6 +65,7 @@ class EcosystemNotification {
     String? actionLabel,
     EcosystemNotificationAction? action,
     String? petId,
+    String? threadId,
     String? professionalName,
     String? contentTitle,
   }) {
@@ -79,6 +82,7 @@ class EcosystemNotification {
       actionLabel: actionLabel ?? this.actionLabel,
       action: action ?? this.action,
       petId: petId ?? this.petId,
+      threadId: threadId ?? this.threadId,
       professionalName: professionalName ?? this.professionalName,
       contentTitle: contentTitle ?? this.contentTitle,
     );
@@ -98,6 +102,7 @@ class EcosystemNotification {
       'actionLabel': actionLabel,
       'action': action?.name,
       'petId': petId,
+      'threadId': threadId,
       'professionalName': professionalName,
       'contentTitle': contentTitle,
     };
@@ -131,6 +136,7 @@ class EcosystemNotification {
               EcosystemNotificationAction.openConnectionsInbox,
             ),
       petId: json['petId'] as String?,
+      threadId: json['threadId'] as String?,
       professionalName: json['professionalName'] as String?,
       contentTitle: json['contentTitle'] as String?,
     );

@@ -710,6 +710,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           actionLabel: 'Abrir mensajes',
           action: EcosystemNotificationAction.openMessagesInbox,
           petId: pet.id,
+          threadId: 'local-thread-${pet.id}',
         ),
       ),
       petActivityEvents: _prependPetActivityEvent(

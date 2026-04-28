@@ -62,6 +62,7 @@ List<EcosystemNotification> buildMockNotifications([
         actionLabel: 'Ir a mensajes',
         action: EcosystemNotificationAction.openMessagesInbox,
         petId: thread.pet.id,
+        threadId: thread.id,
       ),
     );
   }

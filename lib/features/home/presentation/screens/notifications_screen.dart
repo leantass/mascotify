@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../features/explore/presentation/screens/connections_inbox_screen.dart';
+import '../../../../features/explore/presentation/screens/conversation_screen.dart';
 import '../../../../features/explore/presentation/screens/messages_inbox_screen.dart';
 import '../../../../features/explore/presentation/screens/professional_content_detail_screen.dart';
 import '../../../../features/explore/presentation/screens/professionals_screen.dart';
@@ -10,6 +11,7 @@ import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/notification_models.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/professional_models.dart';
+import '../../../../shared/models/social_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 
@@ -226,10 +228,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   ) async {
     await _markAsRead(notification.id);
     if (!context.mounted) return;
-    await _handleNotificationAction(context, notification);
+    final handled = await _handleNotificationAction(context, notification);
+    if (!context.mounted || handled) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('No hay un destino disponible para esta notificacion.'),
+      ),
+    );
   }
 
-  Future<void> _handleNotificationAction(
+  Future<bool> _handleNotificationAction(
     BuildContext context,
     EcosystemNotification notification,
   ) async {
@@ -238,36 +246,45 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         await Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const ConnectionsInboxScreen()),
         );
-        return;
+        return true;
       case EcosystemNotificationAction.openMessagesInbox:
+        final thread = _findMessageThread(notification);
+        if (thread != null) {
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => ConversationScreen(thread: thread),
+            ),
+          );
+          return true;
+        }
         await Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => const MessagesInboxScreen()));
-        return;
+        return true;
       case EcosystemNotificationAction.openPetDetail:
         final pet = _findPet(notification.petId);
-        if (pet == null) return;
+        if (pet == null) return false;
         await Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => PetDetailScreen(pet: pet)));
-        return;
+        return true;
       case EcosystemNotificationAction.openPetQrTraceability:
         final pet = _findPet(notification.petId);
-        if (pet == null) return;
+        if (pet == null) return false;
         await Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => QrTraceabilityScreen(pet: pet)),
         );
-        return;
+        return true;
       case EcosystemNotificationAction.openProfessionals:
         await Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => const ProfessionalsScreen()));
-        return;
+        return true;
       case EcosystemNotificationAction.openProfessionalContent:
         final professional = _findProfessional(notification.professionalName);
-        if (professional == null) return;
+        if (professional == null) return false;
         final content = _findContent(professional, notification.contentTitle);
-        if (content == null) return;
+        if (content == null) return false;
         await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => ProfessionalContentDetailScreen(
@@ -276,15 +293,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
           ),
         );
-        return;
+        return true;
       case null:
-        return;
+        return false;
     }
   }
 
   Pet? _findPet(String? petId) {
     if (petId == null) return null;
     return AppData.findPetById(petId);
+  }
+
+  MessageThread? _findMessageThread(EcosystemNotification notification) {
+    final threadId = notification.threadId;
+    if (threadId != null) {
+      final thread = AppData.findMessageThreadById(threadId);
+      if (thread != null) return thread;
+    }
+
+    final pet = _findPet(notification.petId);
+    if (pet == null) return null;
+    return AppData.findMessageThreadForPet(pet);
   }
 
   ProfessionalProfile? _findProfessional(String? professionalName) {
@@ -490,101 +519,116 @@ class _NotificationCard extends StatelessWidget {
         ? AppColors.accent
         : AppColors.border;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: isUnread ? Colors.white : AppColors.surfaceAlt,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: borderColor, width: isUnread ? 1.5 : 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        onTap: onOpen,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: isUnread ? Colors.white : AppColors.surfaceAlt,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: borderColor, width: isUnread ? 1.5 : 1),
+          ),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: tone,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Icon(iconData, color: AppColors.textPrimary),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: tone,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Icon(iconData, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _TypePill(
-                          label: typeLabel,
-                          backgroundColor: AppColors.surfaceAlt,
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _TypePill(
+                              label: typeLabel,
+                              backgroundColor: AppColors.surfaceAlt,
+                            ),
+                            _TypePill(
+                              label: priorityLabel,
+                              backgroundColor: _priorityColor(
+                                notification.priority,
+                              ),
+                            ),
+                            if (isUnread)
+                              const _TypePill(
+                                label: 'Sin leer',
+                                backgroundColor: AppColors.supportSoft,
+                              ),
+                          ],
                         ),
-                        _TypePill(
-                          label: priorityLabel,
-                          backgroundColor: _priorityColor(
-                            notification.priority,
-                          ),
+                        const SizedBox(height: 8),
+                        Text(
+                          notification.title,
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
-                        if (isUnread)
-                          const _TypePill(
-                            label: 'Sin leer',
-                            backgroundColor: AppColors.supportSoft,
-                          ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      notification.title,
-                      style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    notification.timeLabel,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textMuted,
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
+              const SizedBox(height: 12),
               Text(
-                notification.timeLabel,
+                notification.description,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                  height: 1.45,
                 ),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  if (notification.actionLabel != null)
+                    ElevatedButton(
+                      onPressed: onOpen,
+                      child: Text(notification.actionLabel!),
+                    ),
+                  if (onMarkAsRead != null)
+                    OutlinedButton(
+                      onPressed: onMarkAsRead,
+                      child: const Text('Marcar visto'),
+                    ),
+                  if (onDismiss != null)
+                    TextButton(
+                      onPressed: onDismiss,
+                      child: const Text('Ocultar'),
+                    ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            notification.description,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
-              height: 1.45,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              if (notification.actionLabel != null)
-                ElevatedButton(
-                  onPressed: onOpen,
-                  child: Text(notification.actionLabel!),
-                ),
-              if (onMarkAsRead != null)
-                OutlinedButton(
-                  onPressed: onMarkAsRead,
-                  child: const Text('Marcar visto'),
-                ),
-              if (onDismiss != null)
-                TextButton(onPressed: onDismiss, child: const Text('Ocultar')),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
