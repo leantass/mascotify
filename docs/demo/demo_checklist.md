@@ -21,6 +21,12 @@ C:\src\flutter\bin\flutter.bat build web
 
 GitHub Actions tambien corre automaticamente en `push`, `pull_request`, ejecucion manual y schedule nocturno.
 
+Para servir una build web local sin `flutter run -d chrome`, ver:
+
+```text
+docs/demo/demo_web_local.md
+```
+
 ## Validar Antes De Mostrar
 
 - La app abre en Chrome sin pantalla blanca.
