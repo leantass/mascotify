@@ -18,3 +18,11 @@ matching, mensajeria, QR y vertical profesional para mascotas.
 El proyecto mantiene una sola base de producto entre mobile y browser.
 La preparacion final de release requiere completar identificadores, firma,
 assets de marca y metadatos definitivos por plataforma.
+
+## Demo web local
+
+La guia de entrega/demo esta en:
+
+```text
+docs/demo/demo_readme.md
+```
