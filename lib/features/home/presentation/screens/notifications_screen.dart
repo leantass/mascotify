@@ -128,7 +128,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               title: 'Historial reciente',
                               subtitle: historyNotifications.isEmpty
                                   ? 'No hay actividad archivada por ahora.'
-                                  : 'Actividad util, ya vista o mas informativa.',
+                                  : 'Actividad útil, ya vista o más informativa.',
                               notifications: historyNotifications,
                               isUnread: _isUnread,
                               onOpen: (notification) =>
@@ -396,7 +396,7 @@ class _NotificationsHero extends StatelessWidget {
             minItemWidth: 180,
             children: [
               _HeroMetric(label: 'Sin leer', value: '$unreadCount activos'),
-              _HeroMetric(label: 'Atencion', value: '$attentionCount primero'),
+              _HeroMetric(label: 'Atención', value: '$attentionCount primero'),
               _HeroMetric(label: 'Historial', value: '$historyCount vistos'),
             ],
           ),

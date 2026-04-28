@@ -220,12 +220,12 @@ class _ActivityFeedControls extends StatelessWidget {
           onChanged: onSearchChanged,
           decoration: InputDecoration(
             labelText: 'Buscar actividad',
-            hintText: 'Buscar por titulo, mascota, descripcion u origen',
+            hintText: 'Buscar por título, mascota, descripción u origen',
             prefixIcon: const Icon(Icons.search_rounded),
             suffixIcon: controller.text.isEmpty
                 ? null
                 : IconButton(
-                    tooltip: 'Limpiar busqueda',
+                    tooltip: 'Limpiar búsqueda',
                     onPressed: onClear,
                     icon: const Icon(Icons.close_rounded),
                   ),
@@ -354,7 +354,7 @@ class _ActivityHero extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Una linea de tiempo local para volver rapido a mascotas, mensajes, social y notificaciones importantes.',
+            'Una línea de tiempo local para volver rápido a mascotas, mensajes, social y notificaciones importantes.',
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
