@@ -3,6 +3,10 @@ name: Flutter CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
+  schedule:
+    # GitHub Actions usa UTC; 06:00 UTC equivale aproximadamente a 03:00 AM Argentina.
+    - cron: "0 6 * * *"
 
 jobs:
   analyze-and-test:
