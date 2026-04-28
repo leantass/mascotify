@@ -15,9 +15,21 @@ class ActivityFeedScreen extends StatefulWidget {
 }
 
 class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
+  final _searchController = TextEditingController();
+  EcosystemActivityFeedType? _selectedType;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final items = AppData.ecosystemActivityFeed;
+    final filteredItems = _filteredItems(items);
+    final hasActiveFilters =
+        _searchController.text.trim().isNotEmpty || _selectedType != null;
     final petsCount = items
         .where((item) => item.type == EcosystemActivityFeedType.pet)
         .length;
@@ -58,10 +70,27 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 18),
+                      if (items.isNotEmpty) ...[
+                        _ActivityFeedControls(
+                          controller: _searchController,
+                          selectedType: _selectedType,
+                          hasActiveFilters: hasActiveFilters,
+                          onSearchChanged: (_) => setState(() {}),
+                          onTypeSelected: (type) {
+                            setState(() {
+                              _selectedType = type;
+                            });
+                          },
+                          onClear: _clearFilters,
+                        ),
+                        const SizedBox(height: 18),
+                      ],
                       if (items.isEmpty)
                         const _EmptyActivityState()
+                      else if (filteredItems.isEmpty)
+                        _FilteredEmptyState(onClear: _clearFilters)
                       else
-                        ...items.map(
+                        ...filteredItems.map(
                           (item) => Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: _ActivityFeedTile(
@@ -79,6 +108,40 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
         ),
       ),
     );
+  }
+
+  List<EcosystemActivityFeedItem> _filteredItems(
+    List<EcosystemActivityFeedItem> items,
+  ) {
+    final query = _searchController.text.trim().toLowerCase();
+    return items.where((item) {
+      final matchesType = _selectedType == null || item.type == _selectedType;
+      final matchesQuery =
+          query.isEmpty || _searchableTextFor(item).contains(query);
+      return matchesType && matchesQuery;
+    }).toList();
+  }
+
+  String _searchableTextFor(EcosystemActivityFeedItem item) {
+    return [
+      item.title,
+      item.description,
+      item.sourceLabel,
+      item.timeLabel,
+      _labelForType(item.type),
+      item.relatedEntityId,
+      item.relatedEntityType,
+      item.petId,
+      item.threadId,
+      item.notificationId,
+    ].whereType<String>().join(' ').toLowerCase();
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _searchController.clear();
+      _selectedType = null;
+    });
   }
 
   Future<void> _openItem(EcosystemActivityFeedItem item) async {
@@ -116,6 +179,114 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('No hay un destino disponible para esta actividad.'),
+      ),
+    );
+  }
+}
+
+class _ActivityFeedControls extends StatelessWidget {
+  const _ActivityFeedControls({
+    required this.controller,
+    required this.selectedType,
+    required this.hasActiveFilters,
+    required this.onSearchChanged,
+    required this.onTypeSelected,
+    required this.onClear,
+  });
+
+  final TextEditingController controller;
+  final EcosystemActivityFeedType? selectedType;
+  final bool hasActiveFilters;
+  final ValueChanged<String> onSearchChanged;
+  final ValueChanged<EcosystemActivityFeedType?> onTypeSelected;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          key: const ValueKey('activity-search-field'),
+          controller: controller,
+          onChanged: onSearchChanged,
+          decoration: InputDecoration(
+            labelText: 'Buscar actividad',
+            hintText: 'Buscar por titulo, mascota, descripcion u origen',
+            prefixIcon: const Icon(Icons.search_rounded),
+            suffixIcon: controller.text.isEmpty
+                ? null
+                : IconButton(
+                    tooltip: 'Limpiar busqueda',
+                    onPressed: onClear,
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _FilterChip(
+              key: const ValueKey('activity-filter-all'),
+              label: 'Todas',
+              isSelected: selectedType == null,
+              onTap: () => onTypeSelected(null),
+            ),
+            ...EcosystemActivityFeedType.values.map(
+              (type) => _FilterChip(
+                key: ValueKey('activity-filter-${type.name}'),
+                label: _labelForType(type),
+                isSelected: selectedType == type,
+                onTap: () => onTypeSelected(type),
+              ),
+            ),
+            if (hasActiveFilters)
+              _FilterChip(
+                key: const ValueKey('activity-filter-clear'),
+                label: 'Limpiar',
+                isSelected: false,
+                onTap: onClear,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    super.key,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.dark : Colors.white,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: isSelected ? Colors.white : AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }
@@ -218,6 +389,44 @@ class _EmptyActivityState extends StatelessWidget {
           color: AppColors.textPrimary,
           height: 1.45,
         ),
+      ),
+    );
+  }
+}
+
+class _FilteredEmptyState extends StatelessWidget {
+  const _FilteredEmptyState({required this.onClear});
+
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'No hay actividad para esos filtros',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Probá con otra búsqueda o volvé a ver todo el feed.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 14),
+          OutlinedButton(onPressed: onClear, child: const Text('Limpiar')),
+        ],
       ),
     );
   }
@@ -385,5 +594,22 @@ class _ActivityPill extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+String _labelForType(EcosystemActivityFeedType type) {
+  switch (type) {
+    case EcosystemActivityFeedType.pet:
+      return 'Mascotas';
+    case EcosystemActivityFeedType.qr:
+      return 'QR';
+    case EcosystemActivityFeedType.social:
+      return 'Intereses sociales';
+    case EcosystemActivityFeedType.message:
+      return 'Mensajes';
+    case EcosystemActivityFeedType.notification:
+      return 'Notificaciones';
+    case EcosystemActivityFeedType.professional:
+      return 'Perfil profesional';
   }
 }
