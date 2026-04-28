@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../features/home/presentation/screens/activity_feed_screen.dart';
 import '../../features/explore/presentation/screens/explore_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/pets/presentation/screens/pets_screen.dart';
@@ -46,6 +47,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             label: 'Explorar',
           ),
           _NavigationItem(
+            screen: ActivityFeedScreen(),
+            icon: Icons.history_outlined,
+            selectedIcon: Icons.history_rounded,
+            label: 'Actividad',
+          ),
+          _NavigationItem(
             screen: ProfileScreen(experience: AccountExperience.family),
             icon: Icons.person_outline_rounded,
             selectedIcon: Icons.person_rounded,
@@ -70,6 +77,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             icon: Icons.explore_outlined,
             selectedIcon: Icons.explore,
             label: 'Explorar',
+          ),
+          _NavigationItem(
+            screen: ActivityFeedScreen(),
+            icon: Icons.history_outlined,
+            selectedIcon: Icons.history_rounded,
+            label: 'Actividad',
           ),
           _NavigationItem(
             screen: ProfileScreen(experience: AccountExperience.professional),

@@ -1,5 +1,6 @@
 import '../models/account_identity_models.dart';
 import '../models/app_user.dart';
+import '../models/ecosystem_activity_feed_item.dart';
 import '../models/notification_models.dart';
 import '../models/pet.dart';
 import '../models/pet_activity_event.dart';
@@ -19,6 +20,7 @@ abstract class MascotifyDataSource {
   List<Pet> getPets();
   Pet? findPetById(String id);
   List<PetActivityEvent> getPetActivityEvents(String petId);
+  List<EcosystemActivityFeedItem> getEcosystemActivityFeedItems();
   List<ProfileOptionItem> getProfileOptions();
 
   MascotifyAccount accountFor(AccountExperience experience);
@@ -126,6 +128,11 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   @override
   List<PetActivityEvent> getPetActivityEvents(String petId) {
     return const <PetActivityEvent>[];
+  }
+
+  @override
+  List<EcosystemActivityFeedItem> getEcosystemActivityFeedItems() {
+    return const <EcosystemActivityFeedItem>[];
   }
 
   @override
@@ -337,6 +344,9 @@ class AppData {
   static List<PetActivityEvent> petActivityEventsForPet(String petId) {
     return source.getPetActivityEvents(petId);
   }
+
+  static List<EcosystemActivityFeedItem> get ecosystemActivityFeed =>
+      source.getEcosystemActivityFeedItems();
 
   static List<ProfileOptionItem> get profileOptions =>
       source.getProfileOptions();

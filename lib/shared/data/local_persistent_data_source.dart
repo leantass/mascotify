@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/presentation/auth_session_controller.dart';
 import '../models/account_identity_models.dart';
 import '../models/app_user.dart';
+import '../models/ecosystem_activity_feed_item.dart';
 import '../models/notification_models.dart';
 import '../models/pet.dart';
 import '../models/pet_activity_event.dart';
@@ -499,6 +500,122 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
             .toList()
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return List.unmodifiable(events);
+  }
+
+  @override
+  List<EcosystemActivityFeedItem> getEcosystemActivityFeedItems() {
+    final userId = _currentUserId;
+    if (userId == null) return const <EcosystemActivityFeedItem>[];
+
+    final currentState = _stateForUser(userId);
+    final items = <EcosystemActivityFeedItem>[];
+    var derivedSortValue = DateTime.now().microsecondsSinceEpoch;
+
+    int nextDerivedSortValue() => derivedSortValue--;
+
+    for (final event in currentState.petActivityEvents) {
+      items.add(
+        EcosystemActivityFeedItem(
+          id: 'pet-event-${event.id}',
+          title: event.title,
+          description: event.description,
+          type: _activityFeedTypeForPetEvent(event.type),
+          timeLabel: _activityTimeLabel(event.createdAt),
+          sourceLabel: _sourceLabelForPetEvent(event.type),
+          sortValue: event.createdAt.microsecondsSinceEpoch,
+          petId: event.petId,
+          threadId: event.relatedEntityType == 'messageThread'
+              ? event.relatedEntityId
+              : null,
+          relatedEntityId: event.relatedEntityId,
+          relatedEntityType: event.relatedEntityType,
+        ),
+      );
+    }
+
+    for (final notification in currentState.notifications) {
+      items.add(
+        EcosystemActivityFeedItem(
+          id: 'notification-${notification.id}',
+          title: notification.title,
+          description: notification.description,
+          type: EcosystemActivityFeedType.notification,
+          timeLabel: notification.timeLabel,
+          sourceLabel: 'Notificacion',
+          sortValue: nextDerivedSortValue(),
+          petId: notification.petId,
+          threadId: notification.threadId,
+          notificationId: notification.id,
+          relatedEntityId:
+              notification.threadId ??
+              notification.petId ??
+              notification.professionalName ??
+              notification.contentTitle,
+          relatedEntityType: notification.threadId != null
+              ? 'messageThread'
+              : notification.petId != null
+              ? 'pet'
+              : notification.professionalName != null
+              ? 'professional'
+              : null,
+        ),
+      );
+    }
+
+    for (final thread in currentState.threads) {
+      items.add(
+        EcosystemActivityFeedItem(
+          id: 'thread-${thread.id}',
+          title: 'Conversacion con ${thread.ownerName}',
+          description: thread.lastMessage,
+          type: EcosystemActivityFeedType.message,
+          timeLabel: thread.lastActivity,
+          sourceLabel: 'Mensajeria',
+          sortValue: nextDerivedSortValue(),
+          petId: thread.pet.id,
+          threadId: thread.id,
+          relatedEntityId: thread.id,
+          relatedEntityType: 'messageThread',
+        ),
+      );
+    }
+
+    for (final entry in currentState.socialInboxEntries) {
+      items.add(
+        EcosystemActivityFeedItem(
+          id: 'social-${entry.direction}-${entry.pet.id}',
+          title: '${entry.interestType} para ${entry.pet.name}',
+          description: entry.message,
+          type: EcosystemActivityFeedType.social,
+          timeLabel: entry.status,
+          sourceLabel: 'Social',
+          sortValue: nextDerivedSortValue(),
+          petId: entry.pet.id,
+          relatedEntityId: entry.pet.id,
+          relatedEntityType: 'pet',
+        ),
+      );
+    }
+
+    final professionalProfile = currentState.professionalProfile;
+    if (professionalProfile != null) {
+      items.add(
+        EcosystemActivityFeedItem(
+          id: 'professional-${professionalProfile.name}',
+          title: 'Perfil profesional activo',
+          description: professionalProfile.serviceSummary,
+          type: EcosystemActivityFeedType.professional,
+          timeLabel: professionalProfile.presenceStatusLabel,
+          sourceLabel: 'Profesional',
+          sortValue: nextDerivedSortValue(),
+          relatedEntityId: professionalProfile.name,
+          relatedEntityType: 'professional',
+        ),
+      );
+    }
+
+    items.sort((a, b) => b.sortValue.compareTo(a.sortValue));
+    return List.unmodifiable(items.take(80));
   }
 
   @override
@@ -1876,6 +1993,51 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
   String _notificationId(String prefix) {
     return '$prefix-${DateTime.now().microsecondsSinceEpoch}';
+  }
+
+  EcosystemActivityFeedType _activityFeedTypeForPetEvent(
+    PetActivityEventType type,
+  ) {
+    switch (type) {
+      case PetActivityEventType.created:
+      case PetActivityEventType.updated:
+      case PetActivityEventType.deleted:
+        return EcosystemActivityFeedType.pet;
+      case PetActivityEventType.socialInterest:
+        return EcosystemActivityFeedType.social;
+      case PetActivityEventType.message:
+        return EcosystemActivityFeedType.message;
+      case PetActivityEventType.qr:
+        return EcosystemActivityFeedType.qr;
+      case PetActivityEventType.notification:
+        return EcosystemActivityFeedType.notification;
+    }
+  }
+
+  String _sourceLabelForPetEvent(PetActivityEventType type) {
+    switch (type) {
+      case PetActivityEventType.created:
+      case PetActivityEventType.updated:
+      case PetActivityEventType.deleted:
+        return 'Mascotas';
+      case PetActivityEventType.socialInterest:
+        return 'Social';
+      case PetActivityEventType.message:
+        return 'Mensajeria';
+      case PetActivityEventType.qr:
+        return 'QR';
+      case PetActivityEventType.notification:
+        return 'Notificacion';
+    }
+  }
+
+  String _activityTimeLabel(DateTime createdAt) {
+    final difference = DateTime.now().difference(createdAt);
+    if (difference.inMinutes < 1) return 'Ahora';
+    if (difference.inHours < 1) return 'Hace ${difference.inMinutes} min';
+    if (difference.inDays < 1) return 'Hoy';
+    if (difference.inDays == 1) return 'Ayer';
+    return 'Hace ${difference.inDays} dias';
   }
 
   Pet? _findPetInList(List<Pet> pets, String petId) {
