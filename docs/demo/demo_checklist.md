@@ -6,7 +6,8 @@ Preparar una corrida local presentable de Mascotify para mostrar el ecosistema a
 
 ## Rama recomendada
 
-- `juagotecica7/mascotify-demo-paquete-web`
+- Trabajar en una rama de fase y validar antes de mergear a `main`.
+- Para esta auditoria: `juagotecica7/mascotify-auditoria-demo-docs`.
 
 ## Comandos utiles
 
@@ -53,14 +54,23 @@ py -m http.server 8080
 
 ## Validar Antes De Mostrar
 
+- `tooling\git_flow\check_local.bat` pasa completo.
 - La app abre en Chrome sin pantalla blanca.
 - `flutter analyze` pasa sin issues.
 - `flutter test` pasa completo.
 - `flutter build web` termina OK.
+- `tooling\demo\build_web_demo.bat` genera `build\web\index.html`.
 - `tooling\demo\package_web_demo.bat` genera `dist\demo\mascotify-demo-web.zip`.
+- `tooling\demo\serve_web_demo.bat` sirve `build\web` en `http://localhost:8080`.
 - El flujo demo familia permite navegar Inicio, Mascotas, Actividad, Explorar y Perfil.
 - El flujo demo profesional permite navegar Inicio, Servicios, Actividad, Explorar y Perfil.
+- El feed permite busqueda/filtros y navegacion contextual.
+- Mascotas permite ver fichas, detalle, historial y acciones disponibles.
+- QR muestra trazabilidad local.
+- Mensajes abre y mantiene datos locales por cuenta.
+- Notificaciones abre y navega desde Home.
 - El logout vuelve a Auth y oculta datos privados.
+- GitHub Actions queda verde en la rama antes de mergear.
 
 ## Flujo Familia Para Demo
 

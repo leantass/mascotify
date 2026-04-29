@@ -2,9 +2,14 @@
 setlocal
 
 pushd "%~dp0..\.." >nul
+if errorlevel 1 (
+  echo [serve_web_demo] ERROR: No se pudo entrar a la raiz del repo.
+  exit /b 1
+)
 
 if not exist "build\web\index.html" (
-  echo [serve_web_demo] No existe build web. Ejecuta primero tooling\demo\build_web_demo.bat
+  echo [serve_web_demo] ERROR: No existe build\web\index.html.
+  echo [serve_web_demo] Ejecuta primero tooling\demo\build_web_demo.bat
   popd >nul
   exit /b 1
 )

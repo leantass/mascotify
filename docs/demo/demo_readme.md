@@ -25,7 +25,7 @@ Es una demo web estatica/local para mostrar navegacion, flujos principales y est
 - Preferencias y plan local persistente.
 - Perfil profesional/demo.
 - Build web.
-- Tests automaticos.
+- Suite automatizada actual.
 
 ## Que NO incluye todavia
 
@@ -75,6 +75,12 @@ C:\src\flutter\bin\flutter.bat build web
 tooling\demo\build_web_demo.bat
 ```
 
+Equivale a ejecutar:
+
+```bat
+C:\src\flutter\bin\flutter.bat build web
+```
+
 La salida queda en:
 
 ```text
@@ -86,6 +92,8 @@ build\web
 ```bat
 tooling\demo\serve_web_demo.bat
 ```
+
+Requiere que exista `build\web\index.html`. Si no existe, generar primero el build web.
 
 URL local:
 

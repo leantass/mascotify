@@ -1,11 +1,24 @@
 @echo off
 setlocal
 
+set "FLUTTER=C:\src\flutter\bin\flutter.bat"
+
 pushd "%~dp0..\.." >nul
+if errorlevel 1 (
+  echo [package_web_demo] ERROR: No se pudo entrar a la raiz del repo.
+  exit /b 1
+)
 
-echo Generando paquete demo web de Mascotify...
+if not exist "%FLUTTER%" (
+  echo [package_web_demo] ERROR: No existe %FLUTTER%.
+  echo [package_web_demo] Revisa la instalacion local de Flutter.
+  popd >nul
+  exit /b 1
+)
 
-call C:\src\flutter\bin\flutter.bat build web
+echo [package_web_demo] Generando paquete demo web de Mascotify...
+
+call "%FLUTTER%" build web
 if errorlevel 1 (
   echo [package_web_demo] ERROR: flutter build web fallo. No se genero el paquete.
   popd >nul
@@ -50,7 +63,7 @@ if not exist "dist\demo\mascotify-demo-web.zip" (
   exit /b 1
 )
 
-echo Paquete generado en: dist\demo\mascotify-demo-web.zip
+echo [package_web_demo] Paquete generado en: dist\demo\mascotify-demo-web.zip
 
 popd >nul
 exit /b 0

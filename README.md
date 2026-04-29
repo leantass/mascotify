@@ -26,3 +26,16 @@ La guia de entrega/demo esta en:
 ```text
 docs/demo/demo_readme.md
 ```
+
+Comandos principales desde la raiz del proyecto:
+
+```bat
+C:\src\flutter\bin\flutter.bat run -d chrome
+tooling\git_flow\check_local.bat
+tooling\demo\build_web_demo.bat
+tooling\demo\serve_web_demo.bat
+tooling\demo\package_web_demo.bat
+```
+
+El build web queda en `build\web` y el paquete entregable se genera en
+`dist\demo\mascotify-demo-web.zip`.

@@ -135,16 +135,18 @@ La demo web requiere un servidor estatico para verse correctamente. Evitar abrir
 1. Ejecutar:
 
 ```bat
-C:\src\flutter\bin\flutter.bat analyze
-C:\src\flutter\bin\flutter.bat test
+tooling\git_flow\check_local.bat
 ```
 
-2. Revisar el error mostrado por Flutter.
+2. Revisar el primer error mostrado por `flutter analyze`, `flutter test` o `flutter build web`.
 3. Corregir el problema antes de volver a generar la demo.
-4. Para una validacion completa local, ejecutar:
+
+Validacion manual equivalente:
 
 ```bat
-tooling\git_flow\check_local.bat
+C:\src\flutter\bin\flutter.bat analyze
+C:\src\flutter\bin\flutter.bat test
+C:\src\flutter\bin\flutter.bat build web
 ```
 
 ## Si No Hay Python
