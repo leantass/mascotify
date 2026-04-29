@@ -13,76 +13,10 @@ import 'mock_data.dart';
 import 'notifications_mock_data.dart';
 import 'professional_mock_data.dart';
 import 'reporting_mock_data.dart';
+import 'mascotify_data_source.dart';
 import 'social_mock_data.dart';
 
-abstract class MascotifyDataSource {
-  AppUser getCurrentUser();
-  List<Pet> getPets();
-  Pet? findPetById(String id);
-  List<PetActivityEvent> getPetActivityEvents(String petId);
-  List<EcosystemActivityFeedItem> getEcosystemActivityFeedItems();
-  List<ProfileOptionItem> getProfileOptions();
-
-  MascotifyAccount accountFor(AccountExperience experience);
-  List<ExperienceOption> getExperienceOptions();
-  OnboardingTrack trackFor(AccountExperience experience);
-
-  List<EcosystemNotification> getNotifications();
-  int getUnreadNotificationsCount();
-  Future<void> markNotificationRead(String notificationId);
-  Future<void> markAllNotificationsRead();
-
-  List<MessageThread> getMessageThreads();
-  MessageThread? findMessageThreadById(String id);
-  MessageThread? findMessageThreadForPet(Pet pet);
-  Future<void> sendMessage(String threadId, String text);
-  Future<void> addAutomatedReply(String threadId);
-  List<SocialInboxEntry> getSocialInboxEntries();
-  List<SavedProfileEntry> getSavedProfiles();
-  Future<void> saveProfile(String petId);
-  Future<void> expressInterest({
-    required String petId,
-    required String interestType,
-    required String message,
-  });
-
-  List<ProfessionalProfile> getProfessionalProfiles();
-  ProfessionalProfile? getCurrentProfessionalProfile();
-  Future<void> activateCurrentProfessionalProfile();
-  ProfessionalProfile? findProfessionalByName(String name);
-  ProfessionalContentPreview? findFeaturedContent(
-    ProfessionalProfile professional,
-    String title,
-  );
-  List<ProfessionalLibraryContent> getProfessionalLibraryContents();
-  List<ProfessionalRecommendation> getProfessionalRecommendations();
-  List<ProfessionalServiceSpotlight> getProfessionalServiceSpotlights();
-  List<String> getProfessionalSpecialties();
-
-  SightingLocationReference getSuggestedLocationForPet(Pet pet);
-  QrStatusSnapshot getQrStatusSnapshotForPet(Pet pet);
-  List<QrActivityEntry> getQrActivityEntriesForPet(Pet pet);
-  Future<void> registerQrTraceabilityReview(String petId);
-  Future<void> registerQrScan(String petId);
-  Future<void> submitSightingReport(SightingReportDraft draft);
-
-  Future<void> syncCurrentUserState();
-  Future<void> addPet(Pet pet);
-  Future<void> updatePet(Pet pet);
-  Future<void> deletePet(String petId);
-  Future<void> addPetActivityEvent(PetActivityEvent event);
-  Future<void> setNotificationsEnabled(bool enabled);
-  Future<void> setMessagesNotificationsEnabled(bool enabled);
-  Future<void> setPetActivityNotificationsEnabled(bool enabled);
-  Future<void> setEcosystemUpdatesNotificationsEnabled(bool enabled);
-  Future<void> setStrategicNotificationsEnabled(bool enabled);
-  Future<void> setPlanName(String planName);
-  Future<void> setPrivacyLevel(String privacyLevel);
-  Future<void> setSecurityLevel(String securityLevel);
-  Future<void> setPublicProfileEnabled(bool enabled);
-  Future<void> setShowBasicInfoOnPublicProfile(bool enabled);
-  Future<void> setEcosystemSuggestionsEnabled(bool enabled);
-}
+export 'mascotify_data_source.dart';
 
 class MockMascotifyDataSource implements MascotifyDataSource {
   // Keeps the original demo-only behavior available for isolated previews and
