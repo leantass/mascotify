@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/app_environment.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
@@ -1082,6 +1083,8 @@ class _DemoPanel extends StatelessWidget {
         children: [
           Text('Acceso demo', style: Theme.of(context).textTheme.titleMedium),
           SizedBox(height: descriptionGap),
+          const _RuntimeModePill(),
+          SizedBox(height: descriptionGap),
           Text(
             'Si querés recorrer la experiencia antes de usar una cuenta propia, podés entrar con uno de estos perfiles de prueba.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -1160,6 +1163,31 @@ class _DemoPanel extends StatelessWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _RuntimeModePill extends StatelessWidget {
+  const _RuntimeModePill();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.supportSoft,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Text(
+          AppEnvironment.runtimeLabel,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
       ),
     );
   }

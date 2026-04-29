@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../features/auth/presentation/auth_session_controller.dart';
+import '../../../../core/app_environment.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../shared/models/app_user.dart';
@@ -116,6 +117,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+              const _RuntimeModeNotice(),
+              const SizedBox(height: 16),
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
@@ -391,6 +394,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
       const SnackBar(
         content: Text(
           'El cambio de email o contraseña debe conectarse al proveedor de autenticación final.',
+        ),
+      ),
+    );
+  }
+}
+
+class _RuntimeModeNotice extends StatelessWidget {
+  const _RuntimeModeNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: AppColors.supportSoft,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.info_outline_rounded,
+                color: AppColors.primaryDeep,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppEnvironment.runtimeLabel,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${AppEnvironment.runtimeShortDescription} ${AppEnvironment.productionReadinessLabel}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
