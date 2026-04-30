@@ -1,4 +1,4 @@
-name: Flutter CI
+name: Mascotify CI
 
 on:
   push:
@@ -9,8 +9,8 @@ on:
     - cron: "0 6 * * *"
 
 jobs:
-  analyze-and-test:
-    name: Analyze and test
+  flutter:
+    name: Flutter
     runs-on: ubuntu-latest
 
     steps:
@@ -26,23 +26,23 @@ jobs:
       - name: Show Flutter version
         run: flutter --version
 
-      - name: Install dependencies
+      - name: Install Flutter dependencies
         id: pub_get
         run: flutter pub get
 
-      - name: Analyze project
+      - name: Analyze Flutter project
         id: analyze
         run: flutter analyze
 
-      - name: Run tests
+      - name: Run Flutter tests
         id: test
         run: flutter test
 
-      - name: Build web
+      - name: Build Flutter web
         id: build_web
         run: flutter build web
 
-      - name: Write GitHub Actions summary
+      - name: Write Flutter summary
         if: always()
         run: |
           status() {
@@ -61,7 +61,7 @@ jobs:
           BUILD_WEB_RESULT="$(status "${{ steps.build_web.outcome }}")"
 
           {
-            echo "# Mascotify Flutter CI"
+            echo "# Mascotify CI - Flutter"
             echo ""
             echo "| Validacion | Resultado |"
             echo "|---|---|"
@@ -77,5 +77,70 @@ jobs:
             echo "- Evento: ${{ github.event_name }}"
             echo "- Workflow: ${{ github.workflow }}"
             echo "- Fecha/hora: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-            echo "- Tests esperados: 57"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        id: npm_ci
+        run: npm ci
+
+      - name: Build backend
+        id: build
+        run: npm run build
+
+      - name: Run backend tests
+        id: test
+        run: npm test
+
+      - name: Write backend summary
+        if: always()
+        run: |
+          status() {
+            case "$1" in
+              success) echo "OK" ;;
+              failure) echo "ERROR" ;;
+              cancelled) echo "CANCELADO" ;;
+              skipped) echo "OMITIDO" ;;
+              *) echo "$1" ;;
+            esac
+          }
+
+          NPM_CI_RESULT="$(status "${{ steps.npm_ci.outcome }}")"
+          BUILD_RESULT="$(status "${{ steps.build.outcome }}")"
+          TEST_RESULT="$(status "${{ steps.test.outcome }}")"
+
+          {
+            echo "# Mascotify CI - Backend"
+            echo ""
+            echo "| Validacion | Resultado |"
+            echo "|---|---|"
+            echo "| npm ci | ${NPM_CI_RESULT} |"
+            echo "| Backend build | ${BUILD_RESULT} |"
+            echo "| Backend test | ${TEST_RESULT} |"
+            echo ""
+            echo "## Contexto"
+            echo ""
+            echo "- Rama: ${{ github.ref_name }}"
+            echo "- Commit: ${{ github.sha }}"
+            echo "- Evento: ${{ github.event_name }}"
+            echo "- Workflow: ${{ github.workflow }}"
+            echo "- Fecha/hora: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
           } >> "$GITHUB_STEP_SUMMARY"
