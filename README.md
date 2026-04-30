@@ -27,6 +27,12 @@ La guia de entrega/demo esta en:
 docs/demo/demo_readme.md
 ```
 
+Roadmap ejecutivo:
+
+```text
+docs/demo/mascotify_roadmap_ejecutivo.md
+```
+
 Comandos principales desde la raiz del proyecto:
 
 ```bat
