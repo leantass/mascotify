@@ -102,6 +102,12 @@ jobs:
         id: npm_ci
         run: npm ci
 
+      - name: Generate Prisma Client
+        id: prisma_generate
+        run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mascotify_ci
+
       - name: Build backend
         id: build
         run: npm run build
@@ -124,6 +130,7 @@ jobs:
           }
 
           NPM_CI_RESULT="$(status "${{ steps.npm_ci.outcome }}")"
+          PRISMA_GENERATE_RESULT="$(status "${{ steps.prisma_generate.outcome }}")"
           BUILD_RESULT="$(status "${{ steps.build.outcome }}")"
           TEST_RESULT="$(status "${{ steps.test.outcome }}")"
 
@@ -133,6 +140,7 @@ jobs:
             echo "| Validacion | Resultado |"
             echo "|---|---|"
             echo "| npm ci | ${NPM_CI_RESULT} |"
+            echo "| Prisma generate | ${PRISMA_GENERATE_RESULT} |"
             echo "| Backend build | ${BUILD_RESULT} |"
             echo "| Backend test | ${TEST_RESULT} |"
             echo ""
