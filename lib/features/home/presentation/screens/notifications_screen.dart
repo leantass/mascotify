@@ -47,7 +47,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         .length;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Actividad y notificaciones')),
+      appBar: AppBar(
+        title: Text(
+          MediaQuery.sizeOf(context).width < 380
+              ? 'Actividad'
+              : 'Actividad y notificaciones',
+        ),
+      ),
       body: SafeArea(
         child: ResponsivePageBody(
           child: ListView(
@@ -535,10 +541,9 @@ class _NotificationCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final icon = Container(
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
@@ -546,55 +551,79 @@ class _NotificationCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: Icon(iconData, color: AppColors.textPrimary),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            _TypePill(
-                              label: typeLabel,
-                              backgroundColor: AppColors.surfaceAlt,
+                  );
+                  final content = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _TypePill(
+                            label: typeLabel,
+                            backgroundColor: AppColors.surfaceAlt,
+                          ),
+                          _TypePill(
+                            label: priorityLabel,
+                            backgroundColor: _priorityColor(
+                              notification.priority,
                             ),
-                            _TypePill(
-                              label: priorityLabel,
-                              backgroundColor: _priorityColor(
-                                notification.priority,
-                              ),
+                          ),
+                          if (isUnread)
+                            const _TypePill(
+                              label: 'Sin leer',
+                              backgroundColor: AppColors.supportSoft,
                             ),
-                            if (isUnread)
-                              const _TypePill(
-                                label: 'Sin leer',
-                                backgroundColor: AppColors.supportSoft,
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        notification.title,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      if (constraints.maxWidth < 340) ...[
+                        const SizedBox(height: 6),
                         Text(
-                          notification.title,
-                          style: Theme.of(context).textTheme.titleMedium,
+                          notification.timeLabel,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    notification.timeLabel,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.textMuted,
-                  ),
-                ],
+                    ],
+                  );
+
+                  if (constraints.maxWidth < 340) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [icon, const SizedBox(height: 12), content],
+                    );
+                  }
+
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      icon,
+                      const SizedBox(width: 14),
+                      Expanded(child: content),
+                      const SizedBox(width: 12),
+                      Text(
+                        notification.timeLabel,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: AppColors.textMuted,
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 12),
               Text(

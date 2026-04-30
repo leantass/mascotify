@@ -104,6 +104,35 @@ class _PetHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
+    Widget buildAvatar() {
+      return Container(
+        width: 76,
+        height: 76,
+        decoration: BoxDecoration(
+          color: AppColors.dark,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: const Icon(Icons.pets_rounded, color: Colors.white, size: 36),
+      );
+    }
+
+    Widget buildStatusPill() {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.supportSoft,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          pet.status,
+          style: textTheme.bodyMedium?.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -122,40 +151,23 @@ class _PetHeroCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 76,
-                height: 76,
-                decoration: BoxDecoration(
-                  color: AppColors.dark,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: const Icon(
-                  Icons.pets_rounded,
-                  color: Colors.white,
-                  size: 36,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.supportSoft,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  pet.status,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth < 340) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildAvatar(),
+                    const SizedBox(height: 12),
+                    buildStatusPill(),
+                  ],
+                );
+              }
+
+              return Row(
+                children: [buildAvatar(), const Spacer(), buildStatusPill()],
+              );
+            },
           ),
           const SizedBox(height: 18),
           Text(pet.name, style: textTheme.headlineLarge),

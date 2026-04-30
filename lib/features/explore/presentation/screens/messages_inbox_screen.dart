@@ -206,22 +206,15 @@ class _ThreadCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            thread.ownerName,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        _StatusPill(
-                          label: thread.status,
-                          backgroundColor: Colors.white,
-                          textColor: AppColors.textPrimary,
-                        ),
-                      ],
+                    Text(
+                      thread.ownerName,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    _StatusPill(
+                      label: thread.status,
+                      backgroundColor: Colors.white,
+                      textColor: AppColors.textPrimary,
                     ),
                     const SizedBox(height: 4),
                     Text(

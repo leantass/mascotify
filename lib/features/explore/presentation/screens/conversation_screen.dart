@@ -49,11 +49,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 return Column(
                   children: [
                     Expanded(
-                      child: _buildConversationPane(
-                        context,
-                        thread,
-                        includeSummary: true,
-                      ),
+                      child: _buildMobileConversationPane(context, thread),
                     ),
                     _buildComposerPanel(context, thread, compact: true),
                   ],
@@ -111,6 +107,40 @@ class _ConversationScreenState extends State<ConversationScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMobileConversationPane(
+    BuildContext context,
+    MessageThread thread,
+  ) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+      children: [
+        _ThreadSummaryCard(thread: thread),
+        const SizedBox(height: 12),
+        _ContextSummaryCard(thread: thread),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            children: thread.messages
+                .map(
+                  (message) => _MessageBubble(
+                    message: message,
+                    accentColor: Color(thread.accentColorHex),
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+      ],
     );
   }
 

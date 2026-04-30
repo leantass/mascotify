@@ -149,6 +149,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ? null
           : NavigationBar(
               selectedIndex: _currentIndex,
+              labelBehavior: screenWidth < 380
+                  ? NavigationDestinationLabelBehavior.onlyShowSelected
+                  : NavigationDestinationLabelBehavior.alwaysShow,
               onDestinationSelected: (index) {
                 setState(() {
                   _currentIndex = index;

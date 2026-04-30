@@ -58,9 +58,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         : const Color(0xFFCFEFF5),
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Container(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final avatar = Container(
                       width: 74,
                       height: 74,
                       decoration: BoxDecoration(
@@ -74,46 +74,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         size: 34,
                         color: Colors.white,
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
+                    );
+                    final accountSummary = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          account.ownerName,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          account.email,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.accentSoft,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            isFamily
+                                ? 'Modo familia - ${account.city}'
+                                : 'Modo profesional - ${account.city}',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: AppColors.accentDeep,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                        ),
+                      ],
+                    );
+
+                    if (constraints.maxWidth < 340) {
+                      return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            account.ownerName,
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            account.email,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.accentSoft,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              isFamily
-                                  ? 'Modo familia - ${account.city}'
-                                  : 'Modo profesional - ${account.city}',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: AppColors.accentDeep,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                          ),
+                          avatar,
+                          const SizedBox(height: 14),
+                          accountSummary,
                         ],
-                      ),
-                    ),
-                  ],
+                      );
+                    }
+
+                    return Row(
+                      children: [
+                        avatar,
+                        const SizedBox(width: 16),
+                        Expanded(child: accountSummary),
+                      ],
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 24),
@@ -408,10 +428,9 @@ class _RuntimeModeNotice extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final icon = Container(
               width: 42,
               height: 42,
               decoration: BoxDecoration(
@@ -422,28 +441,41 @@ class _RuntimeModeNotice extends StatelessWidget {
                 Icons.info_outline_rounded,
                 color: AppColors.primaryDeep,
               ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
+            );
+            final text = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppEnvironment.runtimeLabel,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${AppEnvironment.runtimeShortDescription} ${AppEnvironment.productionReadinessLabel}',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            );
+
+            if (constraints.maxWidth < 320) {
+              return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppEnvironment.runtimeLabel,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${AppEnvironment.runtimeShortDescription} ${AppEnvironment.productionReadinessLabel}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+                children: [icon, const SizedBox(height: 12), text],
+              );
+            }
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                icon,
+                const SizedBox(width: 14),
+                Expanded(child: text),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -499,6 +531,8 @@ class _PreferencesAndPlanCard extends StatelessWidget {
                 children: [
                   TabBar(
                     controller: tabController,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
                     labelColor: AppColors.primaryDeep,
                     unselectedLabelColor: AppColors.textSecondary,
                     indicatorColor: AppColors.primary,
