@@ -21,7 +21,8 @@ Preparar Mascotify para una futura publicacion Android sin publicar todavia, sin
 - `minSdk`: toma `flutter.minSdkVersion`.
 - Iconos: existen `ic_launcher.png` en densidades `mdpi`, `hdpi`, `xhdpi`, `xxhdpi` y `xxxhdpi`.
 - Signing release: preparado de forma condicional con `android/key.properties`, pero no hay `key.properties` presente.
-- Secretos: `.gitignore` excluye `key.properties`.
+- Plantilla local: `android/key.properties.example`.
+- Secretos: `.gitignore` excluye `key.properties`, `*.jks` y `*.keystore`.
 
 ## Permisos actuales
 
@@ -83,10 +84,10 @@ No toca Git, no crea keystore, no genera release firmado y no publica nada.
 Comando futuro para app bundle:
 
 ```bat
-C:\src\flutter\bin\flutter.bat build appbundle
+tooling\mobile\build_android_appbundle_release.bat
 ```
 
-Ese comando puede requerir signing y configuracion adicional antes de considerarse listo para Play Store.
+El script requiere `android/key.properties` local y no crea ni commitea secretos.
 
 ## Keystore y secretos
 
@@ -102,6 +103,13 @@ No commitear:
 - certificados o claves de signing
 
 La configuracion actual solo habilita signing release si existen `key.properties`, todas sus claves requeridas y el archivo de keystore referenciado.
+
+Ver tambien:
+
+```text
+docs/mobile/android_play_release.md
+docs/mobile/play_store_checklist.md
+```
 
 ## Que falta para Play Store
 

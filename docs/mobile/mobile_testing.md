@@ -103,6 +103,8 @@ Auditoria y checklist pre Play Store:
 ```text
 docs/mobile/android_release_readiness.md
 docs/mobile/android_release_checklist.md
+docs/mobile/android_play_release.md
+docs/mobile/play_store_checklist.md
 ```
 
 Diagnostico Android seguro:
