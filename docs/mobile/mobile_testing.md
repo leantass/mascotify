@@ -96,6 +96,21 @@ Guia completa:
 docs/mobile/android_device_testing.md
 ```
 
+## Preparacion para release Android futura
+
+Auditoria y checklist pre Play Store:
+
+```text
+docs/mobile/android_release_readiness.md
+docs/mobile/android_release_checklist.md
+```
+
+Diagnostico Android seguro:
+
+```bat
+tooling\mobile\android_release_check.bat
+```
+
 ## Diferencia entre validaciones
 
 - Tests widget/responsive: prueban pantallas en tamanos mobile dentro de Flutter Test.
