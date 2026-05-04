@@ -50,6 +50,20 @@ tooling\git_flow\check_local.bat
 
 ## Build APK debug
 
+Opcion recomendada:
+
+```bat
+tooling\mobile\build_android_debug.bat
+```
+
+El detalle de instalacion y checklist de prueba real esta en:
+
+```text
+docs/mobile/android_debug_apk.md
+```
+
+Comando Flutter equivalente:
+
 ```bat
 C:\src\flutter\bin\flutter.bat build apk --debug
 ```
