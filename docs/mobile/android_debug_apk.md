@@ -6,6 +6,8 @@ Un APK debug es un paquete instalable de Android pensado para pruebas locales e 
 
 No es una version productiva. No esta firmada para release, no usa keystore de produccion y no representa una publicacion oficial.
 
+Para QA con logs y recarga desde Flutter, ver tambien `docs/mobile/android_device_testing.md`.
+
 ## Como generarlo
 
 Desde la raiz del proyecto:

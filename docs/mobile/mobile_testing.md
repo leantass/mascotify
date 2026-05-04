@@ -76,6 +76,26 @@ build\app\outputs\flutter-apk\app-debug.apk
 
 No se genera APK release firmado en esta fase. No se toca keystore ni Play Store.
 
+## Prueba en dispositivo o emulador Android
+
+Ver dispositivos:
+
+```bat
+tooling\mobile\android_devices.bat
+```
+
+Correr la app en Android con Flutter:
+
+```bat
+tooling\mobile\run_android_debug.bat
+```
+
+Guia completa:
+
+```text
+docs/mobile/android_device_testing.md
+```
+
 ## Diferencia entre validaciones
 
 - Tests widget/responsive: prueban pantallas en tamanos mobile dentro de Flutter Test.

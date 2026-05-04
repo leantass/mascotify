@@ -27,13 +27,13 @@ Luego usar DevTools del navegador y activar un viewport mobile. Esta prueba ayud
 3. Verificar dispositivos disponibles:
 
 ```bat
-C:\src\flutter\bin\flutter.bat devices
+tooling\mobile\android_devices.bat
 ```
 
 4. Ejecutar:
 
 ```bat
-C:\src\flutter\bin\flutter.bat run -d <device-id>
+tooling\mobile\run_android_debug.bat
 ```
 
 ## Prueba en dispositivo Android fisico
@@ -44,14 +44,16 @@ C:\src\flutter\bin\flutter.bat run -d <device-id>
 4. Verificar:
 
 ```bat
-C:\src\flutter\bin\flutter.bat devices
+tooling\mobile\android_devices.bat
 ```
 
 5. Ejecutar:
 
 ```bat
-C:\src\flutter\bin\flutter.bat run -d <device-id>
+tooling\mobile\run_android_debug.bat
 ```
+
+Guia detallada: `docs/mobile/android_device_testing.md`.
 
 ## Checklist de flujos criticos
 
