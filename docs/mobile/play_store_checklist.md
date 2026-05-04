@@ -8,7 +8,8 @@
 - [ ] Nombre visible confirmado: `Mascotify`.
 - [ ] VersionName revisado.
 - [ ] VersionCode incrementado para la subida.
-- [ ] Target SDK compatible con requisitos vigentes de Play.
+- [ ] Target SDK API 35 o superior confirmado para Google Play.
+- [ ] Compile SDK compatible con el SDK Android instalado localmente o en CI.
 
 ## Signing
 
@@ -18,6 +19,7 @@
 - [ ] `.jks` o `.keystore` fuera de git.
 - [ ] `tooling\mobile\build_android_appbundle_release.bat` genera `.aab`.
 - [ ] Se conserva backup seguro de keystore.
+- [ ] El `.aab` no se genera con una keystore temporal o de prueba.
 
 ## Store listing
 

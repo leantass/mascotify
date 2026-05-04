@@ -29,6 +29,34 @@ if not exist "%KEY_PROPERTIES%" (
   exit /b 1
 )
 
+findstr /R /C:"^storePassword=." "%KEY_PROPERTIES%" >nul
+if errorlevel 1 (
+  echo [build_android_appbundle_release] ERROR: android\key.properties no tiene storePassword completo.
+  echo [build_android_appbundle_release] Completar el valor localmente sin commitear secretos.
+  exit /b 1
+)
+
+findstr /R /C:"^keyPassword=." "%KEY_PROPERTIES%" >nul
+if errorlevel 1 (
+  echo [build_android_appbundle_release] ERROR: android\key.properties no tiene keyPassword completo.
+  echo [build_android_appbundle_release] Completar el valor localmente sin commitear secretos.
+  exit /b 1
+)
+
+findstr /R /C:"^keyAlias=." "%KEY_PROPERTIES%" >nul
+if errorlevel 1 (
+  echo [build_android_appbundle_release] ERROR: android\key.properties no tiene keyAlias completo.
+  echo [build_android_appbundle_release] Completar el valor localmente sin commitear secretos.
+  exit /b 1
+)
+
+findstr /R /C:"^storeFile=." "%KEY_PROPERTIES%" >nul
+if errorlevel 1 (
+  echo [build_android_appbundle_release] ERROR: android\key.properties no tiene storeFile completo.
+  echo [build_android_appbundle_release] storeFile debe apuntar a la keystore real local, fuera de git.
+  exit /b 1
+)
+
 call "%FLUTTER%" build appbundle --release
 if errorlevel 1 (
   echo [build_android_appbundle_release] ERROR: fallo el build appbundle release.

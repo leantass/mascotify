@@ -16,8 +16,8 @@ Preparar Mascotify para una futura publicacion Android sin publicar todavia, sin
 - Version actual desde `pubspec.yaml`: `1.0.0+1`.
 - `versionName`: `1.0.0`.
 - `versionCode`: `1`.
-- `compileSdk`: toma `flutter.compileSdkVersion`.
-- `targetSdk`: toma `flutter.targetSdkVersion`.
+- `compileSdk`: toma `flutter.compileSdkVersion` (Flutter local: API 36).
+- `targetSdk`: toma `flutter.targetSdkVersion` (Flutter local: API 36).
 - `minSdk`: toma `flutter.minSdkVersion`.
 - Iconos: existen `ic_launcher.png` en densidades `mdpi`, `hdpi`, `xhdpi`, `xxhdpi` y `xxxhdpi`.
 - Signing release: preparado de forma condicional con `android/key.properties`, pero no hay `key.properties` presente.
@@ -36,6 +36,8 @@ Manifests debug/profile:
 - Declaran `android.permission.INTERNET` para herramientas de desarrollo Flutter, hot reload y debugging.
 
 No hay permisos de camara, geolocalizacion, push notifications ni almacenamiento declarados para produccion en esta etapa.
+
+Google Play exige Android 15 / API 35 o superior para nuevas apps y actualizaciones. El Flutter local usado por el proyecto apunta a API 36, por lo que la configuracion actual queda por encima del requisito.
 
 ## Build APK debug
 
@@ -118,6 +120,7 @@ docs/mobile/play_store_checklist.md
 - Build debug validado en dispositivo real.
 - Build release firmado con keystore real seguro.
 - App bundle validado.
+- `versionCode` incrementado antes de cada subida a Play.
 - Politica de privacidad publica.
 - Revision de datos recolectados/declaracion Play Console.
 - Auth real definida si corresponde.

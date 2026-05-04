@@ -14,14 +14,31 @@ La app actual sigue funcionando como demo/local mientras no exista backend real 
 - Version actual: `1.0.0+1`.
 - `versionName`: `1.0.0`.
 - `versionCode`: `1`.
-- `compileSdk`: `flutter.compileSdkVersion`.
-- `targetSdk`: `flutter.targetSdkVersion`.
+- `compileSdk`: `flutter.compileSdkVersion` (Flutter local: API 36).
+- `targetSdk`: `flutter.targetSdkVersion` (Flutter local: API 36).
 - `minSdk`: `flutter.minSdkVersion`.
 - Manifest principal: no declara permisos funcionales explicitos.
 - Debug/profile: declaran `android.permission.INTERNET` para tooling Flutter.
 - Iconos: existen `ic_launcher.png` por densidad en `android/app/src/main/res/mipmap-*`.
 - Signing release: Gradle lee `android/key.properties` solo si existe y esta completo.
 - Secretos: `.gitignore` excluye `key.properties`, `*.jks` y `*.keystore`.
+
+Google Play exige que apps nuevas y actualizaciones apunten a Android 15 / API 35 o superior. Con los valores actuales de Flutter (`compileSdk` y `targetSdk` API 36), Mascotify queda por encima de ese requisito.
+
+Referencia oficial: https://developer.android.com/google/play/requirements/target-sdk
+
+## Versionado para Play Console
+
+La version Android sale de `pubspec.yaml`:
+
+```yaml
+version: 1.0.0+1
+```
+
+- `versionName`: parte visible para usuarios (`1.0.0`).
+- `versionCode`: numero interno para Play (`1`).
+
+Antes de cada nueva subida a Play Console hay que incrementar siempre `versionCode`. Si la release cambia para usuarios, tambien actualizar `versionName`.
 
 ## APK debug vs AAB release
 
@@ -78,6 +95,8 @@ Con `android/key.properties` local completo:
 tooling\mobile\build_android_appbundle_release.bat
 ```
 
+El script valida que exista `android\key.properties` y que tenga completos `storePassword`, `keyPassword`, `keyAlias` y `storeFile` antes de intentar el build.
+
 Comando Flutter equivalente:
 
 ```bat
@@ -128,3 +147,4 @@ build\app\outputs\bundle\release\app-release.aab
 - Si se habilitan camara, QR real, geolocalizacion o push, revisar permisos y privacidad antes de subir.
 - Si se conecta backend/auth real, actualizar Data Safety y politica de privacidad.
 - Incrementar `versionCode` para cada nueva subida a Play.
+- Mantener `targetSdk` en API 35 o superior segun el requisito vigente de Google Play.
