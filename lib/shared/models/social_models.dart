@@ -11,6 +11,8 @@ class ExploreClip {
     this.thumbnailAssetPath,
     required this.likes,
     required this.comments,
+    this.sourceLabel,
+    this.isDemoContent = true,
     this.isLiked = false,
     this.isSaved = false,
   });
@@ -24,6 +26,8 @@ class ExploreClip {
   final String? thumbnailAssetPath;
   final int likes;
   final int comments;
+  final String? sourceLabel;
+  final bool isDemoContent;
   final bool isLiked;
   final bool isSaved;
 
@@ -37,6 +41,8 @@ class ExploreClip {
     String? thumbnailAssetPath,
     int? likes,
     int? comments,
+    String? sourceLabel,
+    bool? isDemoContent,
     bool? isLiked,
     bool? isSaved,
   }) {
@@ -50,6 +56,8 @@ class ExploreClip {
       thumbnailAssetPath: thumbnailAssetPath ?? this.thumbnailAssetPath,
       likes: likes ?? this.likes,
       comments: comments ?? this.comments,
+      sourceLabel: sourceLabel ?? this.sourceLabel,
+      isDemoContent: isDemoContent ?? this.isDemoContent,
       isLiked: isLiked ?? this.isLiked,
       isSaved: isSaved ?? this.isSaved,
     );
@@ -66,6 +74,8 @@ class ExploreClip {
       'thumbnailAssetPath': thumbnailAssetPath,
       'likes': likes,
       'comments': comments,
+      'sourceLabel': sourceLabel,
+      'isDemoContent': isDemoContent,
       'isLiked': isLiked,
       'isSaved': isSaved,
     };
@@ -82,6 +92,8 @@ class ExploreClip {
       thumbnailAssetPath: json['thumbnailAssetPath'] as String?,
       likes: json['likes'] as int,
       comments: json['comments'] as int,
+      sourceLabel: json['sourceLabel'] as String?,
+      isDemoContent: json['isDemoContent'] as bool? ?? true,
       isLiked: json['isLiked'] as bool? ?? false,
       isSaved: json['isSaved'] as bool? ?? false,
     );

@@ -9,6 +9,7 @@ import '../models/professional_models.dart';
 import '../models/report_models.dart';
 import '../models/social_models.dart';
 import 'account_identity_mock_data.dart';
+import 'clips_mock_data.dart';
 import 'mock_data.dart';
 import 'notifications_mock_data.dart';
 import 'professional_mock_data.dart';
@@ -184,7 +185,7 @@ class MockMascotifyDataSource implements MascotifyDataSource {
 
   @override
   List<ExploreClip> getExploreClips() {
-    return List.unmodifiable(MockData.exploreClips);
+    return List.unmodifiable(ClipsMockData.clips);
   }
 
   @override

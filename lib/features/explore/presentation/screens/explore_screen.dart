@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../features/pets/presentation/screens/express_interest_screen.dart';
 import '../../../../features/pets/presentation/screens/pet_public_profile_screen.dart';
 import '../../../../shared/data/app_data_source.dart';
+import '../../../../shared/data/clips_mock_data.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/social_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
@@ -312,11 +313,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   List<String> _clipCategoriesFor(List<ExploreClip> clips) {
     final categories = <String>{
-      'Tiernos',
-      'Bloopers',
-      'Consejos',
-      'Rescates',
-      'Profesionales',
+      ...ClipsMockData.categories.where(
+        (category) => category != _allClipCategories,
+      ),
       ...clips.map((clip) => clip.category),
     }.toList()..sort();
     return <String>[_allClipCategories, ...categories];
@@ -664,6 +663,8 @@ class _ExploreClipCard extends StatelessWidget {
                     children: [
                       _VideoBadge(label: clip.category),
                       _VideoBadge(label: clip.animalType),
+                      if (clip.sourceLabel != null)
+                        _VideoBadge(label: clip.sourceLabel!),
                       if (!hasVideo)
                         const _VideoBadge(label: 'Clip demo local'),
                     ],
