@@ -766,6 +766,11 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  List<ExploreClip> getExploreClips() {
+    return List.unmodifiable(MockData.exploreClips);
+  }
+
+  @override
   List<SocialInboxEntry> getSocialInboxEntries() {
     return List.unmodifiable(_socialInboxEntriesWithCurrentPets());
   }

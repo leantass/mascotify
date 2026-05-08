@@ -183,6 +183,11 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  List<ExploreClip> getExploreClips() {
+    return List.unmodifiable(MockData.exploreClips);
+  }
+
+  @override
   List<SocialInboxEntry> getSocialInboxEntries() {
     return List.unmodifiable(buildMockSocialInboxEntries(MockData.pets));
   }
@@ -336,6 +341,8 @@ class AppData {
       source.getSocialInboxEntries();
 
   static List<SavedProfileEntry> get savedProfiles => source.getSavedProfiles();
+
+  static List<ExploreClip> get exploreClips => source.getExploreClips();
 
   static Future<void> saveProfile(String petId) {
     return source.saveProfile(petId);

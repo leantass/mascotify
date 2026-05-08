@@ -1,5 +1,93 @@
 import 'pet.dart';
 
+class ExploreClip {
+  const ExploreClip({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.category,
+    required this.animalType,
+    this.videoAssetPath,
+    this.thumbnailAssetPath,
+    required this.likes,
+    required this.comments,
+    this.isLiked = false,
+    this.isSaved = false,
+  });
+
+  final String id;
+  final String title;
+  final String description;
+  final String category;
+  final String animalType;
+  final String? videoAssetPath;
+  final String? thumbnailAssetPath;
+  final int likes;
+  final int comments;
+  final bool isLiked;
+  final bool isSaved;
+
+  ExploreClip copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? category,
+    String? animalType,
+    String? videoAssetPath,
+    String? thumbnailAssetPath,
+    int? likes,
+    int? comments,
+    bool? isLiked,
+    bool? isSaved,
+  }) {
+    return ExploreClip(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      category: category ?? this.category,
+      animalType: animalType ?? this.animalType,
+      videoAssetPath: videoAssetPath ?? this.videoAssetPath,
+      thumbnailAssetPath: thumbnailAssetPath ?? this.thumbnailAssetPath,
+      likes: likes ?? this.likes,
+      comments: comments ?? this.comments,
+      isLiked: isLiked ?? this.isLiked,
+      isSaved: isSaved ?? this.isSaved,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'id': id,
+      'title': title,
+      'description': description,
+      'category': category,
+      'animalType': animalType,
+      'videoAssetPath': videoAssetPath,
+      'thumbnailAssetPath': thumbnailAssetPath,
+      'likes': likes,
+      'comments': comments,
+      'isLiked': isLiked,
+      'isSaved': isSaved,
+    };
+  }
+
+  factory ExploreClip.fromJson(Map<String, dynamic> json) {
+    return ExploreClip(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String,
+      category: json['category'] as String,
+      animalType: json['animalType'] as String,
+      videoAssetPath: json['videoAssetPath'] as String?,
+      thumbnailAssetPath: json['thumbnailAssetPath'] as String?,
+      likes: json['likes'] as int,
+      comments: json['comments'] as int,
+      isLiked: json['isLiked'] as bool? ?? false,
+      isSaved: json['isSaved'] as bool? ?? false,
+    );
+  }
+}
+
 class MessageThread {
   const MessageThread({
     required this.id,

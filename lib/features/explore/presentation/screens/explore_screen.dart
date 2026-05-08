@@ -10,6 +10,8 @@ import '../../../../theme/app_colors.dart';
 import 'connections_inbox_screen.dart';
 import 'professionals_screen.dart';
 
+enum _ExploreSection { ecosystem, clips }
+
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
 
@@ -22,11 +24,21 @@ class _ExploreScreenState extends State<ExploreScreen> {
   static const _anySex = 'Cualquiera';
   static const _allLocations = 'Todas';
   static const _anyBreeding = 'Indistinto';
+  static const _allClipCategories = 'Todos';
 
+  _ExploreSection _selectedSection = _ExploreSection.ecosystem;
   String _selectedSpecies = _allSpecies;
   String _selectedSex = _anySex;
   String _selectedLocation = _allLocations;
   String _selectedBreeding = _anyBreeding;
+  String _selectedClipCategory = _allClipCategories;
+  late List<ExploreClip> _clips;
+
+  @override
+  void initState() {
+    super.initState();
+    _clips = AppData.exploreClips;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,12 +54,50 @@ class _ExploreScreenState extends State<ExploreScreen> {
         .where((item) => item.direction == 'Recibido')
         .length;
 
+    if (_selectedSection == _ExploreSection.clips) {
+      return Scaffold(
+        body: SafeArea(
+          child: ResponsivePageBody(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+              children: [
+                _ExploreSectionSelector(
+                  selectedSection: _selectedSection,
+                  onChanged: (section) =>
+                      setState(() => _selectedSection = section),
+                ),
+                const SizedBox(height: 16),
+                _ExploreClipsFeed(
+                  clips: _filteredClips(),
+                  categories: _clipCategoriesFor(_clips),
+                  selectedCategory: _selectedClipCategory,
+                  onCategoryChanged: (category) =>
+                      setState(() => _selectedClipCategory = category),
+                  onShowAll: () => setState(
+                    () => _selectedClipCategory = _allClipCategories,
+                  ),
+                  onToggleLike: _toggleClipLike,
+                  onToggleSave: _toggleClipSave,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: SafeArea(
         child: ResponsivePageBody(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
+              _ExploreSectionSelector(
+                selectedSection: _selectedSection,
+                onChanged: (section) =>
+                    setState(() => _selectedSection = section),
+              ),
+              const SizedBox(height: 16),
               const _ExploreHero(),
               const SizedBox(height: 16),
               ResponsiveWrapGrid(
@@ -250,6 +300,553 @@ class _ExploreScreenState extends State<ExploreScreen> {
         .replaceAll('í', 'i')
         .replaceAll('ó', 'o')
         .replaceAll('ú', 'u');
+  }
+
+  List<ExploreClip> _filteredClips() {
+    if (_selectedClipCategory == _allClipCategories) return _clips;
+
+    return _clips
+        .where((clip) => clip.category == _selectedClipCategory)
+        .toList();
+  }
+
+  List<String> _clipCategoriesFor(List<ExploreClip> clips) {
+    final categories = <String>{
+      'Tiernos',
+      'Bloopers',
+      'Consejos',
+      'Rescates',
+      'Profesionales',
+      ...clips.map((clip) => clip.category),
+    }.toList()..sort();
+    return <String>[_allClipCategories, ...categories];
+  }
+
+  void _toggleClipLike(String clipId) {
+    setState(() {
+      _clips = _clips.map((clip) {
+        if (clip.id != clipId) return clip;
+        final nextLiked = !clip.isLiked;
+        return clip.copyWith(
+          isLiked: nextLiked,
+          likes: nextLiked ? clip.likes + 1 : clip.likes - 1,
+        );
+      }).toList();
+    });
+  }
+
+  void _toggleClipSave(String clipId) {
+    setState(() {
+      _clips = _clips.map((clip) {
+        if (clip.id != clipId) return clip;
+        return clip.copyWith(isSaved: !clip.isSaved);
+      }).toList();
+    });
+  }
+}
+
+class _ExploreSectionSelector extends StatelessWidget {
+  const _ExploreSectionSelector({
+    required this.selectedSection,
+    required this.onChanged,
+  });
+
+  final _ExploreSection selectedSection;
+  final ValueChanged<_ExploreSection> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Selector de seccion de Explorar',
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceAlt,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: _SectionButton(
+                label: 'Ecosistema',
+                icon: Icons.groups_rounded,
+                selected: selectedSection == _ExploreSection.ecosystem,
+                onTap: () => onChanged(_ExploreSection.ecosystem),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: _SectionButton(
+                label: 'Clips',
+                icon: Icons.play_circle_fill_rounded,
+                selected: selectedSection == _ExploreSection.clips,
+                onTap: () => onChanged(_ExploreSection.clips),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionButton extends StatelessWidget {
+  const _SectionButton({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = selected ? Colors.white : AppColors.textPrimary;
+
+    return Material(
+      color: selected ? AppColors.primaryDeep : Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: foreground, size: 20),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: foreground,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExploreClipsFeed extends StatelessWidget {
+  const _ExploreClipsFeed({
+    required this.clips,
+    required this.categories,
+    required this.selectedCategory,
+    required this.onCategoryChanged,
+    required this.onShowAll,
+    required this.onToggleLike,
+    required this.onToggleSave,
+  });
+
+  final List<ExploreClip> clips;
+  final List<String> categories;
+  final String selectedCategory;
+  final ValueChanged<String> onCategoryChanged;
+  final VoidCallback onShowAll;
+  final ValueChanged<String> onToggleLike;
+  final ValueChanged<String> onToggleSave;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _ClipsHero(),
+        const SizedBox(height: 16),
+        _ClipCategoryFilters(
+          categories: categories,
+          selectedCategory: selectedCategory,
+          onSelected: onCategoryChanged,
+        ),
+        const SizedBox(height: 16),
+        if (clips.isEmpty)
+          _ExploreEmptyStateWithAction(
+            title: 'No hay clips en esta categoria',
+            description:
+                'Proba volver a Todos para seguir viendo clips demo locales de animales.',
+            actionLabel: 'Volver a Todos',
+            onPressed: onShowAll,
+          )
+        else
+          Column(
+            children: clips
+                .map(
+                  (clip) => Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: _ExploreClipCard(
+                      clip: clip,
+                      onToggleLike: () => onToggleLike(clip.id),
+                      onToggleSave: () => onToggleSave(clip.id),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+      ],
+    );
+  }
+}
+
+class _ClipsHero extends StatelessWidget {
+  const _ClipsHero();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primarySoft, Color(0xFFEAFBFF), AppColors.surface],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: Color(0xFFCFEFF5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.dark,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              'Clips demo locales',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Videos cortos de animales para descubrir, aprender y sonreir.',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Feed preparado para videos propios: si todavia no hay asset de video, Mascotify muestra un placeholder seguro sin depender de internet.',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ClipCategoryFilters extends StatelessWidget {
+  const _ClipCategoryFilters({
+    required this.categories,
+    required this.selectedCategory,
+    required this.onSelected,
+  });
+
+  final List<String> categories;
+  final String selectedCategory;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: categories
+            .map(
+              (category) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(category),
+                  selected: selectedCategory == category,
+                  onSelected: (_) => onSelected(category),
+                  selectedColor: AppColors.primarySoft,
+                  labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: selectedCategory == category
+                        ? AppColors.primaryDeep
+                        : AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+}
+
+class _ExploreClipCard extends StatelessWidget {
+  const _ExploreClipCard({
+    required this.clip,
+    required this.onToggleLike,
+    required this.onToggleSave,
+  });
+
+  final ExploreClip clip;
+  final VoidCallback onToggleLike;
+  final VoidCallback onToggleSave;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasVideo = clip.videoAssetPath != null;
+    final thumbnail = clip.thumbnailAssetPath;
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (thumbnail == null)
+                  const _ClipPlaceholder()
+                else
+                  Image.asset(thumbnail, fit: BoxFit.cover),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.black.withValues(alpha: 0.12),
+                        Colors.black.withValues(alpha: 0.48),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      color: AppColors.primaryDeep,
+                      size: 42,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 14,
+                  top: 14,
+                  child: _VideoBadge(label: hasVideo ? 'Video local' : 'Demo'),
+                ),
+                Positioned(
+                  left: 14,
+                  right: 14,
+                  bottom: 14,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _VideoBadge(label: clip.category),
+                      _VideoBadge(label: clip.animalType),
+                      if (!hasVideo)
+                        const _VideoBadge(label: 'Clip demo local'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(clip.title, style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 8),
+                Text(
+                  clip.description,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _ClipActionButton(
+                      icon: clip.isLiked
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      label: '${clip.likes} likes',
+                      selected: clip.isLiked,
+                      onPressed: onToggleLike,
+                    ),
+                    _ClipActionButton(
+                      icon: Icons.mode_comment_outlined,
+                      label: '${clip.comments} comentarios',
+                      selected: false,
+                      onPressed: () {},
+                    ),
+                    _ClipActionButton(
+                      icon: clip.isSaved
+                          ? Icons.bookmark_rounded
+                          : Icons.bookmark_border_rounded,
+                      label: clip.isSaved ? 'Guardado' : 'Guardar',
+                      selected: clip.isSaved,
+                      onPressed: onToggleSave,
+                    ),
+                    _ClipActionButton(
+                      icon: Icons.ios_share_rounded,
+                      label: 'Compartir',
+                      selected: false,
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ClipPlaceholder extends StatelessWidget {
+  const _ClipPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.accentSoft, AppColors.primarySoft],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: const Align(
+        alignment: Alignment.topRight,
+        child: Padding(
+          padding: EdgeInsets.all(18),
+          child: Icon(Icons.pets_rounded, color: AppColors.dark, size: 42),
+        ),
+      ),
+    );
+  }
+}
+
+class _VideoBadge extends StatelessWidget {
+  const _VideoBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _ClipActionButton extends StatelessWidget {
+  const _ClipActionButton({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: selected
+            ? AppColors.primaryDeep
+            : AppColors.textPrimary,
+        backgroundColor: selected ? AppColors.primarySoft : null,
+      ),
+    );
+  }
+}
+
+class _ExploreEmptyStateWithAction extends StatelessWidget {
+  const _ExploreEmptyStateWithAction({
+    required this.title,
+    required this.description,
+    required this.actionLabel,
+    required this.onPressed,
+  });
+
+  final String title;
+  final String description;
+  final String actionLabel;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 6),
+          Text(
+            description,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 14),
+          OutlinedButton(onPressed: onPressed, child: Text(actionLabel)),
+        ],
+      ),
+    );
   }
 }
 

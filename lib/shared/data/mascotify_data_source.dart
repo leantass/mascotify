@@ -38,6 +38,7 @@ abstract interface class MascotifyDataSource {
   Future<void> addAutomatedReply(String threadId);
   List<SocialInboxEntry> getSocialInboxEntries();
   List<SavedProfileEntry> getSavedProfiles();
+  List<ExploreClip> getExploreClips();
   Future<void> saveProfile(String petId);
   Future<void> expressInterest({
     required String petId,
