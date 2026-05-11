@@ -9,12 +9,15 @@ class ExploreClip {
     required this.animalType,
     this.videoAssetPath,
     this.thumbnailAssetPath,
+    this.authorId,
     required this.likes,
     required this.comments,
+    this.shares = 0,
     this.sourceLabel,
     this.isDemoContent = true,
     this.isLiked = false,
     this.isSaved = false,
+    this.isFollowingAuthor = false,
   });
 
   final String id;
@@ -24,12 +27,15 @@ class ExploreClip {
   final String animalType;
   final String? videoAssetPath;
   final String? thumbnailAssetPath;
+  final String? authorId;
   final int likes;
   final int comments;
+  final int shares;
   final String? sourceLabel;
   final bool isDemoContent;
   final bool isLiked;
   final bool isSaved;
+  final bool isFollowingAuthor;
 
   ExploreClip copyWith({
     String? id,
@@ -39,12 +45,15 @@ class ExploreClip {
     String? animalType,
     String? videoAssetPath,
     String? thumbnailAssetPath,
+    String? authorId,
     int? likes,
     int? comments,
+    int? shares,
     String? sourceLabel,
     bool? isDemoContent,
     bool? isLiked,
     bool? isSaved,
+    bool? isFollowingAuthor,
   }) {
     return ExploreClip(
       id: id ?? this.id,
@@ -54,12 +63,15 @@ class ExploreClip {
       animalType: animalType ?? this.animalType,
       videoAssetPath: videoAssetPath ?? this.videoAssetPath,
       thumbnailAssetPath: thumbnailAssetPath ?? this.thumbnailAssetPath,
+      authorId: authorId ?? this.authorId,
       likes: likes ?? this.likes,
       comments: comments ?? this.comments,
+      shares: shares ?? this.shares,
       sourceLabel: sourceLabel ?? this.sourceLabel,
       isDemoContent: isDemoContent ?? this.isDemoContent,
       isLiked: isLiked ?? this.isLiked,
       isSaved: isSaved ?? this.isSaved,
+      isFollowingAuthor: isFollowingAuthor ?? this.isFollowingAuthor,
     );
   }
 
@@ -72,12 +84,15 @@ class ExploreClip {
       'animalType': animalType,
       'videoAssetPath': videoAssetPath,
       'thumbnailAssetPath': thumbnailAssetPath,
+      'authorId': authorId,
       'likes': likes,
       'comments': comments,
+      'shares': shares,
       'sourceLabel': sourceLabel,
       'isDemoContent': isDemoContent,
       'isLiked': isLiked,
       'isSaved': isSaved,
+      'isFollowingAuthor': isFollowingAuthor,
     };
   }
 
@@ -90,12 +105,15 @@ class ExploreClip {
       animalType: json['animalType'] as String,
       videoAssetPath: json['videoAssetPath'] as String?,
       thumbnailAssetPath: json['thumbnailAssetPath'] as String?,
+      authorId: json['authorId'] as String?,
       likes: json['likes'] as int,
       comments: json['comments'] as int,
+      shares: json['shares'] as int? ?? 0,
       sourceLabel: json['sourceLabel'] as String?,
       isDemoContent: json['isDemoContent'] as bool? ?? true,
       isLiked: json['isLiked'] as bool? ?? false,
       isSaved: json['isSaved'] as bool? ?? false,
+      isFollowingAuthor: json['isFollowingAuthor'] as bool? ?? false,
     );
   }
 }

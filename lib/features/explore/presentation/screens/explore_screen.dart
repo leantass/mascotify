@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../features/pets/presentation/screens/express_interest_screen.dart';
 import '../../../../features/pets/presentation/screens/pet_public_profile_screen.dart';
+import '../../../../features/explore/data/social_clips_repository.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/data/clips_mock_data.dart';
 import '../../../../shared/models/pet.dart';
@@ -15,7 +16,9 @@ import 'professionals_screen.dart';
 enum _ExploreSection { ecosystem, clips }
 
 class ExploreScreen extends StatefulWidget {
-  const ExploreScreen({super.key});
+  const ExploreScreen({super.key, this.socialClipsRepository});
+
+  final SocialClipsRepositoryPort? socialClipsRepository;
 
   @override
   State<ExploreScreen> createState() => _ExploreScreenState();
@@ -35,11 +38,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
   String _selectedBreeding = _anyBreeding;
   String _selectedClipCategory = _allClipCategories;
   late List<ExploreClip> _clips;
+  late final SocialClipsRepositoryPort _socialClipsRepository;
+  SocialClipsDataSource _clipsSource = SocialClipsDataSource.localFallback;
+  bool _isLoadingClips = false;
+  String? _clipsStatusMessage = 'Mostrando clips demo locales';
 
   @override
   void initState() {
     super.initState();
     _clips = AppData.exploreClips;
+    _socialClipsRepository =
+        widget.socialClipsRepository ?? SocialClipsRepository();
+    _loadClipsFeed();
   }
 
   @override
@@ -73,6 +83,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   clips: _filteredClips(),
                   categories: _clipCategoriesFor(_clips),
                   selectedCategory: _selectedClipCategory,
+                  source: _clipsSource,
+                  isLoading: _isLoadingClips,
+                  statusMessage: _clipsStatusMessage,
                   onCategoryChanged: (category) =>
                       setState(() => _selectedClipCategory = category),
                   onShowAll: () => setState(
@@ -80,6 +93,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   ),
                   onToggleLike: _toggleClipLike,
                   onToggleSave: _toggleClipSave,
+                  onShare: _shareClip,
+                  onToggleFollow: _toggleClipFollow,
                   onOpenClip: _openClipViewer,
                 ),
               ],
@@ -323,17 +338,56 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return <String>[_allClipCategories, ...categories];
   }
 
-  void _toggleClipLike(String clipId) {
+  Future<void> _loadClipsFeed() async {
+    setState(() => _isLoadingClips = true);
+    final result = await _socialClipsRepository.fetchFeed(
+      userId: _currentClipsUserId,
+    );
+    if (!mounted) return;
     setState(() {
-      _clips = _clips.map((clip) {
-        if (clip.id != clipId) return clip;
-        final nextLiked = !clip.isLiked;
-        return clip.copyWith(
-          isLiked: nextLiked,
-          likes: nextLiked ? clip.likes + 1 : clip.likes - 1,
-        );
-      }).toList();
+      _clips = result.clips;
+      _clipsSource = result.source;
+      _clipsStatusMessage = result.message;
+      _isLoadingClips = false;
+      if (_selectedClipCategory != _allClipCategories &&
+          !_clips.any((clip) => clip.category == _selectedClipCategory)) {
+        _selectedClipCategory = _allClipCategories;
+      }
     });
+  }
+
+  Future<void> _toggleClipLike(String clipId) async {
+    final clip = _clipById(clipId);
+    if (clip == null) return;
+    final updatedClip = await _toggleClipLikeRemoteAware(clip);
+    if (!mounted) return;
+    setState(() => _replaceClip(updatedClip));
+  }
+
+  Future<ExploreClip> _toggleClipLikeRemoteAware(ExploreClip clip) async {
+    final optimisticClip = _localLikeToggle(clip);
+    setState(() => _replaceClip(optimisticClip));
+    try {
+      return clip.isLiked
+          ? await _socialClipsRepository.unlikeClip(
+              clip,
+              userId: _currentClipsUserId,
+            )
+          : await _socialClipsRepository.likeClip(
+              clip,
+              userId: _currentClipsUserId,
+            );
+    } catch (_) {
+      return optimisticClip;
+    }
+  }
+
+  ExploreClip _localLikeToggle(ExploreClip clip) {
+    final nextLiked = !clip.isLiked;
+    return clip.copyWith(
+      isLiked: nextLiked,
+      likes: nextLiked ? clip.likes + 1 : clip.likes - 1,
+    );
   }
 
   void _toggleClipSave(String clipId) {
@@ -345,16 +399,82 @@ class _ExploreScreenState extends State<ExploreScreen> {
     });
   }
 
+  Future<void> _shareClip(String clipId) async {
+    final clip = _clipById(clipId);
+    if (clip == null) return;
+    final optimisticClip = clip.copyWith(shares: clip.shares + 1);
+    setState(() => _replaceClip(optimisticClip));
+    try {
+      final updatedClip = await _socialClipsRepository.shareClip(
+        clip,
+        userId: _currentClipsUserId,
+      );
+      if (!mounted) return;
+      setState(() => _replaceClip(updatedClip));
+    } catch (_) {}
+  }
+
+  Future<void> _toggleClipFollow(String clipId) async {
+    final clip = _clipById(clipId);
+    if (clip == null || clip.authorId == null) return;
+    final optimisticClip = clip.copyWith(
+      isFollowingAuthor: !clip.isFollowingAuthor,
+    );
+    setState(() => _replaceClip(optimisticClip));
+    try {
+      if (clip.isFollowingAuthor) {
+        await _socialClipsRepository.unfollowAuthor(
+          clip,
+          userId: _currentClipsUserId,
+        );
+      } else {
+        await _socialClipsRepository.followAuthor(
+          clip,
+          userId: _currentClipsUserId,
+        );
+      }
+    } catch (_) {}
+  }
+
   Future<void> _openClipViewer(ExploreClip clip) async {
     final updatedClips = await Navigator.of(context).push<List<ExploreClip>>(
       MaterialPageRoute(
-        builder: (_) =>
-            ExploreClipViewerScreen(clips: _clips, initialClipId: clip.id),
+        builder: (_) => ExploreClipViewerScreen(
+          clips: _clips,
+          initialClipId: clip.id,
+          onToggleLike: _toggleClipLikeRemoteAware,
+          onShare: (clip) async {
+            await _shareClip(clip.id);
+            return _clipById(clip.id) ?? clip.copyWith(shares: clip.shares + 1);
+          },
+          onToggleFollow: (clip) async {
+            await _toggleClipFollow(clip.id);
+            return _clipById(clip.id) ?? clip;
+          },
+        ),
       ),
     );
 
     if (!mounted || updatedClips == null) return;
     setState(() => _clips = updatedClips);
+  }
+
+  String get _currentClipsUserId {
+    final currentUserId = AppData.currentUser.id.trim();
+    return currentUserId.isEmpty ? 'demo-user-local' : currentUserId;
+  }
+
+  ExploreClip? _clipById(String clipId) {
+    for (final clip in _clips) {
+      if (clip.id == clipId) return clip;
+    }
+    return null;
+  }
+
+  void _replaceClip(ExploreClip updatedClip) {
+    _clips = _clips
+        .map((clip) => clip.id == updatedClip.id ? updatedClip : clip)
+        .toList();
   }
 }
 
@@ -458,20 +578,30 @@ class _ExploreClipsFeed extends StatelessWidget {
     required this.clips,
     required this.categories,
     required this.selectedCategory,
+    required this.source,
+    required this.isLoading,
+    required this.statusMessage,
     required this.onCategoryChanged,
     required this.onShowAll,
     required this.onToggleLike,
     required this.onToggleSave,
+    required this.onShare,
+    required this.onToggleFollow,
     required this.onOpenClip,
   });
 
   final List<ExploreClip> clips;
   final List<String> categories;
   final String selectedCategory;
+  final SocialClipsDataSource source;
+  final bool isLoading;
+  final String? statusMessage;
   final ValueChanged<String> onCategoryChanged;
   final VoidCallback onShowAll;
   final ValueChanged<String> onToggleLike;
   final ValueChanged<String> onToggleSave;
+  final ValueChanged<String> onShare;
+  final ValueChanged<String> onToggleFollow;
   final ValueChanged<ExploreClip> onOpenClip;
 
   @override
@@ -479,7 +609,11 @@ class _ExploreClipsFeed extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _ClipsHero(),
+        _ClipsHero(
+          source: source,
+          isLoading: isLoading,
+          statusMessage: statusMessage,
+        ),
         const SizedBox(height: 16),
         _ClipCategoryFilters(
           categories: categories,
@@ -505,6 +639,8 @@ class _ExploreClipsFeed extends StatelessWidget {
                       clip: clip,
                       onToggleLike: () => onToggleLike(clip.id),
                       onToggleSave: () => onToggleSave(clip.id),
+                      onShare: () => onShare(clip.id),
+                      onToggleFollow: () => onToggleFollow(clip.id),
                       onOpen: () => onOpenClip(clip),
                     ),
                   ),
@@ -517,7 +653,15 @@ class _ExploreClipsFeed extends StatelessWidget {
 }
 
 class _ClipsHero extends StatelessWidget {
-  const _ClipsHero();
+  const _ClipsHero({
+    required this.source,
+    required this.isLoading,
+    required this.statusMessage,
+  });
+
+  final SocialClipsDataSource source;
+  final bool isLoading;
+  final String? statusMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -543,13 +687,24 @@ class _ClipsHero extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              'Clips demo locales',
+              source == SocialClipsDataSource.remote
+                  ? 'Clips sociales'
+                  : 'Clips demo locales',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
+          if (isLoading || statusMessage != null) ...[
+            const SizedBox(height: 10),
+            _ClipsStatusPill(
+              label: isLoading
+                  ? 'Conectando con backend de clips'
+                  : statusMessage!,
+              isLoading: isLoading,
+            ),
+          ],
           const SizedBox(height: 14),
           Text(
             'Videos cortos de animales para descubrir, aprender y sonreir.',
@@ -561,6 +716,49 @@ class _ClipsHero extends StatelessWidget {
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ClipsStatusPill extends StatelessWidget {
+  const _ClipsStatusPill({required this.label, required this.isLoading});
+
+  final String label;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.74),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: const Color(0xFFCFEFF5)),
+      ),
+      child: Row(
+        children: [
+          if (isLoading) ...[
+            const SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),
@@ -613,12 +811,16 @@ class _ExploreClipCard extends StatelessWidget {
     required this.clip,
     required this.onToggleLike,
     required this.onToggleSave,
+    required this.onShare,
+    required this.onToggleFollow,
     required this.onOpen,
   });
 
   final ExploreClip clip;
   final VoidCallback onToggleLike;
   final VoidCallback onToggleSave;
+  final VoidCallback onShare;
+  final VoidCallback onToggleFollow;
   final VoidCallback onOpen;
 
   @override
@@ -742,10 +944,23 @@ class _ExploreClipCard extends StatelessWidget {
                       ),
                       _ClipActionButton(
                         icon: Icons.ios_share_rounded,
-                        label: 'Compartir',
+                        label: clip.shares > 0
+                            ? '${clip.shares} compartidos'
+                            : 'Compartir',
                         selected: false,
-                        onPressed: () {},
+                        onPressed: onShare,
                       ),
+                      if (clip.authorId != null)
+                        _ClipActionButton(
+                          icon: clip.isFollowingAuthor
+                              ? Icons.check_circle_rounded
+                              : Icons.person_add_alt_1_rounded,
+                          label: clip.isFollowingAuthor
+                              ? 'Siguiendo'
+                              : 'Seguir creador',
+                          selected: clip.isFollowingAuthor,
+                          onPressed: onToggleFollow,
+                        ),
                     ],
                   ),
                 ],

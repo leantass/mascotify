@@ -4,6 +4,10 @@ class AppEnvironment {
   const AppEnvironment._();
 
   static const AppRuntimeMode runtimeMode = AppRuntimeMode.demoLocal;
+  static const String socialClipsApiBaseUrl = String.fromEnvironment(
+    'MASCOTIFY_CLIPS_API_BASE_URL',
+    defaultValue: 'http://localhost:4000/api/v1',
+  );
 
   static bool get isDemoLocal => runtimeMode == AppRuntimeMode.demoLocal;
   static bool get isProduction => runtimeMode == AppRuntimeMode.production;

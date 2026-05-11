@@ -9,10 +9,16 @@ class ExploreClipViewerScreen extends StatefulWidget {
     super.key,
     required this.clips,
     required this.initialClipId,
+    this.onToggleLike,
+    this.onShare,
+    this.onToggleFollow,
   });
 
   final List<ExploreClip> clips;
   final String initialClipId;
+  final Future<ExploreClip> Function(ExploreClip clip)? onToggleLike;
+  final Future<ExploreClip> Function(ExploreClip clip)? onShare;
+  final Future<ExploreClip> Function(ExploreClip clip)? onToggleFollow;
 
   @override
   State<ExploreClipViewerScreen> createState() =>
@@ -99,7 +105,11 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
                 onPrevious: isFirst ? null : _showPrevious,
                 onNext: isLast ? null : _showNext,
                 onToggleLike: () => _toggleClipLike(clip.id),
+                onShare: () => _shareClip(clip.id),
                 onToggleSave: () => _toggleClipSave(clip.id),
+                onToggleFollow: clip.authorId == null
+                    ? null
+                    : () => _toggleClipFollow(clip.id),
               ),
             ),
           ),
@@ -177,17 +187,20 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
     setState(() => _currentIndex++);
   }
 
-  void _toggleClipLike(String clipId) {
-    setState(() {
-      _clips = _clips.map((clip) {
-        if (clip.id != clipId) return clip;
-        final nextLiked = !clip.isLiked;
-        return clip.copyWith(
-          isLiked: nextLiked,
-          likes: nextLiked ? clip.likes + 1 : clip.likes - 1,
-        );
-      }).toList();
-    });
+  Future<void> _toggleClipLike(String clipId) async {
+    final clip = _clipById(clipId);
+    if (clip == null) return;
+    final nextLiked = !clip.isLiked;
+    final optimisticClip = clip.copyWith(
+      isLiked: nextLiked,
+      likes: nextLiked ? clip.likes + 1 : clip.likes - 1,
+    );
+    setState(() => _replaceClip(optimisticClip));
+    final remoteToggle = widget.onToggleLike;
+    if (remoteToggle == null) return;
+    final updatedClip = await remoteToggle(clip);
+    if (!mounted) return;
+    setState(() => _replaceClip(updatedClip));
   }
 
   void _toggleClipSave(String clipId) {
@@ -197,6 +210,45 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
         return clip.copyWith(isSaved: !clip.isSaved);
       }).toList();
     });
+  }
+
+  Future<void> _shareClip(String clipId) async {
+    final clip = _clipById(clipId);
+    if (clip == null) return;
+    final optimisticClip = clip.copyWith(shares: clip.shares + 1);
+    setState(() => _replaceClip(optimisticClip));
+    final remoteShare = widget.onShare;
+    if (remoteShare == null) return;
+    final updatedClip = await remoteShare(clip);
+    if (!mounted) return;
+    setState(() => _replaceClip(updatedClip));
+  }
+
+  Future<void> _toggleClipFollow(String clipId) async {
+    final clip = _clipById(clipId);
+    if (clip == null || clip.authorId == null) return;
+    final optimisticClip = clip.copyWith(
+      isFollowingAuthor: !clip.isFollowingAuthor,
+    );
+    setState(() => _replaceClip(optimisticClip));
+    final remoteFollow = widget.onToggleFollow;
+    if (remoteFollow == null) return;
+    final updatedClip = await remoteFollow(clip);
+    if (!mounted) return;
+    setState(() => _replaceClip(updatedClip));
+  }
+
+  ExploreClip? _clipById(String clipId) {
+    for (final clip in _clips) {
+      if (clip.id == clipId) return clip;
+    }
+    return null;
+  }
+
+  void _replaceClip(ExploreClip updatedClip) {
+    _clips = _clips
+        .map((clip) => clip.id == updatedClip.id ? updatedClip : clip)
+        .toList();
   }
 
   void _close() {
@@ -213,7 +265,9 @@ class _ViewerClipPage extends StatelessWidget {
     required this.onPrevious,
     required this.onNext,
     required this.onToggleLike,
+    required this.onShare,
     required this.onToggleSave,
+    required this.onToggleFollow,
   });
 
   final ExploreClip clip;
@@ -222,7 +276,9 @@ class _ViewerClipPage extends StatelessWidget {
   final VoidCallback? onPrevious;
   final VoidCallback? onNext;
   final VoidCallback onToggleLike;
+  final VoidCallback onShare;
   final VoidCallback onToggleSave;
+  final VoidCallback? onToggleFollow;
 
   @override
   Widget build(BuildContext context) {
@@ -350,6 +406,23 @@ class _ViewerClipPage extends StatelessWidget {
                 selected: clip.isSaved,
                 onPressed: onToggleSave,
               ),
+              _ViewerActionButton(
+                icon: Icons.ios_share_rounded,
+                label: clip.shares > 0
+                    ? '${clip.shares} compartidos'
+                    : 'Compartir',
+                selected: false,
+                onPressed: onShare,
+              ),
+              if (clip.authorId != null)
+                _ViewerActionButton(
+                  icon: clip.isFollowingAuthor
+                      ? Icons.check_circle_rounded
+                      : Icons.person_add_alt_1_rounded,
+                  label: clip.isFollowingAuthor ? 'Siguiendo' : 'Seguir',
+                  selected: clip.isFollowingAuthor,
+                  onPressed: onToggleFollow ?? () {},
+                ),
             ],
           ),
           const SizedBox(height: 12),
