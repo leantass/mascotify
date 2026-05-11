@@ -600,6 +600,113 @@ Errores: `UNAUTHENTICATED`, `VALIDATION_ERROR`.
 
 Notas: el feed puede ser materializado o derivado. Definir consistencia antes de escalar.
 
+## Clips Sociales
+
+Los endpoints iniciales de clips sociales estan implementados en backend como base para una futura experiencia tipo Reels/TikTok con videos propios. Por ahora trabajan con metadata de video, sin upload real, sin storage externo y sin conexion desde Flutter.
+
+Auth temporal: las mutaciones usan `x-user-id` hasta integrar auth real. Este header no representa seguridad productiva.
+
+### GET `/api/v1/clips/feed`
+
+Descripcion: devuelve clips activos ordenados por recientes.
+
+Auth requerida: no para leer, pero si se envia `x-user-id` la respuesta incluye `isLiked` e `isFollowingAuthor` para ese usuario temporal.
+
+Query: `cursor`, `limit`.
+
+Response `200`:
+
+```json
+{
+  "items": [
+    {
+      "id": "clip_01",
+      "authorId": "usr_01",
+      "title": "Rescate con final feliz",
+      "description": "Metadata inicial del clip.",
+      "animalType": "Perro",
+      "category": "Rescates",
+      "videoUrl": "mascotify://videos/rescate.mp4",
+      "thumbnailUrl": "assets/images/clips/rescate.png",
+      "durationSeconds": 24,
+      "likesCount": 10,
+      "commentsCount": 0,
+      "sharesCount": 2,
+      "status": "ACTIVE",
+      "author": {
+        "id": "usr_01",
+        "displayName": "Familia Demo",
+        "avatarUrl": null
+      },
+      "isLiked": true,
+      "isFollowingAuthor": false
+    }
+  ],
+  "pageInfo": {
+    "nextCursor": null,
+    "hasNextPage": false
+  }
+}
+```
+
+### GET `/api/v1/clips/{clipId}`
+
+Descripcion: obtiene metadata de un clip.
+
+Errores: `NOT_FOUND`.
+
+### POST `/api/v1/clips`
+
+Descripcion: crea metadata de clip para el usuario de `x-user-id`.
+
+Request:
+
+```json
+{
+  "title": "Perro aprende a usar su QR",
+  "description": "Clip propio preparado para Mascotify.",
+  "animalType": "Perro",
+  "category": "Consejos",
+  "videoUrl": "mascotify://videos/perro-qr.mp4",
+  "thumbnailUrl": "assets/images/clips/perro-qr.png",
+  "durationSeconds": 18
+}
+```
+
+Errores: `UNAUTHENTICATED`, `VALIDATION_ERROR`.
+
+### PATCH `/api/v1/clips/{clipId}`
+
+Descripcion: actualiza metadata o status del clip.
+
+Campos soportados: `title`, `description`, `animalType`, `category`, `videoUrl`, `thumbnailUrl`, `durationSeconds`, `status`.
+
+### DELETE `/api/v1/clips/{clipId}`
+
+Descripcion: marca el clip como `DELETED`.
+
+Response `204`.
+
+### POST `/api/v1/clips/{clipId}/like`
+
+Descripcion: agrega like del usuario temporal. No duplica contador si el like ya existe.
+
+### DELETE `/api/v1/clips/{clipId}/like`
+
+Descripcion: quita like del usuario temporal.
+
+### POST `/api/v1/clips/{clipId}/share`
+
+Descripcion: incrementa `sharesCount`.
+
+### POST `/api/v1/users/{userId}/follow`
+
+Descripcion: sigue al usuario indicado.
+
+### DELETE `/api/v1/users/{userId}/follow`
+
+Descripcion: deja de seguir al usuario indicado.
+
 ## Mensajeria
 
 ### GET `/api/v1/messages/threads`

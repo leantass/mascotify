@@ -13,12 +13,23 @@ enum UserRole {
   ADMIN
 }
 
+enum ClipStatus {
+  ACTIVE
+  HIDDEN
+  REPORTED
+  DELETED
+}
+
 model User {
   id          String        @id @default(cuid())
   email       String        @unique
   displayName String
   role        UserRole      @default(FAMILY)
   profiles    UserProfile[]
+  clips       Clip[]        @relation("ClipAuthor")
+  clipLikes   ClipLike[]
+  following   UserFollow[]  @relation("UserFollowing")
+  followers   UserFollow[]  @relation("UserFollowers")
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   deletedAt   DateTime?
@@ -41,4 +52,54 @@ model UserProfile {
 
   @@unique([userId, profileType])
   @@index([profileType])
+}
+
+model Clip {
+  id              String     @id @default(cuid())
+  authorId        String
+  title           String
+  description     String
+  animalType      String
+  category        String
+  videoUrl        String
+  thumbnailUrl    String?
+  durationSeconds Int?
+  likesCount      Int        @default(0)
+  commentsCount   Int        @default(0)
+  sharesCount     Int        @default(0)
+  status          ClipStatus @default(ACTIVE)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  author User       @relation("ClipAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  likes  ClipLike[]
+
+  @@index([authorId])
+  @@index([status, createdAt])
+}
+
+model ClipLike {
+  id        String   @id @default(cuid())
+  clipId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  clip Clip @relation(fields: [clipId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([clipId, userId])
+  @@index([userId])
+}
+
+model UserFollow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
 }
