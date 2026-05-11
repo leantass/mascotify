@@ -9,6 +9,7 @@ import '../../../../shared/models/social_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import 'connections_inbox_screen.dart';
+import 'explore_clip_viewer_screen.dart';
 import 'professionals_screen.dart';
 
 enum _ExploreSection { ecosystem, clips }
@@ -79,6 +80,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   ),
                   onToggleLike: _toggleClipLike,
                   onToggleSave: _toggleClipSave,
+                  onOpenClip: _openClipViewer,
                 ),
               ],
             ),
@@ -342,6 +344,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
       }).toList();
     });
   }
+
+  Future<void> _openClipViewer(ExploreClip clip) async {
+    final updatedClips = await Navigator.of(context).push<List<ExploreClip>>(
+      MaterialPageRoute(
+        builder: (_) =>
+            ExploreClipViewerScreen(clips: _clips, initialClipId: clip.id),
+      ),
+    );
+
+    if (!mounted || updatedClips == null) return;
+    setState(() => _clips = updatedClips);
+  }
 }
 
 class _ExploreSectionSelector extends StatelessWidget {
@@ -448,6 +462,7 @@ class _ExploreClipsFeed extends StatelessWidget {
     required this.onShowAll,
     required this.onToggleLike,
     required this.onToggleSave,
+    required this.onOpenClip,
   });
 
   final List<ExploreClip> clips;
@@ -457,6 +472,7 @@ class _ExploreClipsFeed extends StatelessWidget {
   final VoidCallback onShowAll;
   final ValueChanged<String> onToggleLike;
   final ValueChanged<String> onToggleSave;
+  final ValueChanged<ExploreClip> onOpenClip;
 
   @override
   Widget build(BuildContext context) {
@@ -489,6 +505,7 @@ class _ExploreClipsFeed extends StatelessWidget {
                       clip: clip,
                       onToggleLike: () => onToggleLike(clip.id),
                       onToggleSave: () => onToggleSave(clip.id),
+                      onOpen: () => onOpenClip(clip),
                     ),
                   ),
                 )
@@ -596,11 +613,13 @@ class _ExploreClipCard extends StatelessWidget {
     required this.clip,
     required this.onToggleLike,
     required this.onToggleSave,
+    required this.onOpen,
   });
 
   final ExploreClip clip;
   final VoidCallback onToggleLike;
   final VoidCallback onToggleSave;
+  final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -609,123 +628,131 @@ class _ExploreClipCard extends StatelessWidget {
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AspectRatio(
-            aspectRatio: 16 / 9,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (thumbnail == null)
-                  const _ClipPlaceholder()
-                else
-                  Image.asset(thumbnail, fit: BoxFit.cover),
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.black.withValues(alpha: 0.12),
-                        Colors.black.withValues(alpha: 0.48),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Container(
-                    width: 64,
-                    height: 64,
+      child: InkWell(
+        onTap: onOpen,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (thumbnail == null)
+                    const _ClipPlaceholder()
+                  else
+                    Image.asset(thumbnail, fit: BoxFit.cover),
+                  Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.92),
-                      borderRadius: BorderRadius.circular(32),
-                    ),
-                    child: const Icon(
-                      Icons.play_arrow_rounded,
-                      color: AppColors.primaryDeep,
-                      size: 42,
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withValues(alpha: 0.12),
+                          Colors.black.withValues(alpha: 0.48),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
                     ),
                   ),
-                ),
-                Positioned(
-                  left: 14,
-                  top: 14,
-                  child: _VideoBadge(label: hasVideo ? 'Video local' : 'Demo'),
-                ),
-                Positioned(
-                  left: 14,
-                  right: 14,
-                  bottom: 14,
-                  child: Wrap(
+                  Center(
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.92),
+                        borderRadius: BorderRadius.circular(32),
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: AppColors.primaryDeep,
+                        size: 42,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 14,
+                    top: 14,
+                    child: _VideoBadge(
+                      label: hasVideo ? 'Video local' : 'Demo',
+                    ),
+                  ),
+                  Positioned(
+                    left: 14,
+                    right: 14,
+                    bottom: 14,
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _VideoBadge(label: clip.category),
+                        _VideoBadge(label: clip.animalType),
+                        if (clip.sourceLabel != null)
+                          _VideoBadge(label: clip.sourceLabel!),
+                        if (!hasVideo)
+                          const _VideoBadge(label: 'Clip demo local'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    clip.title,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    clip.description,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _VideoBadge(label: clip.category),
-                      _VideoBadge(label: clip.animalType),
-                      if (clip.sourceLabel != null)
-                        _VideoBadge(label: clip.sourceLabel!),
-                      if (!hasVideo)
-                        const _VideoBadge(label: 'Clip demo local'),
+                      _ClipActionButton(
+                        icon: clip.isLiked
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        label: '${clip.likes} likes',
+                        selected: clip.isLiked,
+                        onPressed: onToggleLike,
+                      ),
+                      _ClipActionButton(
+                        icon: Icons.mode_comment_outlined,
+                        label: '${clip.comments} comentarios',
+                        selected: false,
+                        onPressed: () {},
+                      ),
+                      _ClipActionButton(
+                        icon: clip.isSaved
+                            ? Icons.bookmark_rounded
+                            : Icons.bookmark_border_rounded,
+                        label: clip.isSaved ? 'Guardado' : 'Guardar',
+                        selected: clip.isSaved,
+                        onPressed: onToggleSave,
+                      ),
+                      _ClipActionButton(
+                        icon: Icons.ios_share_rounded,
+                        label: 'Compartir',
+                        selected: false,
+                        onPressed: () {},
+                      ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(clip.title, style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 8),
-                Text(
-                  clip.description,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.45,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _ClipActionButton(
-                      icon: clip.isLiked
-                          ? Icons.favorite_rounded
-                          : Icons.favorite_border_rounded,
-                      label: '${clip.likes} likes',
-                      selected: clip.isLiked,
-                      onPressed: onToggleLike,
-                    ),
-                    _ClipActionButton(
-                      icon: Icons.mode_comment_outlined,
-                      label: '${clip.comments} comentarios',
-                      selected: false,
-                      onPressed: () {},
-                    ),
-                    _ClipActionButton(
-                      icon: clip.isSaved
-                          ? Icons.bookmark_rounded
-                          : Icons.bookmark_border_rounded,
-                      label: clip.isSaved ? 'Guardado' : 'Guardar',
-                      selected: clip.isSaved,
-                      onPressed: onToggleSave,
-                    ),
-                    _ClipActionButton(
-                      icon: Icons.ios_share_rounded,
-                      label: 'Compartir',
-                      selected: false,
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
