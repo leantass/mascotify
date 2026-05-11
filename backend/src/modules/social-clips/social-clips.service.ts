@@ -238,6 +238,7 @@ export function normalizeCreateClipInput(
   const category = normalizeRequiredText(input.category, 'category');
   const videoUrl = normalizeRequiredText(input.videoUrl, 'videoUrl');
   const thumbnailUrl = normalizeOptionalText(input.thumbnailUrl);
+  const cloudinaryPublicId = normalizeOptionalText(input.cloudinaryPublicId);
   const durationSeconds = normalizeOptionalPositiveInteger(
     input.durationSeconds,
     'durationSeconds'
@@ -251,6 +252,7 @@ export function normalizeCreateClipInput(
     category,
     videoUrl,
     thumbnailUrl,
+    cloudinaryPublicId,
     durationSeconds
   };
 }
@@ -288,6 +290,12 @@ export function normalizeUpdateClipInput(
 
   if ('thumbnailUrl' in input) {
     normalizedInput.thumbnailUrl = normalizeNullableText(input.thumbnailUrl);
+  }
+
+  if ('cloudinaryPublicId' in input) {
+    normalizedInput.cloudinaryPublicId = normalizeNullableText(
+      input.cloudinaryPublicId
+    );
   }
 
   if ('durationSeconds' in input) {

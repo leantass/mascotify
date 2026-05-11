@@ -10,6 +10,7 @@ class ExploreClip {
     this.videoAssetPath,
     this.thumbnailAssetPath,
     this.authorId,
+    this.cloudinaryPublicId,
     required this.likes,
     required this.comments,
     this.shares = 0,
@@ -28,6 +29,7 @@ class ExploreClip {
   final String? videoAssetPath;
   final String? thumbnailAssetPath;
   final String? authorId;
+  final String? cloudinaryPublicId;
   final int likes;
   final int comments;
   final int shares;
@@ -46,6 +48,7 @@ class ExploreClip {
     String? videoAssetPath,
     String? thumbnailAssetPath,
     String? authorId,
+    String? cloudinaryPublicId,
     int? likes,
     int? comments,
     int? shares,
@@ -64,6 +67,7 @@ class ExploreClip {
       videoAssetPath: videoAssetPath ?? this.videoAssetPath,
       thumbnailAssetPath: thumbnailAssetPath ?? this.thumbnailAssetPath,
       authorId: authorId ?? this.authorId,
+      cloudinaryPublicId: cloudinaryPublicId ?? this.cloudinaryPublicId,
       likes: likes ?? this.likes,
       comments: comments ?? this.comments,
       shares: shares ?? this.shares,
@@ -85,6 +89,7 @@ class ExploreClip {
       'videoAssetPath': videoAssetPath,
       'thumbnailAssetPath': thumbnailAssetPath,
       'authorId': authorId,
+      'cloudinaryPublicId': cloudinaryPublicId,
       'likes': likes,
       'comments': comments,
       'shares': shares,
@@ -106,6 +111,7 @@ class ExploreClip {
       videoAssetPath: json['videoAssetPath'] as String?,
       thumbnailAssetPath: json['thumbnailAssetPath'] as String?,
       authorId: json['authorId'] as String?,
+      cloudinaryPublicId: json['cloudinaryPublicId'] as String?,
       likes: json['likes'] as int,
       comments: json['comments'] as int,
       shares: json['shares'] as int? ?? 0,

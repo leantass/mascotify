@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
@@ -21,6 +22,18 @@ abstract interface class SocialClipsApiClientPort {
   });
   Future<void> followUser({required String authorId, required String userId});
   Future<void> unfollowUser({required String authorId, required String userId});
+  Future<CloudinaryUploadSignature> requestUploadSignature({
+    required String userId,
+  });
+  Future<CloudinaryUploadResult> uploadVideo({
+    required CloudinaryUploadSignature signature,
+    required SelectedClipVideo video,
+  });
+  Future<ExploreClip> createClip({
+    required String userId,
+    required ClipUploadDraft draft,
+    required CloudinaryUploadResult uploadResult,
+  });
 }
 
 class SocialClipsApiClient implements SocialClipsApiClientPort {
@@ -100,6 +113,82 @@ class SocialClipsApiClient implements SocialClipsApiClientPort {
     await _send('DELETE', '/users/$authorId/follow', userId: userId);
   }
 
+  @override
+  Future<CloudinaryUploadSignature> requestUploadSignature({
+    required String userId,
+  }) async {
+    final response = await _send(
+      'POST',
+      '/clips/upload-signature',
+      userId: userId,
+    );
+    return CloudinaryUploadSignature.fromJson(_decodeObject(response));
+  }
+
+  @override
+  Future<CloudinaryUploadResult> uploadVideo({
+    required CloudinaryUploadSignature signature,
+    required SelectedClipVideo video,
+  }) async {
+    final bytes = video.bytes;
+    if (bytes == null) {
+      throw const SocialClipsApiException(
+        'Selected video bytes are not available for upload.',
+      );
+    }
+
+    final request =
+        http.MultipartRequest('POST', Uri.parse(signature.uploadUrl))
+          ..fields['api_key'] = signature.apiKey
+          ..fields['timestamp'] = signature.timestamp.toString()
+          ..fields['signature'] = signature.signature
+          ..fields['folder'] = signature.folder
+          ..fields['resource_type'] = signature.resourceType
+          ..files.add(
+            http.MultipartFile.fromBytes('file', bytes, filename: video.name),
+          );
+    final streamedResponse = await _httpClient.send(request).timeout(timeout);
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw SocialClipsApiException(
+        'Cloudinary upload failed with status ${response.statusCode}.',
+      );
+    }
+
+    final body = _decodeObject(response);
+    return CloudinaryUploadResult.fromJson(body);
+  }
+
+  @override
+  Future<ExploreClip> createClip({
+    required String userId,
+    required ClipUploadDraft draft,
+    required CloudinaryUploadResult uploadResult,
+  }) async {
+    final response = await _send(
+      'POST',
+      '/clips',
+      userId: userId,
+      body: jsonEncode(<String, Object?>{
+        'title': draft.title,
+        'description': draft.description,
+        'animalType': draft.animalType,
+        'category': draft.category,
+        'videoUrl': uploadResult.secureUrl,
+        'thumbnailUrl': uploadResult.thumbnailUrl,
+        'cloudinaryPublicId': uploadResult.publicId,
+        'durationSeconds': uploadResult.durationSeconds,
+      }),
+    );
+    final body = _decodeObject(response);
+    final clip = body['clip'];
+    if (clip is! Map) {
+      throw const FormatException('Invalid create clip response.');
+    }
+    return _clipFromBackend(Map<String, dynamic>.from(clip));
+  }
+
   Future<ExploreClip> _sendClipMutation(
     String method,
     String path,
@@ -121,6 +210,7 @@ class SocialClipsApiClient implements SocialClipsApiClientPort {
     String path, {
     required String userId,
     Map<String, String>? queryParameters,
+    Object? body,
   }) async {
     final uri = _baseUri.replace(
       path: '${_baseUri.path}$path',
@@ -128,11 +218,12 @@ class SocialClipsApiClient implements SocialClipsApiClientPort {
     );
     final headers = <String, String>{
       'accept': 'application/json',
+      if (body != null) 'content-type': 'application/json',
       'x-user-id': userId,
     };
     final request = switch (method) {
       'GET' => _httpClient.get(uri, headers: headers),
-      'POST' => _httpClient.post(uri, headers: headers),
+      'POST' => _httpClient.post(uri, headers: headers, body: body),
       'DELETE' => _httpClient.delete(uri, headers: headers),
       _ => throw ArgumentError.value(method, 'method', 'Unsupported method'),
     };
@@ -178,6 +269,7 @@ ExploreClip _clipFromBackend(Map<String, dynamic> json) {
     category: json['category'] as String,
     animalType: json['animalType'] as String,
     authorId: json['authorId'] as String?,
+    cloudinaryPublicId: json['cloudinaryPublicId'] as String?,
     thumbnailAssetPath: _assetPathOrNull(thumbnailUrl, 'assets/images/clips/'),
     videoAssetPath: _assetPathOrNull(videoUrl, 'assets/videos/clips/'),
     likes: json['likesCount'] as int? ?? 0,
@@ -188,6 +280,88 @@ ExploreClip _clipFromBackend(Map<String, dynamic> json) {
     isLiked: json['isLiked'] as bool? ?? false,
     isFollowingAuthor: json['isFollowingAuthor'] as bool? ?? false,
   );
+}
+
+class CloudinaryUploadSignature {
+  const CloudinaryUploadSignature({
+    required this.cloudName,
+    required this.apiKey,
+    required this.timestamp,
+    required this.signature,
+    required this.folder,
+    required this.resourceType,
+    required this.uploadUrl,
+  });
+
+  final String cloudName;
+  final String apiKey;
+  final int timestamp;
+  final String signature;
+  final String folder;
+  final String resourceType;
+  final String uploadUrl;
+
+  factory CloudinaryUploadSignature.fromJson(Map<String, dynamic> json) {
+    return CloudinaryUploadSignature(
+      cloudName: json['cloudName'] as String,
+      apiKey: json['apiKey'] as String,
+      timestamp: json['timestamp'] as int,
+      signature: json['signature'] as String,
+      folder: json['folder'] as String,
+      resourceType: json['resourceType'] as String,
+      uploadUrl: json['uploadUrl'] as String,
+    );
+  }
+}
+
+class CloudinaryUploadResult {
+  const CloudinaryUploadResult({
+    required this.secureUrl,
+    required this.publicId,
+    this.thumbnailUrl,
+    this.durationSeconds,
+  });
+
+  final String secureUrl;
+  final String publicId;
+  final String? thumbnailUrl;
+  final int? durationSeconds;
+
+  factory CloudinaryUploadResult.fromJson(Map<String, dynamic> json) {
+    return CloudinaryUploadResult(
+      secureUrl: json['secure_url'] as String,
+      publicId: json['public_id'] as String,
+      thumbnailUrl: json['thumbnail_url'] as String?,
+      durationSeconds: _durationFromJson(json['duration']),
+    );
+  }
+}
+
+class SelectedClipVideo {
+  const SelectedClipVideo({required this.name, required this.bytes});
+
+  final String name;
+  final Uint8List? bytes;
+}
+
+class ClipUploadDraft {
+  const ClipUploadDraft({
+    required this.title,
+    required this.description,
+    required this.animalType,
+    required this.category,
+  });
+
+  final String title;
+  final String description;
+  final String animalType;
+  final String category;
+}
+
+int? _durationFromJson(Object? value) {
+  if (value is int) return value;
+  if (value is double) return value.round();
+  return null;
 }
 
 String? _assetPathOrNull(String? value, String prefix) {

@@ -240,6 +240,7 @@ function mapClip(clip: PrismaClipWithAuthor): ClipRecord {
     category: clip.category,
     videoUrl: clip.videoUrl,
     thumbnailUrl: clip.thumbnailUrl,
+    cloudinaryPublicId: clip.cloudinaryPublicId,
     durationSeconds: clip.durationSeconds,
     likesCount: clip.likesCount,
     commentsCount: clip.commentsCount,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mascotify/features/explore/data/social_clips_api_client.dart';
 import 'package:mascotify/features/explore/data/social_clips_repository.dart';
 import 'package:mascotify/features/explore/presentation/screens/explore_screen.dart';
 import 'package:mascotify/shared/data/app_data_source.dart';
@@ -26,6 +27,7 @@ class _FakeSocialClipsRepository implements SocialClipsRepositoryPort {
   int shareCalls = 0;
   int followCalls = 0;
   int unfollowCalls = 0;
+  int uploadCalls = 0;
 
   @override
   Future<SocialClipsLoadResult> fetchFeed({required String userId}) async {
@@ -78,6 +80,31 @@ class _FakeSocialClipsRepository implements SocialClipsRepositoryPort {
     required String userId,
   }) async {
     unfollowCalls += 1;
+  }
+
+  @override
+  Future<ExploreClip> uploadClip({
+    required String userId,
+    required ClipUploadDraft draft,
+    required SelectedClipVideo video,
+  }) async {
+    uploadCalls += 1;
+    if (shouldFailFetch) {
+      throw Exception('media disabled');
+    }
+    return ExploreClip(
+      id: 'uploaded-remote',
+      title: draft.title,
+      description: draft.description,
+      category: draft.category,
+      animalType: draft.animalType,
+      authorId: userId,
+      cloudinaryPublicId: 'mascotify/clips/uploaded-remote',
+      likes: 0,
+      comments: 0,
+      sourceLabel: 'Backend social',
+      isDemoContent: false,
+    );
   }
 }
 
@@ -193,6 +220,32 @@ void main() {
     expect(find.text('Rescate remoto con final feliz'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('boton Subir clip aparece en Clips', (tester) async {
+    setDesktopViewport(tester);
+
+    await _openClips(tester, _FakeSocialClipsRepository.remote(_remoteClips));
+
+    expect(find.text('Subir clip'), findsOneWidget);
+  });
+
+  testWidgets(
+    'si backend de medios no esta configurado muestra feedback seguro',
+    (tester) async {
+      setDesktopViewport(tester);
+
+      await _openClips(tester, _FakeSocialClipsRepository.failing());
+      await tester.tap(find.text('Subir clip'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Publicar'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Completa titulo, descripcion y selecciona un video.'),
+        findsOneWidget,
+      );
+    },
+  );
 }
 
 Future<void> _openClips(

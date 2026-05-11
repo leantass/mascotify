@@ -63,6 +63,7 @@ model Clip {
   category        String
   videoUrl        String
   thumbnailUrl    String?
+  cloudinaryPublicId String?
   durationSeconds Int?
   likesCount      Int        @default(0)
   commentsCount   Int        @default(0)

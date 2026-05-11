@@ -15,6 +15,7 @@ export type ClipRecord = {
   category: string;
   videoUrl: string;
   thumbnailUrl: string | null;
+  cloudinaryPublicId: string | null;
   durationSeconds: number | null;
   likesCount: number;
   commentsCount: number;
@@ -37,6 +38,7 @@ export type CreateClipInput = {
   category?: unknown;
   videoUrl?: unknown;
   thumbnailUrl?: unknown;
+  cloudinaryPublicId?: unknown;
   durationSeconds?: unknown;
 };
 
@@ -52,6 +54,7 @@ export type NormalizedCreateClipInput = {
   category: string;
   videoUrl: string;
   thumbnailUrl?: string;
+  cloudinaryPublicId?: string;
   durationSeconds?: number;
 };
 
@@ -62,6 +65,7 @@ export type NormalizedUpdateClipInput = {
   category?: string;
   videoUrl?: string;
   thumbnailUrl?: string | null;
+  cloudinaryPublicId?: string | null;
   durationSeconds?: number | null;
   status?: ClipStatus;
 };

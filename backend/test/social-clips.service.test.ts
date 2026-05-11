@@ -31,6 +31,7 @@ class FakeSocialClipsRepository implements SocialClipsRepositoryPort {
       category: input.category,
       videoUrl: input.videoUrl,
       thumbnailUrl: input.thumbnailUrl ?? null,
+      cloudinaryPublicId: input.cloudinaryPublicId ?? null,
       durationSeconds: input.durationSeconds ?? null,
       likesCount: 0,
       commentsCount: 0,
@@ -65,6 +66,10 @@ class FakeSocialClipsRepository implements SocialClipsRepositoryPort {
       ...input,
       thumbnailUrl:
         input.thumbnailUrl === undefined ? clip.thumbnailUrl : input.thumbnailUrl,
+      cloudinaryPublicId:
+        input.cloudinaryPublicId === undefined
+          ? clip.cloudinaryPublicId
+          : input.cloudinaryPublicId,
       durationSeconds:
         input.durationSeconds === undefined
           ? clip.durationSeconds
@@ -188,10 +193,50 @@ test('SocialClipsService creates a valid clip with metadata', async () => {
   assert.equal(clip.animalType, 'Perro');
   assert.equal(clip.videoUrl, 'mascotify://videos/perro-qr.mp4');
   assert.equal(clip.thumbnailUrl, 'assets/images/clips/perro-qr.png');
+  assert.equal(clip.cloudinaryPublicId, null);
   assert.equal(clip.durationSeconds, 18);
   assert.equal(clip.likesCount, 0);
   assert.equal(clip.sharesCount, 0);
   assert.equal(clip.status, ClipStatus.ACTIVE);
+});
+
+test('SocialClipsService creates a clip with Cloudinary metadata', async () => {
+  const { service } = createFixture();
+
+  const clip = await service.createClip('author_1', {
+    ...validClipInput(),
+    videoUrl: 'https://res.cloudinary.com/demo/video/upload/v1/clip.mp4',
+    thumbnailUrl: 'https://res.cloudinary.com/demo/video/upload/v1/clip.jpg',
+    cloudinaryPublicId: 'mascotify/clips/clip'
+  });
+
+  assert.equal(
+    clip.videoUrl,
+    'https://res.cloudinary.com/demo/video/upload/v1/clip.mp4'
+  );
+  assert.equal(clip.cloudinaryPublicId, 'mascotify/clips/clip');
+
+  const feed = await service.getFeed({ viewerId: 'viewer_1' });
+
+  assert.equal(feed.items[0].id, clip.id);
+  assert.equal(
+    feed.items[0].videoUrl,
+    'https://res.cloudinary.com/demo/video/upload/v1/clip.mp4'
+  );
+  assert.equal(feed.items[0].cloudinaryPublicId, 'mascotify/clips/clip');
+});
+
+test('SocialClipsService rejects a real uploaded clip without video url', async () => {
+  const { service } = createFixture();
+
+  await assert.rejects(
+    () =>
+      service.createClip('author_1', {
+        ...validClipInput(),
+        videoUrl: ' '
+      }),
+    /Clip data is invalid/
+  );
 });
 
 test('SocialClipsService rejects invalid clip input with controlled error', async () => {
@@ -382,6 +427,7 @@ function validClipInput(): {
   category: string;
   videoUrl: string;
   thumbnailUrl: string;
+  cloudinaryPublicId?: string;
   durationSeconds: number;
 } {
   return {

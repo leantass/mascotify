@@ -1,12 +1,17 @@
 import { Router, type Request, type Response } from 'express';
 
 import {
+  CloudinaryConfigurationError,
+  CloudinaryService
+} from '../media/cloudinary.service';
+import {
   SocialClipsError,
   SocialClipsService
 } from './social-clips.service';
 
 export function createSocialClipsRouter(
-  service = new SocialClipsService()
+  service = new SocialClipsService(),
+  mediaService = new CloudinaryService()
 ): Router {
   const router = Router();
 
@@ -32,6 +37,15 @@ export function createSocialClipsRouter(
       );
 
       response.json({ clip });
+    } catch (error) {
+      sendError(response, error);
+    }
+  });
+
+  router.post('/clips/upload-signature', async (request, response) => {
+    try {
+      readRequiredUserId(request);
+      response.json(mediaService.createUploadSignature());
     } catch (error) {
       sendError(response, error);
     }
@@ -192,6 +206,17 @@ function sendError(response: Response, error: unknown): void {
         code: error.code,
         message: error.message,
         details: error.details
+      }
+    });
+    return;
+  }
+
+  if (error instanceof CloudinaryConfigurationError) {
+    response.status(503).json({
+      error: {
+        code: 'MEDIA_UPLOAD_DISABLED',
+        message: error.message,
+        details: []
       }
     });
     return;

@@ -26,6 +26,11 @@ abstract interface class SocialClipsRepositoryPort {
   Future<ExploreClip> shareClip(ExploreClip clip, {required String userId});
   Future<void> followAuthor(ExploreClip clip, {required String userId});
   Future<void> unfollowAuthor(ExploreClip clip, {required String userId});
+  Future<ExploreClip> uploadClip({
+    required String userId,
+    required ClipUploadDraft draft,
+    required SelectedClipVideo video,
+  });
 }
 
 class SocialClipsRepository implements SocialClipsRepositoryPort {
@@ -109,6 +114,24 @@ class SocialClipsRepository implements SocialClipsRepositoryPort {
     final authorId = clip.authorId;
     if (clip.isDemoContent || authorId == null) return;
     await _apiClient.unfollowUser(authorId: authorId, userId: userId);
+  }
+
+  @override
+  Future<ExploreClip> uploadClip({
+    required String userId,
+    required ClipUploadDraft draft,
+    required SelectedClipVideo video,
+  }) async {
+    final signature = await _apiClient.requestUploadSignature(userId: userId);
+    final uploadResult = await _apiClient.uploadVideo(
+      signature: signature,
+      video: video,
+    );
+    return _apiClient.createClip(
+      userId: userId,
+      draft: draft,
+      uploadResult: uploadResult,
+    );
   }
 }
 

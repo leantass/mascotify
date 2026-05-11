@@ -72,11 +72,14 @@ Base path: `/api/v1`.
 
 - `GET /clips/feed`
 - `GET /clips/:id`
+- `POST /clips/upload-signature`
 - `POST /clips`
 - `PATCH /clips/:id`
 - `DELETE /clips/:id`
 
 `POST /clips` requiere `x-user-id` y crea el clip con ese usuario como autor.
+
+`POST /clips/upload-signature` requiere `x-user-id` y devuelve parametros firmados para subir video propio a Cloudinary. No devuelve `CLOUDINARY_API_SECRET`; si Cloudinary no esta configurado responde `MEDIA_UPLOAD_DISABLED`.
 
 `GET /clips/feed` devuelve clips activos ordenados por recientes, con paginacion simple:
 
@@ -92,6 +95,7 @@ Base path: `/api/v1`.
       "category": "Rescates",
       "videoUrl": "mascotify://videos/rescate.mp4",
       "thumbnailUrl": "assets/images/clips/rescate.png",
+      "cloudinaryPublicId": null,
       "durationSeconds": 24,
       "likesCount": 10,
       "commentsCount": 0,

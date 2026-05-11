@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../../../../features/pets/presentation/screens/express_interest_screen.dart';
 import '../../../../features/pets/presentation/screens/pet_public_profile_screen.dart';
+import '../../../../features/explore/data/social_clips_api_client.dart';
 import '../../../../features/explore/data/social_clips_repository.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/data/clips_mock_data.dart';
@@ -95,6 +97,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   onToggleSave: _toggleClipSave,
                   onShare: _shareClip,
                   onToggleFollow: _toggleClipFollow,
+                  onUploadClip: _openUploadClipDialog,
                   onOpenClip: _openClipViewer,
                 ),
               ],
@@ -459,6 +462,24 @@ class _ExploreScreenState extends State<ExploreScreen> {
     setState(() => _clips = updatedClips);
   }
 
+  Future<void> _openUploadClipDialog() async {
+    final uploadedClip = await showDialog<ExploreClip>(
+      context: context,
+      builder: (_) => _UploadClipDialog(
+        userId: _currentClipsUserId,
+        repository: _socialClipsRepository,
+      ),
+    );
+
+    if (!mounted || uploadedClip == null) return;
+    setState(() {
+      _clips = [uploadedClip, ..._clips];
+      _clipsSource = SocialClipsDataSource.remote;
+      _clipsStatusMessage = null;
+      _selectedClipCategory = _allClipCategories;
+    });
+  }
+
   String get _currentClipsUserId {
     final currentUserId = AppData.currentUser.id.trim();
     return currentUserId.isEmpty ? 'demo-user-local' : currentUserId;
@@ -587,6 +608,7 @@ class _ExploreClipsFeed extends StatelessWidget {
     required this.onToggleSave,
     required this.onShare,
     required this.onToggleFollow,
+    required this.onUploadClip,
     required this.onOpenClip,
   });
 
@@ -602,6 +624,7 @@ class _ExploreClipsFeed extends StatelessWidget {
   final ValueChanged<String> onToggleSave;
   final ValueChanged<String> onShare;
   final ValueChanged<String> onToggleFollow;
+  final VoidCallback onUploadClip;
   final ValueChanged<ExploreClip> onOpenClip;
 
   @override
@@ -613,6 +636,7 @@ class _ExploreClipsFeed extends StatelessWidget {
           source: source,
           isLoading: isLoading,
           statusMessage: statusMessage,
+          onUploadClip: onUploadClip,
         ),
         const SizedBox(height: 16),
         _ClipCategoryFilters(
@@ -657,11 +681,13 @@ class _ClipsHero extends StatelessWidget {
     required this.source,
     required this.isLoading,
     required this.statusMessage,
+    required this.onUploadClip,
   });
 
   final SocialClipsDataSource source;
   final bool isLoading;
   final String? statusMessage;
+  final VoidCallback onUploadClip;
 
   @override
   Widget build(BuildContext context) {
@@ -717,6 +743,15 @@ class _ClipsHero extends StatelessWidget {
               context,
             ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
+          const SizedBox(height: 16),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: ElevatedButton.icon(
+              onPressed: onUploadClip,
+              icon: const Icon(Icons.cloud_upload_rounded),
+              label: const Text('Subir clip'),
+            ),
+          ),
         ],
       ),
     );
@@ -763,6 +798,197 @@ class _ClipsStatusPill extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _UploadClipDialog extends StatefulWidget {
+  const _UploadClipDialog({required this.userId, required this.repository});
+
+  final String userId;
+  final SocialClipsRepositoryPort repository;
+
+  @override
+  State<_UploadClipDialog> createState() => _UploadClipDialogState();
+}
+
+class _UploadClipDialogState extends State<_UploadClipDialog> {
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  String _animalType = 'Perro';
+  String _category = 'Consejos';
+  PlatformFile? _selectedVideo;
+  bool _isUploading = false;
+  String? _feedback;
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Subir clip', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 8),
+              Text(
+                'Selecciona un video propio. Mascotify pide una firma al backend y luego guarda la metadata del clip.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _titleController,
+                decoration: const InputDecoration(labelText: 'Titulo'),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _descriptionController,
+                maxLines: 3,
+                decoration: const InputDecoration(labelText: 'Descripcion'),
+              ),
+              const SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                initialValue: _animalType,
+                decoration: const InputDecoration(labelText: 'Animal'),
+                items: const ['Perro', 'Gato', 'Otros']
+                    .map(
+                      (value) =>
+                          DropdownMenuItem(value: value, child: Text(value)),
+                    )
+                    .toList(),
+                onChanged: (value) =>
+                    setState(() => _animalType = value ?? _animalType),
+              ),
+              const SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                initialValue: _category,
+                decoration: const InputDecoration(labelText: 'Categoria'),
+                items: ClipsMockData.categories
+                    .where((category) => category != 'Todos')
+                    .map(
+                      (value) =>
+                          DropdownMenuItem(value: value, child: Text(value)),
+                    )
+                    .toList(),
+                onChanged: (value) =>
+                    setState(() => _category = value ?? _category),
+              ),
+              const SizedBox(height: 14),
+              OutlinedButton.icon(
+                onPressed: _isUploading ? null : _pickVideo,
+                icon: const Icon(Icons.video_file_rounded),
+                label: Text(_selectedVideo?.name ?? 'Seleccionar video'),
+              ),
+              if (_feedback != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _feedback!,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.primaryDeep,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _isUploading
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      child: const Text('Cancelar'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _isUploading ? null : _submit,
+                      icon: _isUploading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.cloud_upload_rounded),
+                      label: Text(_isUploading ? 'Subiendo' : 'Publicar'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickVideo() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.video,
+      allowMultiple: false,
+      withData: true,
+    );
+    final file = result?.files.single;
+    if (file == null) return;
+    setState(() {
+      _selectedVideo = file;
+      _feedback = null;
+    });
+  }
+
+  Future<void> _submit() async {
+    final title = _titleController.text.trim();
+    final description = _descriptionController.text.trim();
+    final video = _selectedVideo;
+
+    if (title.isEmpty || description.isEmpty || video == null) {
+      setState(
+        () => _feedback = 'Completa titulo, descripcion y selecciona un video.',
+      );
+      return;
+    }
+
+    setState(() {
+      _isUploading = true;
+      _feedback = null;
+    });
+
+    try {
+      final clip = await widget.repository.uploadClip(
+        userId: widget.userId,
+        draft: ClipUploadDraft(
+          title: title,
+          description: description,
+          animalType: _animalType,
+          category: _category,
+        ),
+        video: SelectedClipVideo(name: video.name, bytes: video.bytes),
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).pop(clip);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isUploading = false;
+        _feedback =
+            'Subida de clips disponible cuando el backend de medios este configurado.';
+      });
+    }
   }
 }
 
