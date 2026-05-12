@@ -63,14 +63,14 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
             child: Row(
               children: [
-                OutlinedButton.icon(
+                ElevatedButton.icon(
                   onPressed: _close,
                   icon: const Icon(Icons.arrow_back_rounded),
                   label: const Text('Volver a Clips'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.58),
+                  style: _viewerNavigationButtonStyle(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
                     ),
                   ),
                 ),
@@ -438,18 +438,11 @@ class _ViewerClipPage extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
+                child: ElevatedButton.icon(
                   onPressed: onPrevious,
                   icon: const Icon(Icons.keyboard_arrow_up_rounded),
                   label: const Text('Clip anterior'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: BorderSide(
-                      color: Colors.white.withValues(
-                        alpha: isFirst ? 0.22 : 0.7,
-                      ),
-                    ),
-                  ),
+                  style: _viewerNavigationButtonStyle(),
                 ),
               ),
               const SizedBox(width: 10),
@@ -458,6 +451,7 @@ class _ViewerClipPage extends StatelessWidget {
                   onPressed: onNext,
                   icon: const Icon(Icons.keyboard_arrow_down_rounded),
                   label: const Text('Siguiente clip'),
+                  style: _viewerNavigationButtonStyle(),
                 ),
               ),
             ],
@@ -466,6 +460,20 @@ class _ViewerClipPage extends StatelessWidget {
       ),
     );
   }
+}
+
+ButtonStyle _viewerNavigationButtonStyle({EdgeInsetsGeometry? padding}) {
+  return ElevatedButton.styleFrom(
+    backgroundColor: AppColors.accent,
+    foregroundColor: Colors.white,
+    disabledBackgroundColor: AppColors.accent.withValues(alpha: 0.34),
+    disabledForegroundColor: Colors.white.withValues(alpha: 0.72),
+    elevation: 0,
+    padding:
+        padding ?? const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+    textStyle: const TextStyle(fontWeight: FontWeight.w800),
+  );
 }
 
 class _ViewerPlaceholder extends StatelessWidget {

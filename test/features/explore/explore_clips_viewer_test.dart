@@ -4,6 +4,7 @@ import 'package:mascotify/features/explore/presentation/screens/explore_clip_vie
 import 'package:mascotify/features/explore/presentation/screens/explore_screen.dart';
 import 'package:mascotify/shared/data/app_data_source.dart';
 import 'package:mascotify/shared/data/clips_mock_data.dart';
+import 'package:mascotify/theme/app_colors.dart';
 
 import '../../test_helpers.dart';
 
@@ -91,6 +92,53 @@ void main() {
     expect(find.text('2/6'), findsOneWidget);
   });
 
+  testWidgets('botones de navegacion del visor usan estilo principal', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        ExploreClipViewerScreen(
+          clips: ClipsMockData.clips,
+          initialClipId: 'clip-02',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.widgetWithText(ElevatedButton, 'Volver a Clips'),
+      findsOneWidget,
+    );
+    expect(
+      find.widgetWithText(ElevatedButton, 'Clip anterior'),
+      findsOneWidget,
+    );
+    expect(
+      find.widgetWithText(ElevatedButton, 'Siguiente clip'),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(OutlinedButton, 'Volver a Clips'), findsNothing);
+    expect(find.widgetWithText(OutlinedButton, 'Clip anterior'), findsNothing);
+    expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.keyboard_arrow_up_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsOneWidget);
+
+    final previousButton = tester.widget<ElevatedButton>(
+      find.widgetWithText(ElevatedButton, 'Clip anterior'),
+    );
+    final previousBackground = previousButton.style?.backgroundColor?.resolve(
+      <WidgetState>{},
+    );
+    final previousForeground = previousButton.style?.foregroundColor?.resolve(
+      <WidgetState>{},
+    );
+
+    expect(previousBackground, AppColors.accent);
+    expect(previousForeground, Colors.white);
+  });
+
   testWidgets('volver desde el visor retorna a Explorar Clips', (tester) async {
     setDesktopViewport(tester);
 
@@ -115,6 +163,7 @@ void main() {
     await _openFirstClipFromExplore(tester);
 
     expect(find.text('Visor de clips'), findsOneWidget);
+    expect(find.text('Clip anterior'), findsOneWidget);
     expect(find.text('Siguiente clip'), findsOneWidget);
     expect(find.text('Clip demo local'), findsOneWidget);
     expect(tester.takeException(), isNull);
