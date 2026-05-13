@@ -91,6 +91,7 @@ test('POST /api/v1/clips/upload-signature requires x-user-id', async () => {
 });
 
 test('POST /api/v1/clips/upload-signature returns a controlled disabled error without config', async () => {
+  const previousCloudinaryEnv = clearCloudinaryEnv();
   const server = await startTestServer();
 
   try {
@@ -109,5 +110,45 @@ test('POST /api/v1/clips/upload-signature returns a controlled disabled error wi
     assert.equal(body.error.code, 'MEDIA_UPLOAD_DISABLED');
   } finally {
     await server.close();
+    restoreCloudinaryEnv(previousCloudinaryEnv);
   }
 });
+
+type CloudinaryEnvSnapshot = {
+  cloudName: string | undefined;
+  apiKey: string | undefined;
+  apiSecret: string | undefined;
+  uploadFolder: string | undefined;
+};
+
+function clearCloudinaryEnv(): CloudinaryEnvSnapshot {
+  const snapshot = {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
+    uploadFolder: process.env.CLOUDINARY_UPLOAD_FOLDER
+  };
+
+  delete process.env.CLOUDINARY_CLOUD_NAME;
+  delete process.env.CLOUDINARY_API_KEY;
+  delete process.env.CLOUDINARY_API_SECRET;
+  delete process.env.CLOUDINARY_UPLOAD_FOLDER;
+
+  return snapshot;
+}
+
+function restoreCloudinaryEnv(snapshot: CloudinaryEnvSnapshot): void {
+  setOptionalEnv('CLOUDINARY_CLOUD_NAME', snapshot.cloudName);
+  setOptionalEnv('CLOUDINARY_API_KEY', snapshot.apiKey);
+  setOptionalEnv('CLOUDINARY_API_SECRET', snapshot.apiSecret);
+  setOptionalEnv('CLOUDINARY_UPLOAD_FOLDER', snapshot.uploadFolder);
+}
+
+function setOptionalEnv(key: string, value: string | undefined): void {
+  if (value == null) {
+    delete process.env[key];
+    return;
+  }
+
+  process.env[key] = value;
+}

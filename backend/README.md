@@ -9,6 +9,7 @@ Implementado por ahora:
 - Servidor Express minimo.
 - Healthcheck.
 - Configuracion de entorno basica.
+- CORS configurable para Flutter Web y apps cliente.
 - Prisma configurado.
 - Schema inicial de base de datos.
 - Prisma Client.
@@ -104,9 +105,12 @@ Ver `.env.example`.
 PORT=4000
 NODE_ENV=development
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mascotify
+CORS_ORIGIN=http://localhost:3000,http://localhost:8080,http://localhost:5000
 ```
 
 `DATABASE_URL` se usa para migraciones y comandos de base de datos. No se debe commitear un `.env` real ni secretos.
+
+`CORS_ORIGIN` acepta una lista separada por comas. Para deploy publico, agregar la URL web publica de Mascotify. Las apps mobile nativas normalmente no envian header `Origin`, pero Flutter Web si lo necesita.
 
 ## Prisma
 
@@ -120,6 +124,12 @@ Crear una migracion local cuando exista una base PostgreSQL configurada:
 
 ```bash
 npm run prisma:migrate:dev
+```
+
+Aplicar migraciones versionadas en deploy productivo:
+
+```bash
+npm run prisma:migrate:deploy
 ```
 
 Sincronizar el schema contra una base local durante desarrollo:
@@ -145,3 +155,11 @@ El modulo `users` contiene una primera capa interna de repository/service para c
 - Base PostgreSQL local/dev con migraciones.
 - Mascotas, QR y trazabilidad en backend.
 - Conexion futura Flutter/backend.
+
+## Deploy
+
+Ver guia de deploy publico:
+
+```text
+docs/deploy/backend_deploy.md
+```

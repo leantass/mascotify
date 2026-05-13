@@ -73,3 +73,49 @@ test('GET /api/v1/health returns backend health status', async () => {
     await server.close();
   }
 });
+
+test('GET /health includes CORS headers for configured Flutter web origins', async () => {
+  const server = await startTestServer();
+
+  try {
+    const response = await fetch(`${server.baseUrl}/health`, {
+      headers: {
+        Origin: 'http://localhost:8080'
+      }
+    });
+
+    assert.equal(response.status, 200);
+    assert.equal(
+      response.headers.get('access-control-allow-origin'),
+      'http://localhost:8080'
+    );
+    assert.match(
+      response.headers.get('access-control-allow-headers') ?? '',
+      /x-user-id/
+    );
+  } finally {
+    await server.close();
+  }
+});
+
+test('OPTIONS /api/v1/health answers preflight without auth or Cloudinary', async () => {
+  const server = await startTestServer();
+
+  try {
+    const response = await fetch(`${server.baseUrl}/api/v1/health`, {
+      method: 'OPTIONS',
+      headers: {
+        Origin: 'http://localhost:3000',
+        'Access-Control-Request-Method': 'GET'
+      }
+    });
+
+    assert.equal(response.status, 204);
+    assert.equal(
+      response.headers.get('access-control-allow-origin'),
+      'http://localhost:3000'
+    );
+  } finally {
+    await server.close();
+  }
+});
