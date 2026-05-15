@@ -71,7 +71,7 @@ Prisma produccion:
 npm run prisma:migrate:deploy
 ```
 
-Si todavia no hay migraciones productivas versionadas para el estado actual de la base, no improvisar comandos destructivos. Para un primer entorno temporal se puede evaluar `npm run db:push`, pero debe quedar documentado como sincronizacion de desarrollo, no como estrategia de migraciones productivas.
+El repo incluye una migracion inicial versionada para crear el schema actual en PostgreSQL. No usar `npm run db:push` como estrategia de produccion.
 
 ## Deploy en Render
 
@@ -81,7 +81,7 @@ Configuracion sugerida:
 
 ```text
 Root Directory: backend
-Build Command: npm ci && npm run prisma:generate && npm run build
+Build Command: npm ci && npm run prisma:generate && npm run prisma:migrate:deploy && npm run build
 Start Command: npm start
 Health Check Path: /health
 ```
@@ -101,7 +101,7 @@ Variables:
 Configuracion sugerida:
 
 ```text
-Build Command: cd backend && npm ci && npm run prisma:generate && npm run build
+Build Command: cd backend && npm ci && npm run prisma:generate && npm run prisma:migrate:deploy && npm run build
 Start Command: cd backend && npm start
 Health Check Path: /health
 ```
@@ -120,7 +120,7 @@ Guia especifica recomendada para esta fase:
 Configuracion sugerida:
 
 ```text
-Build Command: npm ci && npm run prisma:generate && npm run build
+Build Command: npm ci && npm run prisma:generate && npm run prisma:migrate:deploy && npm run build
 Start Command: npm start
 ```
 
@@ -129,7 +129,7 @@ Agregar plugin/servicio PostgreSQL y copiar su `DATABASE_URL` al backend.
 ### Opcion B: servicio desde raiz del repo
 
 ```text
-Build Command: cd backend && npm ci && npm run prisma:generate && npm run build
+Build Command: cd backend && npm ci && npm run prisma:generate && npm run prisma:migrate:deploy && npm run build
 Start Command: cd backend && npm start
 ```
 
@@ -151,7 +151,7 @@ Para deploy real:
 - Usar PostgreSQL administrado.
 - Configurar `DATABASE_URL` como variable secreta del proveedor.
 - Ejecutar `npm run prisma:generate` durante build.
-- Ejecutar `npm run prisma:migrate:deploy` cuando existan migraciones versionadas listas para produccion.
+- Ejecutar `npm run prisma:migrate:deploy` durante build/deploy para aplicar migraciones versionadas.
 - No usar SQLite para produccion.
 - No ejecutar migraciones destructivas sin backup.
 

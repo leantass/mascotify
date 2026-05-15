@@ -28,7 +28,7 @@ Con esta opcion Railway usa `backend/package.json` y `backend/railway.json`.
 Si se prefiere usar la raiz del repo como root, configurar comandos con `cd backend`:
 
 ```text
-Build Command: cd backend && npm ci && npx prisma generate && npm run build
+Build Command: cd backend && npm ci && npx prisma generate && npx prisma migrate deploy && npm run build
 Start Command: cd backend && npm start
 ```
 
@@ -38,19 +38,13 @@ Start Command: cd backend && npm start
 2. Copiar la variable `DATABASE_URL` del servicio PostgreSQL al servicio backend.
 3. No copiar `DATABASE_URL` a archivos del repo.
 
-El schema Prisma actual usa PostgreSQL. Para deploy productivo estable, versionar migraciones y ejecutar:
+El schema Prisma actual usa PostgreSQL y ya incluye una migracion inicial versionada. Railway debe ejecutar:
 
 ```bash
 npx prisma migrate deploy
 ```
 
-El repo todavia no tiene carpeta `prisma/migrations`. Por eso `backend/railway.json` no ejecuta migraciones automaticamente. Cuando existan migraciones versionadas, actualizar el build command a:
-
-```bash
-npm ci && npx prisma generate && npx prisma migrate deploy && npm run build
-```
-
-Para un entorno temporal de prueba se puede usar `npx prisma db push` de forma manual y consciente, pero no debe tratarse como estrategia definitiva de produccion.
+No usar `prisma db push` como estrategia de produccion.
 
 ## 4. Variables de entorno
 
@@ -79,15 +73,9 @@ Notas:
 Con `Root Directory = backend`:
 
 ```text
-Build Command: npm ci && npx prisma generate && npm run build
+Build Command: npm ci && npx prisma generate && npx prisma migrate deploy && npm run build
 Start Command: npm start
 Healthcheck Path: /health
-```
-
-Cuando haya migraciones Prisma versionadas:
-
-```text
-Build Command: npm ci && npx prisma generate && npx prisma migrate deploy && npm run build
 ```
 
 ## 6. Dominio publico
@@ -167,15 +155,14 @@ Si no se define `SOCIAL_CLIPS_API_BASE_URL`, Flutter mantiene su configuracion l
 - Revisar logs del servicio backend en Railway.
 - Confirmar que `Root Directory` sea `backend`.
 - Confirmar que `DATABASE_URL` exista en el servicio backend.
-- Confirmar que `npm ci`, `npx prisma generate` y `npm run build` pasan localmente.
-- Si falla Prisma por migraciones inexistentes, usar el build command sin `migrate deploy` hasta versionar migraciones.
+- Confirmar que `npm ci`, `npx prisma generate`, `npx prisma migrate deploy` y `npm run build` pasan con PostgreSQL configurado.
+- Si falla Prisma, revisar `DATABASE_URL`, conectividad de PostgreSQL y estado de migraciones.
 - Si falla Cloudinary, revisar variables sin exponer secretos.
 - Si Flutter Web queda bloqueado por CORS, revisar `CORS_ORIGIN`.
 
 ## Pendientes antes de produccion fuerte
 
 - Auth real en vez de `x-user-id`.
-- Migraciones Prisma versionadas.
 - Dominio propio.
 - Restriccion fina de CORS para Web publica.
 - Moderacion de videos.
