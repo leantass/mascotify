@@ -5,12 +5,13 @@ import express, {
   type Response
 } from 'express';
 
-import { env } from './config/env';
+import { loadEnv } from './config/env';
 import { createHealthRouter } from './modules/health/health.routes';
 import { createSocialClipsRouter } from './modules/social-clips/social-clips.routes';
 
 export function createApp(): Express {
   const app = express();
+  const env = loadEnv();
   const healthRouter = createHealthRouter();
   const socialClipsRouter = createSocialClipsRouter();
 
@@ -36,12 +37,20 @@ export function createApp(): Express {
 }
 
 function configureCors(allowedOrigins: string[]) {
+  const allowsAnyOrigin = allowedOrigins.includes('*');
+
   return (request: Request, response: Response, next: NextFunction) => {
     const origin = request.header('origin');
 
-    if (origin != null && allowedOrigins.includes(origin)) {
-      response.header('Access-Control-Allow-Origin', origin);
-      response.header('Vary', 'Origin');
+    if (origin != null && (allowsAnyOrigin || allowedOrigins.includes(origin))) {
+      response.header(
+        'Access-Control-Allow-Origin',
+        allowsAnyOrigin ? '*' : origin
+      );
+
+      if (!allowsAnyOrigin) {
+        response.header('Vary', 'Origin');
+      }
     }
 
     response.header(

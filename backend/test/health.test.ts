@@ -119,3 +119,28 @@ test('OPTIONS /api/v1/health answers preflight without auth or Cloudinary', asyn
     await server.close();
   }
 });
+
+test('GET /health can allow any CORS origin when configured for Railway', async () => {
+  const originalCorsOrigin = process.env.CORS_ORIGIN;
+  process.env.CORS_ORIGIN = '*';
+  const server = await startTestServer();
+
+  try {
+    const response = await fetch(`${server.baseUrl}/health`, {
+      headers: {
+        Origin: 'https://mascotify-web.example'
+      }
+    });
+
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('access-control-allow-origin'), '*');
+  } finally {
+    await server.close();
+
+    if (originalCorsOrigin == null) {
+      delete process.env.CORS_ORIGIN;
+    } else {
+      process.env.CORS_ORIGIN = originalCorsOrigin;
+    }
+  }
+});

@@ -110,6 +110,11 @@ Usar esta opcion si el proveedor necesita ver el repo completo.
 
 ## Deploy en Railway
 
+Guia especifica recomendada para esta fase:
+
+- [Deploy del backend en Railway](railway_backend_deploy.md)
+- [Checklist de variables Railway](railway_env_checklist.md)
+
 ### Opcion A: servicio apuntando a `backend`
 
 Configuracion sugerida:
