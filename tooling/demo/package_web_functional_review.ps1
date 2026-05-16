@@ -149,6 +149,8 @@ try {
   while ($true) {
     $client = $listener.AcceptTcpClient()
     try {
+      $client.ReceiveTimeout = 5000
+      $client.SendTimeout = 5000
       $stream = $client.GetStream()
       $buffer = New-Object byte[] 8192
       $read = $stream.Read($buffer, 0, $buffer.Length)
