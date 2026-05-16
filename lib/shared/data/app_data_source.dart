@@ -4,6 +4,7 @@ import '../models/ecosystem_activity_feed_item.dart';
 import '../models/notification_models.dart';
 import '../models/pet.dart';
 import '../models/pet_activity_event.dart';
+import '../models/lost_pet.dart';
 import '../models/profile_option_item.dart';
 import '../models/professional_models.dart';
 import '../models/report_models.dart';
@@ -119,6 +120,16 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  List<LostPet> getLostPets() {
+    return const <LostPet>[];
+  }
+
+  @override
+  LostPet? findLostPetById(String id) {
+    return null;
+  }
+
+  @override
   List<ProfessionalLibraryContent> getProfessionalLibraryContents() {
     return List.unmodifiable(professionalLibraryContents);
   }
@@ -220,6 +231,15 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   Future<void> deletePet(String petId) async {}
 
   @override
+  Future<void> addLostPet(LostPet lostPet) async {}
+
+  @override
+  Future<void> updateLostPet(LostPet lostPet) async {}
+
+  @override
+  Future<void> markLostPetFound(String lostPetId) async {}
+
+  @override
   Future<void> addPetActivityEvent(PetActivityEvent event) async {}
 
   @override
@@ -284,6 +304,10 @@ class AppData {
   static List<Pet> get pets => source.getPets();
 
   static Pet? findPetById(String id) => source.findPetById(id);
+
+  static List<LostPet> get lostPets => source.getLostPets();
+
+  static LostPet? findLostPetById(String id) => source.findLostPetById(id);
 
   static List<PetActivityEvent> petActivityEventsForPet(String petId) {
     return source.getPetActivityEvents(petId);
@@ -432,6 +456,18 @@ class AppData {
 
   static Future<void> deletePet(String petId) {
     return source.deletePet(petId);
+  }
+
+  static Future<void> addLostPet(LostPet lostPet) {
+    return source.addLostPet(lostPet);
+  }
+
+  static Future<void> updateLostPet(LostPet lostPet) {
+    return source.updateLostPet(lostPet);
+  }
+
+  static Future<void> markLostPetFound(String lostPetId) {
+    return source.markLostPetFound(lostPetId);
   }
 
   static Future<void> addPetActivityEvent(PetActivityEvent event) {

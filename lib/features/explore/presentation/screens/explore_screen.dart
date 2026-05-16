@@ -734,7 +734,9 @@ class _ClipsHero extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             'Videos cortos de animales para descubrir, aprender y sonreir.',
-            style: Theme.of(context).textTheme.headlineSmall,
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(color: AppColors.textPrimary),
           ),
           const SizedBox(height: 8),
           Text(

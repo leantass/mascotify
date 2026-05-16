@@ -4,6 +4,7 @@ import '../models/ecosystem_activity_feed_item.dart';
 import '../models/notification_models.dart';
 import '../models/pet.dart';
 import '../models/pet_activity_event.dart';
+import '../models/lost_pet.dart';
 import '../models/profile_option_item.dart';
 import '../models/professional_models.dart';
 import '../models/report_models.dart';
@@ -18,6 +19,8 @@ abstract interface class MascotifyDataSource {
   AppUser getCurrentUser();
   List<Pet> getPets();
   Pet? findPetById(String id);
+  List<LostPet> getLostPets();
+  LostPet? findLostPetById(String id);
   List<PetActivityEvent> getPetActivityEvents(String petId);
   List<EcosystemActivityFeedItem> getEcosystemActivityFeedItems();
   List<ProfileOptionItem> getProfileOptions();
@@ -70,6 +73,9 @@ abstract interface class MascotifyDataSource {
   Future<void> addPet(Pet pet);
   Future<void> updatePet(Pet pet);
   Future<void> deletePet(String petId);
+  Future<void> addLostPet(LostPet lostPet);
+  Future<void> updateLostPet(LostPet lostPet);
+  Future<void> markLostPetFound(String lostPetId);
   Future<void> addPetActivityEvent(PetActivityEvent event);
   Future<void> setNotificationsEnabled(bool enabled);
   Future<void> setMessagesNotificationsEnabled(bool enabled);

@@ -10,6 +10,7 @@ import '../models/ecosystem_activity_feed_item.dart';
 import '../models/notification_models.dart';
 import '../models/pet.dart';
 import '../models/pet_activity_event.dart';
+import '../models/lost_pet.dart';
 import '../models/profile_option_item.dart';
 import '../models/professional_models.dart';
 import '../models/report_models.dart';
@@ -81,6 +82,7 @@ class PersistedLocalUserState {
     required this.showBasicInfoOnPublicProfile,
     required this.ecosystemSuggestionsEnabled,
     required this.pets,
+    required this.lostPets,
     required this.threads,
     required this.qrStates,
     required this.socialInboxEntries,
@@ -102,6 +104,7 @@ class PersistedLocalUserState {
   final bool showBasicInfoOnPublicProfile;
   final bool ecosystemSuggestionsEnabled;
   final List<Pet> pets;
+  final List<LostPet> lostPets;
   final List<MessageThread> threads;
   final Map<String, PersistedPetQrState> qrStates;
   final List<SocialInboxEntry> socialInboxEntries;
@@ -123,6 +126,7 @@ class PersistedLocalUserState {
     bool? showBasicInfoOnPublicProfile,
     bool? ecosystemSuggestionsEnabled,
     List<Pet>? pets,
+    List<LostPet>? lostPets,
     List<MessageThread>? threads,
     Map<String, PersistedPetQrState>? qrStates,
     List<SocialInboxEntry>? socialInboxEntries,
@@ -153,6 +157,7 @@ class PersistedLocalUserState {
       ecosystemSuggestionsEnabled:
           ecosystemSuggestionsEnabled ?? this.ecosystemSuggestionsEnabled,
       pets: pets ?? this.pets,
+      lostPets: lostPets ?? this.lostPets,
       threads: threads ?? this.threads,
       qrStates: qrStates ?? this.qrStates,
       socialInboxEntries: socialInboxEntries ?? this.socialInboxEntries,
@@ -180,6 +185,7 @@ class PersistedLocalUserState {
       'showBasicInfoOnPublicProfile': showBasicInfoOnPublicProfile,
       'ecosystemSuggestionsEnabled': ecosystemSuggestionsEnabled,
       'pets': pets.map((item) => item.toJson()).toList(),
+      'lostPets': lostPets.map((item) => item.toJson()).toList(),
       'threads': threads.map((item) => item.toJson()).toList(),
       'qrStates': qrStates.map((key, value) => MapEntry(key, value.toJson())),
       'socialInboxEntries': socialInboxEntries
@@ -221,6 +227,13 @@ class PersistedLocalUserState {
       pets: (json['pets'] as List<dynamic>)
           .map(
             (item) => Pet.fromJson(
+              Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+            ),
+          )
+          .toList(),
+      lostPets: (json['lostPets'] as List<dynamic>? ?? const <dynamic>[])
+          .map(
+            (item) => LostPet.fromJson(
               Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
             ),
           )
@@ -488,6 +501,24 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   @override
   List<Pet> getPets() {
     return List.unmodifiable(_stateForCurrentUser().pets);
+  }
+
+  @override
+  List<LostPet> getLostPets() {
+    final lostPets = [..._stateForCurrentUser().lostPets]
+      ..sort((a, b) {
+        if (a.isFound != b.isFound) return a.isFound ? 1 : -1;
+        return b.createdAt.compareTo(a.createdAt);
+      });
+    return List.unmodifiable(lostPets);
+  }
+
+  @override
+  LostPet? findLostPetById(String id) {
+    for (final lostPet in getLostPets()) {
+      if (lostPet.id == id) return lostPet;
+    }
+    return null;
   }
 
   @override
@@ -1076,6 +1107,79 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  Future<void> addLostPet(LostPet lostPet) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    _userStates[userId] = currentState.copyWith(
+      lostPets: <LostPet>[lostPet, ...currentState.lostPets],
+      notifications: _prependNotification(
+        currentState.notifications,
+        EcosystemNotification(
+          id: _notificationId('notif-lost-pet-created-${lostPet.id}'),
+          type: EcosystemNotificationType.reminder,
+          title: 'Reporte de mascota perdida',
+          description:
+              '${lostPet.name} quedó visible en la base local de mascotas perdidas.',
+          timeLabel: 'Ahora',
+          accentColorHex: lostPet.colorHex,
+          priority: EcosystemNotificationPriority.attention,
+          isUnread: true,
+        ),
+      ),
+    );
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> updateLostPet(LostPet lostPet) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    final updatedLostPets = currentState.lostPets
+        .map((item) => item.id == lostPet.id ? lostPet : item)
+        .toList();
+    _userStates[userId] = currentState.copyWith(lostPets: updatedLostPets);
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> markLostPetFound(String lostPetId) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final currentState = _stateForUser(userId);
+    LostPet? foundPet;
+    final updatedLostPets = currentState.lostPets.map((item) {
+      if (item.id != lostPetId) return item;
+      foundPet = item.copyWith(isFound: true);
+      return foundPet!;
+    }).toList();
+    if (foundPet == null) return;
+
+    _userStates[userId] = currentState.copyWith(
+      lostPets: updatedLostPets,
+      notifications: _prependNotification(
+        currentState.notifications,
+        EcosystemNotification(
+          id: _notificationId('notif-lost-pet-found-$lostPetId'),
+          type: EcosystemNotificationType.reminder,
+          title: '${foundPet!.name} fue marcada como encontrada',
+          description:
+              'El reporte local cambió de estado y queda registrado para esta cuenta.',
+          timeLabel: 'Ahora',
+          accentColorHex: foundPet!.colorHex,
+          priority: EcosystemNotificationPriority.useful,
+          isUnread: true,
+        ),
+      ),
+    );
+    await _persistUserState(userId);
+  }
+
+  @override
   Future<void> addPetActivityEvent(PetActivityEvent event) async {
     final userId = _currentUserId;
     if (userId == null) return;
@@ -1560,6 +1664,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       showBasicInfoOnPublicProfile: true,
       ecosystemSuggestionsEnabled: true,
       pets: pets,
+      lostPets: const <LostPet>[],
       threads: threads,
       qrStates: qrStates,
       socialInboxEntries: socialInboxEntries,

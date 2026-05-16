@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../features/explore/presentation/screens/connections_inbox_screen.dart';
 import '../../../../features/explore/presentation/screens/messages_inbox_screen.dart';
 import '../../../../features/explore/presentation/screens/professionals_screen.dart';
+import '../../../../features/lost_pets/presentation/screens/lost_pets_screen.dart';
 import '../../../../features/pets/presentation/screens/pet_detail_screen.dart';
 import '../../../../features/pets/presentation/screens/qr_traceability_screen.dart';
 import '../../../../shared/data/app_data_source.dart';
@@ -26,6 +27,8 @@ class HomeScreen extends StatelessWidget {
     final account = AppData.accountFor(AccountExperience.family);
     final familyProfile = account.familyProfile!;
     final pets = AppData.pets;
+    final lostPets = AppData.lostPets;
+    final activeLostPets = lostPets.where((item) => !item.isFound).length;
     final notifications = AppData.notifications;
     final notificationCount = notifications
         .where((item) => item.isUnread)
@@ -182,6 +185,10 @@ class HomeScreen extends StatelessWidget {
                     builder: (_) => const ProfessionalsScreen(),
                   ),
                 ),
+                onOpenLostPets: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const LostPetsScreen()),
+                ),
+                activeLostPets: activeLostPets,
               ),
               const SizedBox(height: 24),
               _SectionCard(
@@ -552,6 +559,8 @@ class _PrimaryAccessGrid extends StatelessWidget {
     required this.onOpenSocial,
     required this.onOpenQr,
     required this.onOpenProfessionals,
+    required this.onOpenLostPets,
+    required this.activeLostPets,
   });
 
   final Pet? primaryPet;
@@ -559,6 +568,8 @@ class _PrimaryAccessGrid extends StatelessWidget {
   final VoidCallback onOpenSocial;
   final VoidCallback? onOpenQr;
   final VoidCallback onOpenProfessionals;
+  final VoidCallback onOpenLostPets;
+  final int activeLostPets;
 
   @override
   Widget build(BuildContext context) {
@@ -602,6 +613,17 @@ class _PrimaryAccessGrid extends StatelessWidget {
         onTap: onOpenSocial,
       ),
       _PrimaryAccessCard(
+        title: 'Mascotas perdidas',
+        subtitle:
+            'Reportes comunitarios con ubicación, zona y contacto para activar búsquedas locales.',
+        icon: Icons.search_rounded,
+        tone: AppColors.accentSoft,
+        onTap: onOpenLostPets,
+        highlight: activeLostPets == 0
+            ? 'No hay reportes activos en esta cuenta.'
+            : '$activeLostPets reporte${activeLostPets == 1 ? '' : 's'} activo${activeLostPets == 1 ? '' : 's'}.',
+      ),
+      _PrimaryAccessCard(
         title: 'Profesionales y contenido',
         subtitle:
             'La comunidad experta ya suma voces, confianza y base para futuros servicios dentro del ecosistema.',
@@ -617,7 +639,7 @@ class _PrimaryAccessGrid extends StatelessWidget {
       builder: (context, constraints) {
         final useTwoColumns = constraints.maxWidth >= 700;
         final columnCount = useTwoColumns ? 2 : 1;
-        final itemHeight = useTwoColumns ? 244.0 : 226.0;
+        final itemHeight = useTwoColumns ? 244.0 : 236.0;
 
         return GridView.builder(
           shrinkWrap: true,
