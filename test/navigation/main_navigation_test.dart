@@ -16,6 +16,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Inicio'), findsOneWidget);
+    expect(find.text('Mascotas perdidas'), findsNothing);
 
     await tester.tap(find.text('Mascotas'));
     await tester.pumpAndSettle();

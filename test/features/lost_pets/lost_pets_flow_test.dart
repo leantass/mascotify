@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mascotify/features/explore/presentation/screens/explore_screen.dart';
-import 'package:mascotify/features/home/presentation/screens/home_screen.dart';
-import 'package:mascotify/features/lost_pets/presentation/screens/lost_pets_screen.dart';
+import 'package:mascotify/features/pets/presentation/screens/pets_screen.dart';
 import 'package:mascotify/shared/data/app_data_source.dart';
 import 'package:mascotify/shared/models/account_identity_models.dart';
 import 'package:mascotify/theme/app_colors.dart';
@@ -10,19 +9,42 @@ import 'package:mascotify/theme/app_colors.dart';
 import '../../test_helpers.dart';
 
 void main() {
-  testWidgets('Mascotas perdidas aparece en dashboard mobile', (tester) async {
+  testWidgets('Mascotas contiene Mis mascotas y Mascotas perdidas', (
+    tester,
+  ) async {
     _setMobileViewport(tester, const Size(390, 844));
     final session = await _familySession();
 
     await tester.pumpWidget(
-      buildTestApp(const HomeScreen(), controller: session.controller),
+      buildTestApp(const PetsScreen(), controller: session.controller),
     );
     await tester.pumpAndSettle();
 
-    await _ensureVisibleText(tester, 'Mascotas perdidas');
+    expect(find.text('Mis mascotas'), findsOneWidget);
+    expect(find.text('Mascotas perdidas'), findsOneWidget);
     await _tapText(tester, 'Mascotas perdidas');
-    expect(find.text('Mascotas perdidas'), findsWidgets);
+    expect(
+      find.text('Todavía no hay mascotas perdidas reportadas'),
+      findsOneWidget,
+    );
     _expectNoLayoutException(tester);
+  });
+
+  testWidgets('navegación principal no muestra Mascotas perdidas', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    final session = await _familySession();
+
+    await tester.pumpWidget(session.buildApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Inicio'), findsOneWidget);
+    expect(find.text('Mascotas'), findsOneWidget);
+    expect(find.text('Explorar'), findsOneWidget);
+    expect(find.text('Actividad'), findsOneWidget);
+    expect(find.text('Perfil'), findsOneWidget);
+    expect(find.text('Mascotas perdidas'), findsNothing);
   });
 
   testWidgets('estado vacío y validación obligatoria funcionan', (
@@ -32,9 +54,10 @@ void main() {
     final session = await _familySession();
 
     await tester.pumpWidget(
-      buildTestApp(const LostPetsScreen(), controller: session.controller),
+      buildTestApp(const PetsScreen(), controller: session.controller),
     );
     await tester.pumpAndSettle();
+    await _tapText(tester, 'Mascotas perdidas');
 
     expect(
       find.text('Todavía no hay mascotas perdidas reportadas'),
@@ -55,9 +78,10 @@ void main() {
     final session = await _familySession();
 
     await tester.pumpWidget(
-      buildTestApp(const LostPetsScreen(), controller: session.controller),
+      buildTestApp(const PetsScreen(), controller: session.controller),
     );
     await tester.pumpAndSettle();
+    await _tapText(tester, 'Mascotas perdidas');
 
     await _tapByKey(tester, const ValueKey('lost-pet-add-button'));
     await _fillLostPetForm(tester, name: 'Luna perdida');
@@ -68,6 +92,8 @@ void main() {
     await _tapText(tester, 'Luna perdida');
     expect(find.text('Detalle de mascota perdida'), findsOneWidget);
     expect(find.text('Perdida'), findsOneWidget);
+    expect(find.textContaining('Buenos Aires'), findsWidgets);
+    expect(find.textContaining('Argentina'), findsWidgets);
 
     await _tapByKey(tester, const ValueKey('lost-pet-found-button'));
     expect(find.text('Encontrada'), findsOneWidget);
@@ -82,9 +108,10 @@ void main() {
     final session = await _familySession();
 
     await tester.pumpWidget(
-      buildTestApp(const LostPetsScreen(), controller: session.controller),
+      buildTestApp(const PetsScreen(), controller: session.controller),
     );
     await tester.pumpAndSettle();
+    await _tapText(tester, 'Mascotas perdidas');
 
     await _tapByKey(tester, const ValueKey('lost-pet-add-button'));
     await _fillLostPetForm(
@@ -106,9 +133,10 @@ void main() {
     final session = await _familySession();
 
     await tester.pumpWidget(
-      buildTestApp(const LostPetsScreen(), controller: session.controller),
+      buildTestApp(const PetsScreen(), controller: session.controller),
     );
     await tester.pumpAndSettle();
+    await _tapText(tester, 'Mascotas perdidas');
 
     await _tapByKey(tester, const ValueKey('lost-pet-add-button'));
     await _fillLostPetForm(tester, name: 'Edad inválida', age: '21');
@@ -116,6 +144,27 @@ void main() {
 
     expect(find.text('La edad máxima permitida es 20 años.'), findsOneWidget);
     expect(AppData.lostPets, isEmpty);
+  });
+
+  testWidgets('Mis mascotas sigue permitiendo crear mascota normal', (
+    tester,
+  ) async {
+    _setMobileViewport(tester, const Size(390, 844));
+    final session = await _familySession();
+
+    await tester.pumpWidget(
+      buildTestApp(const PetsScreen(), controller: session.controller),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mis mascotas'), findsOneWidget);
+    await _tapText(tester, 'Agregar');
+    await fillPetForm(tester, name: 'Mascota Normal QA', age: '3');
+    await tapSavePetForm(tester);
+
+    expect(find.text('Mascota Normal QA'), findsOneWidget);
+    expect(AppData.pets.any((pet) => pet.name == 'Mascota Normal QA'), isTrue);
+    _expectNoLayoutException(tester);
   });
 
   testWidgets('Clips muestra Videos cortos con color oscuro', (tester) async {
@@ -215,20 +264,6 @@ Future<void> _tapText(WidgetTester tester, String text) async {
   await tester.ensureVisible(finder.first);
   await tester.pumpAndSettle();
   await tester.tap(finder.first, warnIfMissed: false);
-  await tester.pumpAndSettle();
-}
-
-Future<void> _ensureVisibleText(WidgetTester tester, String text) async {
-  var finder = find.text(text);
-  for (var attempt = 0; attempt < 10 && finder.evaluate().isEmpty; attempt++) {
-    final scrollables = find.byType(Scrollable);
-    if (scrollables.evaluate().isEmpty) break;
-    await tester.drag(scrollables.first, const Offset(0, -500));
-    await tester.pumpAndSettle();
-    finder = find.text(text);
-  }
-  expect(finder, findsWidgets);
-  await tester.ensureVisible(finder.first);
   await tester.pumpAndSettle();
 }
 

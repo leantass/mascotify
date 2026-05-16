@@ -70,6 +70,8 @@ void main() {
     _expectNoLayoutException(tester);
 
     await _fillPetForm(tester, 'Mobile QA Pet');
+    expect(AppData.pets.any((pet) => pet.name == 'Mobile QA Pet'), isTrue);
+    await _ensureExactVisibleText(tester, 'Mobile QA Pet');
     expect(find.text('Mobile QA Pet'), findsOneWidget);
 
     await _tapVisibleText(tester, 'Mobile QA Pet');
@@ -230,7 +232,7 @@ Future<void> _openMainTab(WidgetTester tester, String label) async {
 
 Future<void> _fillPetForm(WidgetTester tester, String name) async {
   await fillPetForm(tester, name: name, age: '3');
-  await _tapVisibleText(tester, 'Guardar');
+  await tapSavePetForm(tester);
 }
 
 Future<void> _enterLastEditableText(WidgetTester tester, String text) async {
@@ -262,6 +264,21 @@ Future<void> _ensureVisibleText(WidgetTester tester, String text) async {
 
   final visibleFinder = finder.first;
   await tester.ensureVisible(visibleFinder);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _ensureExactVisibleText(WidgetTester tester, String text) async {
+  var finder = find.text(text);
+  for (var attempt = 0; attempt < 10 && finder.evaluate().isEmpty; attempt++) {
+    final scrollables = find.byType(Scrollable);
+    if (scrollables.evaluate().isEmpty) break;
+    await tester.drag(scrollables.first, const Offset(0, -550));
+    await tester.pumpAndSettle();
+    finder = find.text(text);
+  }
+
+  expect(finder, findsWidgets);
+  await tester.ensureVisible(finder.first);
   await tester.pumpAndSettle();
 }
 

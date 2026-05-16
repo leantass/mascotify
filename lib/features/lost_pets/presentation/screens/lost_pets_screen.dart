@@ -17,6 +17,31 @@ class LostPetsScreen extends StatefulWidget {
 }
 
 class _LostPetsScreenState extends State<LostPetsScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: ResponsivePageBody(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: const [LostPetsSection()],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class LostPetsSection extends StatefulWidget {
+  const LostPetsSection({super.key, this.showHero = true});
+
+  final bool showHero;
+
+  @override
+  State<LostPetsSection> createState() => _LostPetsSectionState();
+}
+
+class _LostPetsSectionState extends State<LostPetsSection> {
   Future<void> _openForm({LostPet? lostPet}) async {
     final result = await showDialog<LostPet>(
       context: context,
@@ -49,49 +74,47 @@ class _LostPetsScreenState extends State<LostPetsScreen> {
     final activeCount = lostPets.where((item) => !item.isFound).length;
     final foundCount = lostPets.where((item) => item.isFound).length;
 
-    return Scaffold(
-      body: SafeArea(
-        child: ResponsivePageBody(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-            children: [
-              _LostPetsHero(
-                activeCount: activeCount,
-                foundCount: foundCount,
-                onAdd: () => _openForm(),
-              ),
-              const SizedBox(height: 20),
-              const SectionHeader(
-                eyebrow: 'Comunidad',
-                title: 'Mascotas perdidas',
-                subtitle:
-                    'Reportes locales para ayudar a ubicar animales y ordenar la información de contacto.',
-              ),
-              const SizedBox(height: 16),
-              if (lostPets.isEmpty)
-                _LostPetsEmptyState(onAdd: () => _openForm())
-              else
-                ResponsiveWrapGrid(
-                  minItemWidth: 300,
-                  children: lostPets
-                      .map(
-                        (lostPet) => _LostPetCard(
-                          lostPet: lostPet,
-                          onTap: () => _openDetail(lostPet),
-                        ),
-                      )
-                      .toList(),
-                ),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.showHero) ...[
+          _LostPetsHero(
+            activeCount: activeCount,
+            foundCount: foundCount,
+            onAdd: () => _openForm(),
           ),
+          const SizedBox(height: 20),
+        ],
+        SectionHeader(
+          eyebrow: 'Comunidad',
+          title: 'Mascotas perdidas',
+          subtitle:
+              'Reportes locales para ayudar a ubicar animales y ordenar la información de contacto.',
+          trailing: widget.showHero
+              ? null
+              : ElevatedButton.icon(
+                  key: const ValueKey('lost-pet-add-button'),
+                  onPressed: () => _openForm(),
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text('Agregar'),
+                ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        key: const ValueKey('lost-pet-add-fab'),
-        onPressed: () => _openForm(),
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Reportar'),
-      ),
+        const SizedBox(height: 16),
+        if (lostPets.isEmpty)
+          _LostPetsEmptyState(onAdd: () => _openForm())
+        else
+          ResponsiveWrapGrid(
+            minItemWidth: 300,
+            children: lostPets
+                .map(
+                  (lostPet) => _LostPetCard(
+                    lostPet: lostPet,
+                    onTap: () => _openDetail(lostPet),
+                  ),
+                )
+                .toList(),
+          ),
+      ],
     );
   }
 }

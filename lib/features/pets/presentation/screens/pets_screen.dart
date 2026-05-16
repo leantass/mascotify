@@ -10,7 +10,10 @@ import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/pet_card.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../lost_pets/presentation/screens/lost_pets_screen.dart';
 import 'pet_detail_screen.dart';
+
+enum _PetsSection { myPets, lostPets }
 
 class PetsScreen extends StatefulWidget {
   const PetsScreen({super.key});
@@ -20,10 +23,13 @@ class PetsScreen extends StatefulWidget {
 }
 
 class _PetsScreenState extends State<PetsScreen> {
+  _PetsSection _selectedSection = _PetsSection.myPets;
+
   @override
   Widget build(BuildContext context) {
     final pets = AppData.pets;
     final entitlement = planEntitlementFor(AppData.currentUser.planName);
+    final showingMyPets = _selectedSection == _PetsSection.myPets;
 
     return Scaffold(
       body: SafeArea(
@@ -44,12 +50,21 @@ class _PetsScreenState extends State<PetsScreen> {
                       eyebrow: 'Centro de mascotas',
                       title: 'Mascotas',
                       subtitle:
-                          'Gestiona perfiles persistidos localmente y listos para crecer hacia QR, social y seguimiento.',
-                      trailing: ElevatedButton.icon(
-                        onPressed: _handleAddPet,
-                        icon: const Icon(Icons.add_rounded),
-                        label: const Text('Agregar'),
-                      ),
+                          'Gestiona perfiles persistidos localmente y reportes comunitarios de mascotas perdidas.',
+                      trailing: showingMyPets
+                          ? ElevatedButton.icon(
+                              onPressed: _handleAddPet,
+                              icon: const Icon(Icons.add_rounded),
+                              label: const Text('Agregar'),
+                            )
+                          : null,
+                    ),
+                    const SizedBox(height: 18),
+                    _PetsSectionSelector(
+                      selectedSection: _selectedSection,
+                      onChanged: (section) {
+                        setState(() => _selectedSection = section);
+                      },
                     ),
                     const SizedBox(height: 18),
                     Container(
@@ -63,7 +78,9 @@ class _PetsScreenState extends State<PetsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${pets.length} perfiles activos guardados en este dispositivo para la cuenta actual.',
+                            showingMyPets
+                                ? '${pets.length} perfiles activos guardados en este dispositivo para la cuenta actual.'
+                                : '${AppData.lostPets.where((item) => !item.isFound).length} reportes activos de mascotas perdidas para esta cuenta.',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   color: AppColors.textPrimary,
@@ -72,7 +89,9 @@ class _PetsScreenState extends State<PetsScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '${entitlement.planName}: ${entitlement.petLimitDisplayLabel}.',
+                            showingMyPets
+                                ? '${entitlement.planName}: ${entitlement.petLimitDisplayLabel}.'
+                                : 'La ubicación se guarda con país, región, ciudad y zona aproximada de pérdida.',
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
                                   color: AppColors.textSecondary,
@@ -86,49 +105,14 @@ class _PetsScreenState extends State<PetsScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              if (pets.isEmpty)
-                const _PetsEmptyState()
+              if (showingMyPets)
+                _MyPetsSection(
+                  pets: pets,
+                  onEditPet: _handleEditPet,
+                  onDeletePet: _handleDeletePet,
+                )
               else
-                ResponsiveWrapGrid(
-                  minItemWidth: 340,
-                  children: pets
-                      .map(
-                        (pet) => Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            PetCard(
-                              pet: pet,
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => PetDetailScreen(pet: pet),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: () => _handleEditPet(pet),
-                                    icon: const Icon(Icons.edit_outlined),
-                                    label: const Text('Editar'),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: () => _handleDeletePet(pet),
-                                    icon: const Icon(Icons.delete_outline),
-                                    label: const Text('Eliminar'),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      )
-                      .toList(),
-                ),
+                const LostPetsSection(showHero: false),
             ],
           ),
         ),
@@ -228,6 +212,178 @@ class _PetsScreenState extends State<PetsScreen> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text('${pet.name} fue eliminado.')));
+  }
+}
+
+class _PetsSectionSelector extends StatelessWidget {
+  const _PetsSectionSelector({
+    required this.selectedSection,
+    required this.onChanged,
+  });
+
+  final _PetsSection selectedSection;
+  final ValueChanged<_PetsSection> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Selector de subseccion de Mascotas',
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 360;
+            final buttons = [
+              _PetsSectionButton(
+                label: 'Mis mascotas',
+                icon: Icons.pets_rounded,
+                selected: selectedSection == _PetsSection.myPets,
+                onTap: () => onChanged(_PetsSection.myPets),
+              ),
+              _PetsSectionButton(
+                label: 'Mascotas perdidas',
+                icon: Icons.search_rounded,
+                selected: selectedSection == _PetsSection.lostPets,
+                onTap: () => onChanged(_PetsSection.lostPets),
+              ),
+            ];
+
+            if (compact) {
+              return Column(
+                children: [
+                  buttons.first,
+                  const SizedBox(height: 6),
+                  buttons.last,
+                ],
+              );
+            }
+
+            return Row(
+              children: [
+                Expanded(child: buttons.first),
+                const SizedBox(width: 6),
+                Expanded(child: buttons.last),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _PetsSectionButton extends StatelessWidget {
+  const _PetsSectionButton({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = selected ? Colors.white : AppColors.textPrimary;
+
+    return Material(
+      color: selected ? AppColors.primaryDeep : Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        key: ValueKey('pets-section-$label'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: foreground, size: 20),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: foreground,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MyPetsSection extends StatelessWidget {
+  const _MyPetsSection({
+    required this.pets,
+    required this.onEditPet,
+    required this.onDeletePet,
+  });
+
+  final List<Pet> pets;
+  final ValueChanged<Pet> onEditPet;
+  final ValueChanged<Pet> onDeletePet;
+
+  @override
+  Widget build(BuildContext context) {
+    if (pets.isEmpty) return const _PetsEmptyState();
+
+    return ResponsiveWrapGrid(
+      minItemWidth: 340,
+      children: pets
+          .map(
+            (pet) => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                PetCard(
+                  pet: pet,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => PetDetailScreen(pet: pet),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => onEditPet(pet),
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text('Editar'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => onDeletePet(pet),
+                        icon: const Icon(Icons.delete_outline),
+                        label: const Text('Eliminar'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          )
+          .toList(),
+    );
   }
 }
 
