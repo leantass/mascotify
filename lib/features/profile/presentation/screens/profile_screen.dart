@@ -5,6 +5,7 @@ import '../../../../core/app_environment.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../shared/models/app_user.dart';
+import '../../../../shared/models/plan_entitlements.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
@@ -606,6 +607,8 @@ class _SubscriptionTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final selectedEntitlement = planEntitlementFor(user.planName);
+
     return Column(
       children: [
         _SettingsDropdown(
@@ -614,17 +617,155 @@ class _SubscriptionTab extends StatelessWidget {
           subtitle: 'Ver o cambiar el plan asociado a esta cuenta.',
           icon: Icons.workspace_premium_outlined,
           value: user.planName,
-          options: const ['Mascotify Free', 'Mascotify Plus', 'Mascotify Pro'],
+          options: planEntitlements
+              .map((entitlement) => entitlement.planName)
+              .toList(growable: false),
           onChanged: isBusy ? null : onPlanChanged,
         ),
+        const SizedBox(height: 14),
+        _PlanCatalog(currentPlanName: selectedEntitlement.planName),
         const SizedBox(height: 14),
         _SettingsInfo(
           title: 'Gestión de suscripción',
           subtitle:
-              'El plan se guarda en la cuenta local activa. Cuando conectes billing real, este cambio debe viajar al proveedor de pagos o backend.',
+              'El plan se guarda en la cuenta local activa. Las suscripciones reales todavia no estan activadas en esta build.',
           icon: Icons.receipt_long_outlined,
         ),
       ],
+    );
+  }
+}
+
+class _PlanCatalog extends StatelessWidget {
+  const _PlanCatalog({required this.currentPlanName});
+
+  final String currentPlanName;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cards = planEntitlements
+            .map(
+              (entitlement) => _PlanCatalogCard(
+                entitlement: entitlement,
+                isCurrent: entitlement.planName == currentPlanName,
+              ),
+            )
+            .toList(growable: false);
+
+        if (constraints.maxWidth < 720) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final card in cards) ...[card, const SizedBox(height: 10)],
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final card in cards) ...[
+              Expanded(child: card),
+              if (card != cards.last) const SizedBox(width: 10),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _PlanCatalogCard extends StatelessWidget {
+  const _PlanCatalogCard({required this.entitlement, required this.isCurrent});
+
+  final PlanEntitlement entitlement;
+  final bool isCurrent;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context).textTheme;
+    final borderColor = isCurrent ? AppColors.primary : AppColors.border;
+    final backgroundColor = isCurrent
+        ? AppColors.primarySoft
+        : AppColors.surfaceAlt;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor, width: isCurrent ? 1.4 : 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  entitlement.shortName,
+                  style: theme.titleMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              if (isCurrent)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    'Actual',
+                    style: theme.labelSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            entitlement.priceLabel,
+            style: theme.titleMedium?.copyWith(
+              color: AppColors.primaryDeep,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            entitlement.petLimitDisplayLabel,
+            style: theme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            entitlement.positioningLabel,
+            style: theme.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            entitlement.adsLabel,
+            style: theme.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.35,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -141,4 +141,22 @@ void main() {
 
     expect(find.text('Mascotify Pro'), findsWidgets);
   });
+
+  testWidgets('subscription plans show updated prices and pet limits', (
+    tester,
+  ) async {
+    await openDemoFamilySession(tester);
+
+    await scrollTo(tester, find.text('Plan actual'));
+
+    expect(find.text('US\$ 0 mensual'), findsOneWidget);
+    expect(find.text('US\$ 1,99 mensual'), findsOneWidget);
+    expect(find.text('US\$ 4,99 mensual'), findsOneWidget);
+    expect(find.text('Hasta 1 mascota'), findsOneWidget);
+    expect(find.text('Hasta 5 mascotas'), findsOneWidget);
+    expect(
+      find.text('Mascotas ilimitadas con politica de uso razonable'),
+      findsOneWidget,
+    );
+  });
 }

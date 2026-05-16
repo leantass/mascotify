@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
+import '../../../../shared/models/plan_entitlements.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/pet_card.dart';
 import '../../../../shared/widgets/section_header.dart';
@@ -20,6 +21,7 @@ class _PetsScreenState extends State<PetsScreen> {
   @override
   Widget build(BuildContext context) {
     final pets = AppData.pets;
+    final entitlement = planEntitlementFor(AppData.currentUser.planName);
 
     return Scaffold(
       body: SafeArea(
@@ -55,12 +57,27 @@ class _PetsScreenState extends State<PetsScreen> {
                         color: AppColors.surfaceAlt,
                         borderRadius: BorderRadius.circular(22),
                       ),
-                      child: Text(
-                        '${pets.length} perfiles activos guardados en este dispositivo para la cuenta actual.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${pets.length} perfiles activos guardados en este dispositivo para la cuenta actual.',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${entitlement.planName}: ${entitlement.petLimitDisplayLabel}.',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -118,6 +135,12 @@ class _PetsScreenState extends State<PetsScreen> {
   }
 
   Future<void> _handleAddPet() async {
+    final entitlement = planEntitlementFor(AppData.currentUser.planName);
+    if (!entitlement.canAddPet(AppData.pets.length)) {
+      await _showPetLimitDialog(entitlement);
+      return;
+    }
+
     final createdPet = await showDialog<Pet>(
       context: context,
       builder: (_) => const _PetFormDialog(),
@@ -132,6 +155,26 @@ class _PetsScreenState extends State<PetsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${createdPet.name} ya quedó guardado localmente.'),
+      ),
+    );
+  }
+
+  Future<void> _showPetLimitDialog(PlanEntitlement entitlement) {
+    final upgradeMessage = entitlement.shortName == 'Free'
+        ? 'Mascotify Free permite hasta 1 mascota. Pasate a Plus por US\$ 1,99 mensual para cargar hasta 5 mascotas.'
+        : 'Mascotify Plus permite hasta 5 mascotas. Pasate a Pro por US\$ 4,99 mensual para mascotas ilimitadas, con politica de uso razonable.';
+
+    return showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Limite de mascotas del plan'),
+        content: Text(upgradeMessage),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Entendido'),
+          ),
+        ],
       ),
     );
   }

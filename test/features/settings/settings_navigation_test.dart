@@ -26,7 +26,9 @@ void main() {
       expect(find.text('Preferencias y plan'), findsOneWidget);
       expect(find.textContaining('Suscripci'), findsWidgets);
       expect(find.text('Plan actual'), findsOneWidget);
-      expect(find.textContaining('billing real'), findsOneWidget);
+      expect(find.textContaining('suscripciones reales'), findsOneWidget);
+      expect(find.text('US\$ 1,99 mensual'), findsOneWidget);
+      expect(find.text('US\$ 4,99 mensual'), findsOneWidget);
 
       await tester.tap(find.text('Notificaciones').first);
       await tester.pumpAndSettle();

@@ -92,6 +92,78 @@ void main() {
     expect(find.text('Pet Dos'), findsNothing);
     expect(AppData.pets.length, 1);
   });
+
+  testWidgets('Free plan allows one pet and blocks the second one', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    await _openEmptyPetsScreen(tester, 'free-limit-pets@mascotify.local');
+    await AppData.setPlanName('Mascotify Free');
+
+    await _createPet(tester, 'Free Pet', breed: 'Criollo', age: '2');
+    await tester.tap(find.text('Agregar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Limite de mascotas del plan'), findsOneWidget);
+    expect(
+      find.textContaining('Mascotify Free permite hasta 1 mascota'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('US\$ 1,99 mensual'), findsOneWidget);
+    expect(find.text('Alta de mascota'), findsNothing);
+    expect(AppData.pets.length, 1);
+  });
+
+  testWidgets('Plus plan allows five pets and blocks the sixth one', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    await _openEmptyPetsScreen(tester, 'plus-limit-pets@mascotify.local');
+
+    for (var index = 1; index <= 5; index += 1) {
+      await _createPet(
+        tester,
+        'Plus Pet $index',
+        breed: 'Mestizo',
+        age: '$index',
+      );
+    }
+
+    await tester.tap(find.text('Agregar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Limite de mascotas del plan'), findsOneWidget);
+    expect(
+      find.textContaining('Mascotify Plus permite hasta 5 mascotas'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('US\$ 4,99 mensual'), findsOneWidget);
+    expect(find.textContaining('mascotas ilimitadas'), findsOneWidget);
+    expect(find.text('Alta de mascota'), findsNothing);
+    expect(AppData.pets.length, 5);
+  });
+
+  testWidgets('Pro plan shows unlimited pets and does not block six pets', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    await _openEmptyPetsScreen(tester, 'pro-unlimited-pets@mascotify.local');
+    await AppData.setPlanName('Mascotify Pro');
+
+    for (var index = 1; index <= 6; index += 1) {
+      await _createPet(
+        tester,
+        'Pro Pet $index',
+        breed: 'Criollo',
+        age: '$index',
+      );
+    }
+
+    expect(find.textContaining('Mascotify Pro'), findsOneWidget);
+    expect(find.textContaining('Mascotas ilimitadas'), findsOneWidget);
+    expect(find.text('Limite de mascotas del plan'), findsNothing);
+    expect(AppData.pets.length, 6);
+  });
 }
 
 Future<TestAppSession> _openEmptyPetsScreen(
