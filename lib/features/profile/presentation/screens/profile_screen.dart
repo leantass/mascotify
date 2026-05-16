@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../features/auth/presentation/auth_session_controller.dart';
 import '../../../../core/app_environment.dart';
+import '../../../../core/localization/app_locale_controller.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../shared/models/app_user.dart';
@@ -344,14 +346,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onPublicProfileChanged: (value) => _updatePreference(
                   AppData.setPublicProfileEnabled(value),
                   value
-                      ? 'Presencia pÃºblica activada.'
-                      : 'Presencia pÃºblica desactivada.',
+                      ? 'Presencia pública activada.'
+                      : 'Presencia pública desactivada.',
                 ),
                 onShowBasicInfoChanged: (value) => _updatePreference(
                   AppData.setShowBasicInfoOnPublicProfile(value),
-                  value
-                      ? 'Datos bÃ¡sicos visibles.'
-                      : 'Datos bÃ¡sicos ocultos.',
+                  value ? 'Datos básicos visibles.' : 'Datos básicos ocultos.',
                 ),
                 onEcosystemSuggestionsChanged: (value) => _updatePreference(
                   AppData.setEcosystemSuggestionsEnabled(value),
@@ -663,14 +663,16 @@ class _PlanCatalog extends StatelessWidget {
           );
         }
 
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final card in cards) ...[
-              Expanded(child: card),
-              if (card != cards.last) const SizedBox(width: 10),
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final card in cards) ...[
+                Expanded(child: card),
+                if (card != cards.last) const SizedBox(width: 10),
+              ],
             ],
-          ],
+          ),
         );
       },
     );
@@ -692,6 +694,8 @@ class _PlanCatalogCard extends StatelessWidget {
         : AppColors.surfaceAlt;
 
     return Container(
+      key: ValueKey('plan-card-${entitlement.shortName.toLowerCase()}'),
+      constraints: const BoxConstraints(minHeight: 176),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: backgroundColor,
@@ -868,8 +872,55 @@ class _ConfigurationTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localeController = AppLocaleScope.maybeOf(context);
+    final localizations = AppLocalizations.of(context);
+    final languageOptions = <String>[
+      localizations.automaticLanguage,
+      AppLocalizations.languageName('es'),
+      AppLocalizations.languageName('en'),
+      AppLocalizations.languageName('pt'),
+    ];
+    final currentLanguageValue = localeController?.manualLanguageCode == null
+        ? localizations.automaticLanguage
+        : AppLocalizations.languageName(localeController!.manualLanguageCode);
+
     return Column(
       children: [
+        _SettingsDropdown(
+          fieldKey: const ValueKey('language-preference-dropdown'),
+          title: localizations.languageSettingTitle,
+          subtitle:
+              '${localizations.languageSettingSubtitle} ${localizations.unsupportedLocaleFallback}',
+          icon: Icons.language_rounded,
+          value: currentLanguageValue,
+          options: languageOptions,
+          onChanged: isBusy || localeController == null
+              ? null
+              : (value) async {
+                  final languageCode = switch (value) {
+                    'English' => 'en',
+                    'Português' => 'pt',
+                    'Español' => 'es',
+                    _ => null,
+                  };
+                  await localeController.setManualLanguageCode(languageCode);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(localizations.languageUpdated)),
+                  );
+                },
+        ),
+        const SizedBox(height: 14),
+        _SettingsInfo(
+          title: localizations.currentLanguageLabel,
+          subtitle:
+              localeController?.labelFor(
+                WidgetsBinding.instance.platformDispatcher.locale,
+              ) ??
+              localizations.automaticLanguage,
+          icon: Icons.translate_rounded,
+        ),
+        const SizedBox(height: 14),
         _SettingsDropdown(
           title: 'Privacidad',
           subtitle: 'Define cuánta visibilidad tendrán tus perfiles.',
@@ -891,7 +942,7 @@ class _ConfigurationTab extends StatelessWidget {
         _SettingsSwitch(
           switchKey: const ValueKey('config-public-profile-switch'),
           title: 'Perfil visible',
-          subtitle: 'Activa la presencia pÃºblica local de la cuenta.',
+          subtitle: 'Activa la presencia pública local de la cuenta.',
           icon: Icons.visibility_outlined,
           value: user.publicProfileEnabled,
           onChanged: isBusy ? null : onPublicProfileChanged,
@@ -899,7 +950,7 @@ class _ConfigurationTab extends StatelessWidget {
         const SizedBox(height: 14),
         _SettingsSwitch(
           switchKey: const ValueKey('config-basic-info-switch'),
-          title: 'Datos bÃ¡sicos en perfil pÃºblico',
+          title: 'Datos básicos en perfil público',
           subtitle: 'Permite mostrar nombre, ciudad y plan dentro del perfil.',
           icon: Icons.badge_outlined,
           value: user.showBasicInfoOnPublicProfile,

@@ -20,7 +20,11 @@ void main() {
     TestAppSession session,
   ) async {
     await tester.pumpWidget(
-      buildTestApp(const ProfileScreen(), controller: session.controller),
+      buildTestApp(
+        const ProfileScreen(),
+        controller: session.controller,
+        localeController: session.localeController,
+      ),
     );
     await tester.pumpAndSettle();
     await tester.drag(
@@ -158,5 +162,62 @@ void main() {
       find.text('Mascotas ilimitadas con politica de uso razonable'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('subscription plan cards keep consistent desktop layout', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    await openDemoFamilySession(tester);
+
+    await scrollTo(tester, find.text('Plan actual'));
+
+    final freeSize = tester.getSize(
+      find.byKey(const ValueKey('plan-card-free')),
+    );
+    final plusSize = tester.getSize(
+      find.byKey(const ValueKey('plan-card-plus')),
+    );
+    final proSize = tester.getSize(find.byKey(const ValueKey('plan-card-pro')));
+
+    expect(freeSize.width, plusSize.width);
+    expect(plusSize.width, proSize.width);
+    expect(freeSize.height, plusSize.height);
+    expect(plusSize.height, proSize.height);
+  });
+
+  testWidgets('configuration exposes and persists manual language preference', (
+    tester,
+  ) async {
+    await openDemoFamilySession(tester);
+
+    await tester.tap(find.textContaining('Configuraci').first);
+    await tester.pumpAndSettle();
+    await scrollTo(
+      tester,
+      find.byKey(const ValueKey('language-preference-dropdown')),
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey('language-preference-dropdown')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('English').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<DropdownButtonFormField<String>>(
+            find.byKey(const ValueKey('language-preference-dropdown')),
+          )
+          .initialValue,
+      'English',
+    );
+
+    await restoreSessionAndOpenProfile(tester);
+    await tester.tap(find.textContaining('Configuraci').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Language'), findsWidgets);
   });
 }

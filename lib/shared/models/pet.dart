@@ -20,6 +20,10 @@ class Pet {
     required this.qrSecondaryAction,
     required this.sex,
     required this.location,
+    this.country = '',
+    this.region = '',
+    this.city = '',
+    this.locationFreeText = '',
     required this.biography,
     required this.personalityTags,
     required this.seekingBreeding,
@@ -49,6 +53,10 @@ class Pet {
   final String qrSecondaryAction;
   final String sex;
   final String location;
+  final String country;
+  final String region;
+  final String city;
+  final String locationFreeText;
   final String biography;
   final List<String> personalityTags;
   final bool seekingBreeding;
@@ -78,6 +86,10 @@ class Pet {
     String? qrSecondaryAction,
     String? sex,
     String? location,
+    String? country,
+    String? region,
+    String? city,
+    String? locationFreeText,
     String? biography,
     List<String>? personalityTags,
     bool? seekingBreeding,
@@ -107,6 +119,10 @@ class Pet {
       qrSecondaryAction: qrSecondaryAction ?? this.qrSecondaryAction,
       sex: sex ?? this.sex,
       location: location ?? this.location,
+      country: country ?? this.country,
+      region: region ?? this.region,
+      city: city ?? this.city,
+      locationFreeText: locationFreeText ?? this.locationFreeText,
       biography: biography ?? this.biography,
       personalityTags: personalityTags ?? this.personalityTags,
       seekingBreeding: seekingBreeding ?? this.seekingBreeding,
@@ -139,6 +155,10 @@ class Pet {
       'qrSecondaryAction': qrSecondaryAction,
       'sex': sex,
       'location': location,
+      'country': country,
+      'region': region,
+      'city': city,
+      'locationFreeText': locationFreeText,
       'biography': biography,
       'personalityTags': personalityTags,
       'seekingBreeding': seekingBreeding,
@@ -171,6 +191,10 @@ class Pet {
       qrSecondaryAction: json['qrSecondaryAction'] as String,
       sex: json['sex'] as String,
       location: json['location'] as String,
+      country: json['country'] as String? ?? '',
+      region: json['region'] as String? ?? '',
+      city: json['city'] as String? ?? '',
+      locationFreeText: json['locationFreeText'] as String? ?? '',
       biography: json['biography'] as String,
       personalityTags: (json['personalityTags'] as List<dynamic>)
           .cast<String>(),

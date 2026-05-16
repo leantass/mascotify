@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../shared/data/app_data_source.dart';
+import '../../../../shared/data/location_catalog.dart';
+import '../../../../shared/data/pet_catalogs.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/plan_entitlements.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
@@ -274,29 +276,57 @@ class _PetFormDialog extends StatefulWidget {
 
 class _PetFormDialogState extends State<_PetFormDialog> {
   late final TextEditingController _nameController;
-  late final TextEditingController _speciesController;
-  late final TextEditingController _breedController;
+  late final TextEditingController _otherBreedController;
   late final TextEditingController _ageController;
-  late final TextEditingController _locationController;
+  late final TextEditingController _manualRegionController;
+  late final TextEditingController _manualCityController;
   late final TextEditingController _biographyController;
 
   String _selectedSex = 'Macho';
+  String _selectedSpecies = PetSpeciesCatalog.species.first.label;
+  String _selectedBreed = PetSpeciesCatalog.mixedBreed;
+  String _selectedCountry = LocationCatalog.countries.first.name;
+  String? _selectedRegion;
+  String? _selectedCity;
   String? _errorMessage;
   bool _isSaving = false;
   bool get _isEditing => widget.initialPet != null;
+  bool get _isOtherBreed => _selectedBreed == PetSpeciesCatalog.other;
+  bool get _isManualCity => _selectedCity == LocationCatalog.otherCity;
 
   @override
   void initState() {
     super.initState();
     final initialPet = widget.initialPet;
     _nameController = TextEditingController(text: initialPet?.name ?? '');
-    _speciesController = TextEditingController(
-      text: initialPet?.species ?? 'Mascota',
+    _selectedSpecies = _initialSpecies(initialPet?.species);
+    _selectedBreed = _initialBreed(_selectedSpecies, initialPet?.breed);
+    _otherBreedController = TextEditingController(
+      text: _selectedBreed == PetSpeciesCatalog.other
+          ? initialPet?.breed ?? ''
+          : '',
     );
-    _breedController = TextEditingController(text: initialPet?.breed ?? '');
     _ageController = TextEditingController(text: initialPet?.ageLabel ?? '');
-    _locationController = TextEditingController(
-      text: initialPet?.location ?? '',
+    _selectedCountry = initialPet?.country.trim().isNotEmpty == true
+        ? initialPet!.country
+        : LocationCatalog.countries.first.name;
+    final regions = LocationCatalog.regionsForCountry(_selectedCountry);
+    _selectedRegion = initialPet?.region.trim().isNotEmpty == true
+        ? initialPet!.region
+        : (regions.isEmpty ? null : regions.first.name);
+    final cities = _citiesForSelection();
+    _selectedCity = initialPet?.city.trim().isNotEmpty == true
+        ? initialPet!.city
+        : (cities.isEmpty ? null : cities.first);
+    _manualRegionController = TextEditingController(
+      text: regions.isEmpty ? initialPet?.region ?? '' : '',
+    );
+    _manualCityController = TextEditingController(
+      text: initialPet?.locationFreeText.trim().isNotEmpty == true
+          ? initialPet!.locationFreeText
+          : cities.isEmpty
+          ? initialPet?.city ?? ''
+          : '',
     );
     _biographyController = TextEditingController(
       text: initialPet?.biography ?? '',
@@ -307,10 +337,10 @@ class _PetFormDialogState extends State<_PetFormDialog> {
   @override
   void dispose() {
     _nameController.dispose();
-    _speciesController.dispose();
-    _breedController.dispose();
+    _otherBreedController.dispose();
     _ageController.dispose();
-    _locationController.dispose();
+    _manualRegionController.dispose();
+    _manualCityController.dispose();
     _biographyController.dispose();
     super.dispose();
   }
@@ -350,38 +380,104 @@ class _PetFormDialogState extends State<_PetFormDialog> {
                     : 'Este formulario ya crea una mascota real en almacenamiento local para la cuenta actual.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton.icon(
+                  key: const ValueKey('pet-save-button'),
+                  onPressed: _isSaving ? null : _savePet,
+                  icon: const Icon(Icons.check_rounded),
+                  label: Text(_isSaving ? 'Guardando...' : 'Guardar'),
+                ),
+              ),
               const SizedBox(height: 18),
-              _PetField(controller: _nameController, label: 'Nombre'),
+              _PetField(
+                fieldKey: const ValueKey('pet-name-field'),
+                controller: _nameController,
+                label: 'Nombre',
+              ),
               const SizedBox(height: 12),
-              _PetField(controller: _speciesController, label: 'Especie'),
+              DropdownButtonFormField<String>(
+                key: const ValueKey('pet-species-dropdown'),
+                initialValue: _selectedSpecies,
+                isExpanded: true,
+                decoration: _petFieldDecoration('Tipo de animal'),
+                items: PetSpeciesCatalog.species
+                    .map(
+                      (species) => DropdownMenuItem<String>(
+                        value: species.label,
+                        child: Text(species.label),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() {
+                    _selectedSpecies = value;
+                    _selectedBreed = PetSpeciesCatalog.breedOptionsForSpecies(
+                      value,
+                    ).first;
+                    _otherBreedController.clear();
+                  });
+                },
+              ),
               const SizedBox(height: 12),
-              _PetField(controller: _breedController, label: 'Raza'),
+              DropdownButtonFormField<String>(
+                key: const ValueKey('pet-breed-dropdown'),
+                initialValue: _selectedBreed,
+                isExpanded: true,
+                decoration: _petFieldDecoration('Raza / tipo'),
+                items:
+                    PetSpeciesCatalog.breedOptionsForSpecies(_selectedSpecies)
+                        .map(
+                          (breed) => DropdownMenuItem<String>(
+                            value: breed,
+                            child: Text(breed),
+                          ),
+                        )
+                        .toList(),
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() {
+                    _selectedBreed = value;
+                    if (!_isOtherBreed) _otherBreedController.clear();
+                  });
+                },
+              ),
+              if (_isOtherBreed) ...[
+                const SizedBox(height: 12),
+                _PetField(
+                  fieldKey: const ValueKey('pet-other-breed-field'),
+                  controller: _otherBreedController,
+                  label: 'Raza / tipo manual',
+                  hintText: 'Ej: cruza local, variedad no listada',
+                ),
+              ],
               const SizedBox(height: 12),
               _PetField(
+                fieldKey: const ValueKey('pet-age-field'),
                 controller: _ageController,
                 label: 'Edad',
-                hintText: 'Ej: 2 años',
+                hintText: 'Ej: 2',
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
               const SizedBox(height: 12),
-              _PetField(
-                controller: _locationController,
-                label: 'Ubicación',
-                hintText: 'Ej: Palermo, Buenos Aires',
+              _LocationFields(
+                selectedCountry: _selectedCountry,
+                selectedRegion: _selectedRegion,
+                selectedCity: _selectedCity,
+                manualRegionController: _manualRegionController,
+                manualCityController: _manualCityController,
+                onCountryChanged: _handleCountryChanged,
+                onRegionChanged: _handleRegionChanged,
+                onCityChanged: _handleCityChanged,
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _selectedSex,
-                decoration: InputDecoration(
-                  labelText: 'Sexo',
-                  filled: true,
-                  fillColor: AppColors.surfaceAlt,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
+                isExpanded: true,
+                decoration: _petFieldDecoration('Sexo'),
                 items: const [
                   DropdownMenuItem(value: 'Macho', child: Text('Macho')),
                   DropdownMenuItem(value: 'Hembra', child: Text('Hembra')),
@@ -395,6 +491,7 @@ class _PetFormDialogState extends State<_PetFormDialog> {
               ),
               const SizedBox(height: 12),
               _PetField(
+                fieldKey: const ValueKey('pet-biography-field'),
                 controller: _biographyController,
                 label: 'Descripción breve',
                 maxLines: 3,
@@ -446,10 +543,18 @@ class _PetFormDialogState extends State<_PetFormDialog> {
 
   void _savePet() {
     final name = _nameController.text.trim();
-    final species = _speciesController.text.trim();
-    final breed = _breedController.text.trim();
+    final species = _selectedSpecies.trim();
+    final breed = _isOtherBreed
+        ? _otherBreedController.text.trim()
+        : _selectedBreed.trim();
     final ageLabel = _ageController.text.trim();
-    final location = _locationController.text.trim();
+    final locationParts = _currentLocationParts();
+    final location = LocationCatalog.display(
+      country: locationParts.country,
+      region: locationParts.region,
+      city: locationParts.city,
+      freeText: locationParts.freeText,
+    );
     final biography = _biographyController.text.trim();
 
     if (name.isEmpty ||
@@ -459,14 +564,27 @@ class _PetFormDialogState extends State<_PetFormDialog> {
         location.isEmpty) {
       setState(() {
         _errorMessage =
-            'Completa al menos nombre, especie, raza, edad y ubicación.';
+            'Completá al menos nombre, tipo de animal, raza, edad y ubicación.';
       });
       return;
     }
 
-    if (int.tryParse(ageLabel) == null) {
+    final age = int.tryParse(ageLabel);
+    if (age == null) {
       setState(() {
         _errorMessage = 'La edad debe ser un valor numérico.';
+      });
+      return;
+    }
+    if (age < 0) {
+      setState(() {
+        _errorMessage = 'La edad mínima permitida es 0 años.';
+      });
+      return;
+    }
+    if (age > 20) {
+      setState(() {
+        _errorMessage = 'La edad máxima permitida es 20 años.';
       });
       return;
     }
@@ -487,6 +605,10 @@ class _PetFormDialogState extends State<_PetFormDialog> {
           colorHex: _colorForSpecies(species),
           sex: _selectedSex,
           location: location,
+          country: locationParts.country,
+          region: locationParts.region,
+          city: locationParts.city,
+          locationFreeText: locationParts.freeText,
           biography: biography.isEmpty
               ? '$name ya tiene una base persistida y lista para seguir completándose.'
               : biography,
@@ -530,6 +652,10 @@ class _PetFormDialogState extends State<_PetFormDialog> {
       qrSecondaryAction: 'Configurar placa',
       sex: _selectedSex,
       location: location,
+      country: locationParts.country,
+      region: locationParts.region,
+      city: locationParts.city,
+      locationFreeText: locationParts.freeText,
       biography: biography.isEmpty
           ? '$name ya tiene una base persistida y lista para seguir completándose.'
           : biography,
@@ -577,6 +703,86 @@ class _PetFormDialogState extends State<_PetFormDialog> {
     Navigator.of(context).pop(pet);
   }
 
+  String _initialSpecies(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return PetSpeciesCatalog.species.first.label;
+    }
+    final normalized = value.trim().toLowerCase();
+    for (final species in PetSpeciesCatalog.species) {
+      if (species.label.toLowerCase() == normalized) {
+        return species.label;
+      }
+    }
+    return PetSpeciesCatalog.species.last.label;
+  }
+
+  String _initialBreed(String species, String? breed) {
+    final options = PetSpeciesCatalog.breedOptionsForSpecies(species);
+    if (breed == null || breed.trim().isEmpty) return options.first;
+    for (final option in options) {
+      if (option.toLowerCase() == breed.trim().toLowerCase()) return option;
+    }
+    return PetSpeciesCatalog.other;
+  }
+
+  List<String> _citiesForSelection() {
+    final regions = LocationCatalog.regionsForCountry(_selectedCountry);
+    if (regions.isEmpty || _selectedRegion == null) return const <String>[];
+    for (final region in regions) {
+      if (region.name == _selectedRegion) return region.cities;
+    }
+    return const <String>[];
+  }
+
+  void _handleCountryChanged(String country) {
+    final regions = LocationCatalog.regionsForCountry(country);
+    setState(() {
+      _selectedCountry = country;
+      _selectedRegion = regions.isEmpty ? null : regions.first.name;
+      final cities = _citiesForSelection();
+      _selectedCity = cities.isEmpty ? null : cities.first;
+      _manualRegionController.clear();
+      _manualCityController.clear();
+    });
+  }
+
+  void _handleRegionChanged(String region) {
+    setState(() {
+      _selectedRegion = region;
+      final cities = _citiesForSelection();
+      _selectedCity = cities.isEmpty ? null : cities.first;
+      _manualCityController.clear();
+    });
+  }
+
+  void _handleCityChanged(String city) {
+    setState(() {
+      _selectedCity = city;
+      if (!_isManualCity) _manualCityController.clear();
+    });
+  }
+
+  _PetLocationParts _currentLocationParts() {
+    final hasRegions = LocationCatalog.regionsForCountry(
+      _selectedCountry,
+    ).isNotEmpty;
+    final region = hasRegions
+        ? _selectedRegion?.trim() ?? ''
+        : _manualRegionController.text.trim();
+    final city = hasRegions && !_isManualCity
+        ? _selectedCity?.trim() ?? ''
+        : '';
+    final freeText = hasRegions && !_isManualCity
+        ? ''
+        : _manualCityController.text.trim();
+    return _PetLocationParts(
+      country: _selectedCountry,
+      region: region,
+      city: city,
+      freeText: freeText,
+    );
+  }
+
   int _colorForSpecies(String species) {
     final normalized = species.trim().toLowerCase();
     if (normalized.contains('gato')) return 0xFFFFE1EA;
@@ -596,8 +802,140 @@ class _PetFormDialogState extends State<_PetFormDialog> {
   }
 }
 
+class _PetLocationParts {
+  const _PetLocationParts({
+    required this.country,
+    required this.region,
+    required this.city,
+    required this.freeText,
+  });
+
+  final String country;
+  final String region;
+  final String city;
+  final String freeText;
+}
+
+class _LocationFields extends StatelessWidget {
+  const _LocationFields({
+    required this.selectedCountry,
+    required this.selectedRegion,
+    required this.selectedCity,
+    required this.manualRegionController,
+    required this.manualCityController,
+    required this.onCountryChanged,
+    required this.onRegionChanged,
+    required this.onCityChanged,
+  });
+
+  final String selectedCountry;
+  final String? selectedRegion;
+  final String? selectedCity;
+  final TextEditingController manualRegionController;
+  final TextEditingController manualCityController;
+  final ValueChanged<String> onCountryChanged;
+  final ValueChanged<String> onRegionChanged;
+  final ValueChanged<String> onCityChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final regions = LocationCatalog.regionsForCountry(selectedCountry);
+    LocationRegion? selectedRegionData;
+    for (final region in regions) {
+      if (region.name == selectedRegion) selectedRegionData = region;
+    }
+    final cities = selectedRegionData?.cities ?? const <String>[];
+    final needsManualLocation = regions.isEmpty;
+    final needsManualCity = selectedCity == LocationCatalog.otherCity;
+
+    return Column(
+      children: [
+        DropdownButtonFormField<String>(
+          key: const ValueKey('pet-country-dropdown'),
+          initialValue: selectedCountry,
+          isExpanded: true,
+          decoration: _petFieldDecoration('País'),
+          items: LocationCatalog.countries
+              .map(
+                (country) => DropdownMenuItem<String>(
+                  value: country.name,
+                  child: Text(country.name),
+                ),
+              )
+              .toList(),
+          onChanged: (value) {
+            if (value != null) onCountryChanged(value);
+          },
+        ),
+        const SizedBox(height: 12),
+        if (needsManualLocation)
+          _PetField(
+            fieldKey: const ValueKey('pet-manual-region-field'),
+            controller: manualRegionController,
+            label: 'Provincia / Estado / Región',
+            hintText: 'Ej: Montevideo, Florida, São Paulo',
+          )
+        else
+          DropdownButtonFormField<String>(
+            key: const ValueKey('pet-region-dropdown'),
+            initialValue: selectedRegion,
+            isExpanded: true,
+            decoration: _petFieldDecoration('Provincia / Estado / Región'),
+            items: regions
+                .map(
+                  (region) => DropdownMenuItem<String>(
+                    value: region.name,
+                    child: Text(region.name),
+                  ),
+                )
+                .toList(),
+            onChanged: (value) {
+              if (value != null) onRegionChanged(value);
+            },
+          ),
+        const SizedBox(height: 12),
+        if (needsManualLocation)
+          _PetField(
+            fieldKey: const ValueKey('pet-manual-city-field'),
+            controller: manualCityController,
+            label: 'Ciudad / localidad',
+            hintText: 'Ej: ciudad o localidad',
+          )
+        else
+          DropdownButtonFormField<String>(
+            key: const ValueKey('pet-city-dropdown'),
+            initialValue: cities.contains(selectedCity)
+                ? selectedCity
+                : (cities.isEmpty ? null : cities.first),
+            isExpanded: true,
+            decoration: _petFieldDecoration('Ciudad / localidad'),
+            items: cities
+                .map(
+                  (city) =>
+                      DropdownMenuItem<String>(value: city, child: Text(city)),
+                )
+                .toList(),
+            onChanged: (value) {
+              if (value != null) onCityChanged(value);
+            },
+          ),
+        if (needsManualCity) ...[
+          const SizedBox(height: 12),
+          _PetField(
+            fieldKey: const ValueKey('pet-other-city-field'),
+            controller: manualCityController,
+            label: 'Localidad manual',
+            hintText: 'Escribí tu ciudad o localidad',
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 class _PetField extends StatelessWidget {
   const _PetField({
+    this.fieldKey,
     required this.controller,
     required this.label,
     this.hintText,
@@ -606,6 +944,7 @@ class _PetField extends StatelessWidget {
     this.inputFormatters,
   });
 
+  final Key? fieldKey;
   final TextEditingController controller;
   final String label;
   final String? hintText;
@@ -616,20 +955,25 @@ class _PetField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextField(
+      key: fieldKey,
       controller: controller,
       maxLines: maxLines,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hintText,
-        filled: true,
-        fillColor: AppColors.surfaceAlt,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide.none,
-        ),
-      ),
+      decoration: _petFieldDecoration(label, hintText: hintText),
     );
   }
+}
+
+InputDecoration _petFieldDecoration(String label, {String? hintText}) {
+  return InputDecoration(
+    labelText: label,
+    hintText: hintText,
+    filled: true,
+    fillColor: AppColors.surfaceAlt,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+      borderSide: BorderSide.none,
+    ),
+  );
 }

@@ -46,15 +46,11 @@ void main() {
       await tester.tap(find.text('Agregar'));
       await tester.pumpAndSettle();
 
-      final fields = find.byType(EditableText);
-      await tester.enterText(fields.at(2), 'Criollo');
-      await tester.enterText(fields.at(3), '5');
-      await tester.enterText(fields.at(4), 'Buenos Aires');
-      await tester.tap(find.text('Guardar'));
-      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const ValueKey('pet-age-field')), '5');
+      await tapSavePetForm(tester);
 
       expect(find.text('Alta de mascota'), findsOneWidget);
-      expect(find.textContaining('Completa al menos'), findsOneWidget);
+      expect(find.textContaining('Completá al menos'), findsOneWidget);
       expect(find.textContaining('0 perfiles activos'), findsOneWidget);
       expect(AppData.pets, isEmpty);
     },
@@ -75,8 +71,7 @@ void main() {
     await tester.tap(find.widgetWithText(OutlinedButton, 'Editar').first);
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(EditableText).at(0), 'Pet Uno Editado');
-    await tester.tap(find.text('Guardar'));
-    await tester.pumpAndSettle();
+    await tapSavePetForm(tester);
 
     final edited = AppData.pets.firstWhere(
       (pet) => pet.name == 'Pet Uno Editado',
@@ -196,11 +191,6 @@ Future<void> _createPet(
   await tester.tap(find.text('Agregar'));
   await tester.pumpAndSettle();
 
-  final fields = find.byType(EditableText);
-  await tester.enterText(fields.at(0), name);
-  await tester.enterText(fields.at(2), breed);
-  await tester.enterText(fields.at(3), age);
-  await tester.enterText(fields.at(4), 'Buenos Aires');
-  await tester.tap(find.text('Guardar'));
-  await tester.pumpAndSettle();
+  await fillPetForm(tester, name: name, breed: breed, age: age);
+  await tapSavePetForm(tester);
 }

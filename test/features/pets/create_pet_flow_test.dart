@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mascotify/features/auth/data/local_auth_models.dart';
 
@@ -21,14 +20,9 @@ void main() {
     await tester.tap(find.text('Agregar'));
     await tester.pumpAndSettle();
 
-    final fields = find.byType(EditableText);
-    await tester.enterText(fields.at(0), 'QA Mascota');
-    await tester.enterText(fields.at(2), 'Mestizo');
-    await tester.enterText(fields.at(3), '4');
-    await tester.enterText(fields.at(4), 'Buenos Aires');
+    await fillPetForm(tester, name: 'QA Mascota', age: '4');
 
-    await tester.tap(find.text('Guardar'));
-    await tester.pumpAndSettle();
+    await tapSavePetForm(tester);
 
     expect(find.text('QA Mascota'), findsOneWidget);
     expect(find.textContaining('ya quedó guardado localmente'), findsOneWidget);

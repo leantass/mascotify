@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mascotify/shared/models/account_identity_models.dart';
 
@@ -27,13 +26,14 @@ void main() {
     await tester.tap(find.text('Agregar'));
     await tester.pumpAndSettle();
 
-    final fields = find.byType(EditableText);
-    await tester.enterText(fields.at(0), 'Persistente QA');
-    await tester.enterText(fields.at(2), 'Criollo');
-    await tester.enterText(fields.at(3), '5');
-    await tester.enterText(fields.at(4), 'Córdoba');
-    await tester.tap(find.text('Guardar'));
-    await tester.pumpAndSettle();
+    await fillPetForm(
+      tester,
+      name: 'Persistente QA',
+      breed: 'Criollo',
+      age: '5',
+      manualCity: 'Córdoba',
+    );
+    await tapSavePetForm(tester);
 
     expect(find.text('Persistente QA'), findsOneWidget);
 

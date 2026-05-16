@@ -28,14 +28,9 @@ void main() {
     await tester.tap(find.text('Agregar'));
     await tester.pumpAndSettle();
 
-    final fields = find.byType(EditableText);
-    await tester.enterText(fields.at(0), name);
-    await tester.enterText(fields.at(2), 'Criollo');
-    await tester.enterText(fields.at(3), '3');
-    await tester.enterText(fields.at(4), 'Buenos Aires');
+    await fillPetForm(tester, name: name, breed: 'Criollo', age: '3');
 
-    await tester.tap(find.text('Guardar'));
-    await tester.pumpAndSettle();
+    await tapSavePetForm(tester);
   }
 
   testWidgets('user can edit an existing pet without duplicating it', (
@@ -48,15 +43,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Editar mascota'), findsOneWidget);
-    final fields = find.byType(EditableText);
-    await tester.enterText(fields.at(0), 'Mascota Editada');
-    await tester.enterText(fields.at(3), '7abc');
+    await tester.enterText(
+      find.byKey(const ValueKey('pet-name-field')),
+      'Mascota Editada',
+    );
+    await tester.enterText(find.byKey(const ValueKey('pet-age-field')), '7abc');
     await tester.pump();
     expect(find.text('7'), findsOneWidget);
     expect(find.text('7abc'), findsNothing);
 
-    await tester.tap(find.text('Guardar'));
-    await tester.pumpAndSettle();
+    await tapSavePetForm(tester);
 
     expect(find.text('Mascota Editada'), findsOneWidget);
     expect(find.text('Mascota Editable'), findsNothing);

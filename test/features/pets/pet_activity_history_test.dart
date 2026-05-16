@@ -49,8 +49,7 @@ void main() {
       find.byType(EditableText).at(0),
       'Historial Editado',
     );
-    await tester.tap(find.text('Guardar'));
-    await tester.pumpAndSettle();
+    await tapSavePetForm(tester);
 
     await _openPetDetail(tester, 'Historial Editado');
     await _scrollToHistory(tester);
@@ -196,13 +195,8 @@ Future<void> _createPetFromUi(WidgetTester tester, String name) async {
   await tester.tap(find.text('Agregar'));
   await tester.pumpAndSettle();
 
-  final fields = find.byType(EditableText);
-  await tester.enterText(fields.at(0), name);
-  await tester.enterText(fields.at(2), 'Criollo');
-  await tester.enterText(fields.at(3), '3');
-  await tester.enterText(fields.at(4), 'Buenos Aires');
-  await tester.tap(find.text('Guardar'));
-  await tester.pumpAndSettle();
+  await fillPetForm(tester, name: name, breed: 'Criollo', age: '3');
+  await tapSavePetForm(tester);
 }
 
 Future<void> _openPetDetail(WidgetTester tester, String name) async {

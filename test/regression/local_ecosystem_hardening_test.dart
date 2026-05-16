@@ -296,11 +296,7 @@ Future<void> _openMainTab(WidgetTester tester, String label) async {
 
 Future<void> _createPetFromUi(WidgetTester tester, String name) async {
   await _tapVisibleText(tester, 'Agregar');
-  final fields = find.byType(EditableText);
-  await tester.enterText(fields.at(0), name);
-  await tester.enterText(fields.at(2), 'Mestizo');
-  await tester.enterText(fields.at(3), '4');
-  await tester.enterText(fields.at(4), 'Buenos Aires');
+  await fillPetForm(tester, name: name, age: '4');
   await _tapVisibleText(tester, 'Guardar');
 }
 
