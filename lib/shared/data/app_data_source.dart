@@ -63,6 +63,14 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  Pet? findPetByQrId(String qrId) {
+    for (final pet in MockData.pets) {
+      if (pet.qrCodeLabel == qrId) return pet;
+    }
+    return null;
+  }
+
+  @override
   List<PetActivityEvent> getPetActivityEvents(String petId) {
     return const <PetActivityEvent>[];
   }
@@ -179,12 +187,27 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  List<QrScanEvent> getQrScanEventsForPet(String petId) {
+    return const <QrScanEvent>[];
+  }
+
+  @override
+  QrScanEvent? findQrScanEventById(String id) {
+    return null;
+  }
+
+  @override
   QrStatusSnapshot getQrStatusSnapshotForPet(Pet pet) {
     return buildQrStatusSnapshotForPet(pet);
   }
 
   @override
   Future<void> registerQrScan(String petId) async {}
+
+  @override
+  Future<QrScanEvent?> submitQrScanEvent(QrScanEvent event) async {
+    return event;
+  }
 
   @override
   Future<void> registerQrTraceabilityReview(String petId) async {}
@@ -304,6 +327,8 @@ class AppData {
   static List<Pet> get pets => source.getPets();
 
   static Pet? findPetById(String id) => source.findPetById(id);
+
+  static Pet? findPetByQrId(String qrId) => source.findPetByQrId(qrId);
 
   static List<LostPet> get lostPets => source.getLostPets();
 
@@ -430,8 +455,20 @@ class AppData {
     return source.getQrActivityEntriesForPet(pet);
   }
 
+  static List<QrScanEvent> qrScanEventsForPet(String petId) {
+    return source.getQrScanEventsForPet(petId);
+  }
+
+  static QrScanEvent? findQrScanEventById(String id) {
+    return source.findQrScanEventById(id);
+  }
+
   static Future<void> registerQrScan(String petId) {
     return source.registerQrScan(petId);
+  }
+
+  static Future<QrScanEvent?> submitQrScanEvent(QrScanEvent event) {
+    return source.submitQrScanEvent(event);
   }
 
   static Future<void> registerQrTraceabilityReview(String petId) {

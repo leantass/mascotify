@@ -1,9 +1,12 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mascotify/features/home/presentation/screens/activity_feed_screen.dart';
 import 'package:mascotify/features/pets/presentation/screens/qr_traceability_screen.dart';
+import 'package:mascotify/features/pets/presentation/screens/secure_qr_scan_screen.dart';
 import 'package:mascotify/shared/data/app_data_source.dart';
 import 'package:mascotify/shared/data/mock_data.dart';
 import 'package:mascotify/shared/models/account_identity_models.dart';
+import 'package:mascotify/shared/models/lost_pet.dart';
 import 'package:mascotify/shared/models/pet.dart';
 import 'package:mascotify/shared/models/report_models.dart';
 
@@ -108,6 +111,160 @@ void main() {
     );
   });
 
+  testWidgets('secure public QR screen hides owner private data', (
+    tester,
+  ) async {
+    _setMobileViewport(tester);
+    final session = await _buildQrSession(
+      ownerName: 'Dueña Privada',
+      email: 'duenia-privada@mascotify.local',
+    );
+    final pet = _pet(id: 'pet-qr-public-safe', name: 'QR Seguro');
+    await AppData.addPet(pet);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        SecureQrScanScreen(qrId: pet.qrCodeLabel),
+        controller: session.controller,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('QR Seguro'), findsOneWidget);
+    expect(find.text('Avisar que encontré o vi esta mascota'), findsOneWidget);
+    expect(find.text('Compartir ubicación actual'), findsOneWidget);
+    expect(find.text('Cargar ubicación manual'), findsOneWidget);
+    expect(find.text('Dueña Privada'), findsNothing);
+    expect(find.text('duenia-privada@mascotify.local'), findsNothing);
+    expect(find.textContaining('dirección privada'), findsOneWidget);
+    _expectNoLayoutException(tester);
+  });
+
+  testWidgets('manual QR location creates event notification and detail', (
+    tester,
+  ) async {
+    _setMobileViewport(tester);
+    final session = await _buildQrSession(email: 'qr-manual@mascotify.local');
+    final pet = _pet(id: 'pet-qr-manual', name: 'QR Manual');
+    await AppData.addPet(pet);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        SecureQrScanScreen(qrId: pet.qrCodeLabel),
+        controller: session.controller,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _enterByKey(
+      tester,
+      const ValueKey('qr-region-field'),
+      'Buenos Aires',
+    );
+    await _enterByKey(tester, const ValueKey('qr-city-field'), 'CABA');
+    await _enterByKey(
+      tester,
+      const ValueKey('qr-area-field'),
+      'Parque Chacabuco',
+    );
+    await _enterByKey(
+      tester,
+      const ValueKey('qr-message-field'),
+      'La vi cerca del canil.',
+    );
+    await _tapByKey(tester, const ValueKey('submit-secure-qr-scan-button'));
+
+    expect(AppData.qrScanEventsForPet(pet.id), hasLength(1));
+    expect(
+      AppData.notifications.map((notification) => notification.title),
+      contains('Alguien escaneó el QR de QR Manual.'),
+    );
+    expect(
+      AppData.petActivityEventsForPet(pet.id).map((event) => event.title),
+      contains('QR escaneado con ubicación'),
+    );
+    expect(
+      find.text('Gracias. Avisamos a la familia con la información cargada.'),
+      findsOneWidget,
+    );
+
+    await _tapByKey(tester, const ValueKey('open-qr-event-detail-button'));
+    expect(find.text('Detalle del evento QR'), findsOneWidget);
+    expect(find.textContaining('Parque Chacabuco'), findsWidgets);
+    expect(find.text('No pagues rescates ni transferencias.'), findsOneWidget);
+  });
+
+  testWidgets('secure QR scan blocks payment intent', (tester) async {
+    _setMobileViewport(tester);
+    final session = await _buildQrSession(email: 'qr-payment@mascotify.local');
+    final pet = _pet(id: 'pet-qr-payment', name: 'QR Cobro');
+    await AppData.addPet(pet);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        SecureQrScanScreen(qrId: pet.qrCodeLabel),
+        controller: session.controller,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _enterByKey(tester, const ValueKey('qr-city-field'), 'CABA');
+    await _enterByKey(tester, const ValueKey('qr-area-field'), 'Caballito');
+    await _enterByKey(
+      tester,
+      const ValueKey('qr-message-field'),
+      'Pido rescate y transferencia.',
+    );
+    await _tapByKey(tester, const ValueKey('submit-secure-qr-scan-button'));
+
+    expect(
+      find.textContaining('Mascotify no permite pedir dinero'),
+      findsOneWidget,
+    );
+    expect(AppData.qrScanEventsForPet(pet.id), isEmpty);
+  });
+
+  testWidgets('lost pet QR scan is marked as possible sighting', (
+    tester,
+  ) async {
+    _setMobileViewport(tester);
+    final session = await _buildQrSession(email: 'qr-lost@mascotify.local');
+    final pet = _pet(id: 'pet-qr-lost', name: 'Luna Perdida');
+    await AppData.addPet(pet);
+    await AppData.addLostPet(_lostPetForPet(pet, id: 'lost-${pet.id}'));
+
+    await tester.pumpWidget(
+      buildTestApp(
+        SecureQrScanScreen(qrId: pet.qrCodeLabel),
+        controller: session.controller,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _enterByKey(tester, const ValueKey('qr-city-field'), 'CABA');
+    await _enterByKey(tester, const ValueKey('qr-area-field'), 'Plaza Irlanda');
+    await _tapByKey(tester, const ValueKey('submit-secure-qr-scan-button'));
+
+    final event = AppData.qrScanEventsForPet(pet.id).single;
+    expect(event.possibleLostPetSighting, isTrue);
+    expect(
+      AppData.notifications.map((notification) => notification.description),
+      contains(contains('Posible avistaje de mascota perdida')),
+    );
+
+    await tester.pumpWidget(
+      buildTestApp(
+        QrTraceabilityScreen(pet: pet),
+        controller: session.controller,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Posible avistaje de mascota perdida'),
+      260,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Posible avistaje de mascota perdida'), findsWidgets);
+    _expectNoLayoutException(tester);
+  });
+
   testWidgets('QR history is isolated between accounts', (tester) async {
     final session = await _buildQrSession(
       ownerName: 'Cuenta QR Uno',
@@ -157,4 +314,67 @@ Pet _pet({required String id, required String name}) {
     profileId: 'MSC-$id',
     qrCodeLabel: 'MSC-$id',
   );
+}
+
+LostPet _lostPetForPet(Pet pet, {required String id}) {
+  return LostPet(
+    id: id,
+    name: pet.name,
+    species: pet.species,
+    breed: pet.breed,
+    ageLabel: pet.ageLabel,
+    sex: pet.sex,
+    colorHex: pet.colorHex,
+    country: 'Argentina',
+    region: 'Buenos Aires',
+    city: 'CABA',
+    locationFreeText: '',
+    location: 'CABA, Buenos Aires, Argentina',
+    lostZone: 'Plaza Irlanda',
+    lostDateLabel: 'Hoy',
+    description: 'Aviso de prueba',
+    contact: 'Contacto protegido',
+    distinctiveSigns: 'Collar rojo',
+    isFound: false,
+    createdAt: DateTime.now(),
+  );
+}
+
+Future<void> _tapByKey(WidgetTester tester, Key key) async {
+  final finder = find.byKey(key);
+  await tester.scrollUntilVisible(
+    finder,
+    260,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(finder, warnIfMissed: false);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _enterByKey(WidgetTester tester, Key key, String value) async {
+  final finder = find.byKey(key);
+  await tester.scrollUntilVisible(
+    finder,
+    260,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
+  await tester.enterText(finder, value);
+  await tester.pumpAndSettle();
+}
+
+void _setMobileViewport(WidgetTester tester) {
+  tester.view.physicalSize = const Size(390, 844);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
+
+void _expectNoLayoutException(WidgetTester tester) {
+  final exception = tester.takeException();
+  final details = exception is FlutterError
+      ? exception.diagnostics.map((node) => node.toStringDeep()).join('\n')
+      : exception.toString();
+  expect(exception, isNull, reason: details);
 }

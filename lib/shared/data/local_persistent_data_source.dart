@@ -89,6 +89,7 @@ class PersistedLocalUserState {
     required this.savedProfiles,
     required this.notifications,
     required this.petActivityEvents,
+    required this.qrScanEvents,
     required this.professionalProfile,
   });
 
@@ -111,6 +112,7 @@ class PersistedLocalUserState {
   final List<SavedProfileEntry> savedProfiles;
   final List<EcosystemNotification> notifications;
   final List<PetActivityEvent> petActivityEvents;
+  final List<QrScanEvent> qrScanEvents;
   final ProfessionalProfile? professionalProfile;
 
   PersistedLocalUserState copyWith({
@@ -133,6 +135,7 @@ class PersistedLocalUserState {
     List<SavedProfileEntry>? savedProfiles,
     List<EcosystemNotification>? notifications,
     List<PetActivityEvent>? petActivityEvents,
+    List<QrScanEvent>? qrScanEvents,
     ProfessionalProfile? professionalProfile,
     bool clearProfessionalProfile = false,
   }) {
@@ -164,6 +167,7 @@ class PersistedLocalUserState {
       savedProfiles: savedProfiles ?? this.savedProfiles,
       notifications: notifications ?? this.notifications,
       petActivityEvents: petActivityEvents ?? this.petActivityEvents,
+      qrScanEvents: qrScanEvents ?? this.qrScanEvents,
       professionalProfile: clearProfessionalProfile
           ? null
           : professionalProfile ?? this.professionalProfile,
@@ -196,6 +200,7 @@ class PersistedLocalUserState {
       'petActivityEvents': petActivityEvents
           .map((item) => item.toJson())
           .toList(),
+      'qrScanEvents': qrScanEvents.map((item) => item.toJson()).toList(),
       'professionalProfile': professionalProfile?.toJson(),
     };
   }
@@ -281,6 +286,14 @@ class PersistedLocalUserState {
           (json['petActivityEvents'] as List<dynamic>? ?? const <dynamic>[])
               .map(
                 (item) => PetActivityEvent.fromJson(
+                  Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+                ),
+              )
+              .toList(),
+      qrScanEvents:
+          (json['qrScanEvents'] as List<dynamic>? ?? const <dynamic>[])
+              .map(
+                (item) => QrScanEvent.fromJson(
                   Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
                 ),
               )
@@ -406,6 +419,16 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   Pet? findPetById(String id) {
     for (final pet in getPets()) {
       if (pet.id == id) return pet;
+    }
+    return null;
+  }
+
+  @override
+  Pet? findPetByQrId(String qrId) {
+    final normalizedQrId = qrId.trim().toLowerCase();
+    for (final pet in getPets()) {
+      if (pet.qrCodeLabel.trim().toLowerCase() == normalizedQrId) return pet;
+      if (pet.id.trim().toLowerCase() == normalizedQrId) return pet;
     }
     return null;
   }
@@ -785,6 +808,30 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   @override
   List<QrActivityEntry> getQrActivityEntriesForPet(Pet pet) {
     return List.unmodifiable(_qrStateForPet(pet).activity);
+  }
+
+  @override
+  List<QrScanEvent> getQrScanEventsForPet(String petId) {
+    final userId = _currentUserId;
+    if (userId == null) return const <QrScanEvent>[];
+    final events =
+        _stateForUser(userId).qrScanEvents
+            .where(
+              (event) => event.ownerUserId == userId && event.petId == petId,
+            )
+            .toList()
+          ..sort((a, b) => b.scannedAt.compareTo(a.scannedAt));
+    return List.unmodifiable(events);
+  }
+
+  @override
+  QrScanEvent? findQrScanEventById(String id) {
+    final userId = _currentUserId;
+    if (userId == null) return null;
+    for (final event in _stateForUser(userId).qrScanEvents) {
+      if (event.id == id && event.ownerUserId == userId) return event;
+    }
+    return null;
   }
 
   @override
@@ -1342,6 +1389,134 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  Future<QrScanEvent?> submitQrScanEvent(QrScanEvent event) async {
+    final userId = _currentUserId;
+    if (userId == null) return null;
+
+    final pet = findPetById(event.petId) ?? findPetByQrId(event.qrId);
+    if (pet == null) return null;
+
+    final currentState = _stateForUser(userId);
+    final recentDuplicate = _findRecentDuplicateQrScan(
+      currentState.qrScanEvents,
+      event,
+    );
+    if (recentDuplicate != null) return recentDuplicate;
+
+    final possibleLostSighting = _isPossibleLostPetSighting(
+      pet,
+      currentState.lostPets,
+    );
+    final safetyFlag = _containsPaymentIntent(
+      '${event.message} ${event.scannerContact}',
+    );
+    final normalizedEvent = QrScanEvent(
+      id: event.id,
+      petId: pet.id,
+      qrId: pet.qrCodeLabel,
+      ownerUserId: userId,
+      scannedAt: event.scannedAt,
+      locationSource: event.locationSource,
+      latitude: event.latitude,
+      longitude: event.longitude,
+      accuracyMeters: event.accuracyMeters,
+      country: event.country,
+      region: event.region,
+      city: event.city,
+      area: event.area,
+      message: event.message,
+      scannerContact: event.scannerContact,
+      status: event.status,
+      safetyFlag: safetyFlag,
+      possibleLostPetSighting: possibleLostSighting,
+    );
+    final locationSummary = normalizedEvent.locationSummary;
+    final title = possibleLostSighting
+        ? 'Posible avistaje de mascota perdida'
+        : 'QR escaneado con aviso';
+    final detail = possibleLostSighting
+        ? 'Alguien escaneó el QR de ${pet.name}. Ubicación reportada: $locationSummary. Posible avistaje de mascota perdida.'
+        : 'Alguien escaneó el QR de ${pet.name}. Ubicación reportada: $locationSummary.';
+
+    await _updateQrState(userId, pet, (currentState) {
+      final nextLocation = currentState.suggestedLocation.copyWith(
+        zone: locationSummary,
+        zoneReference: locationSummary,
+        shortReference: normalizedEvent.area.trim().isEmpty
+            ? 'Aviso QR'
+            : normalizedEvent.area.trim(),
+        timeReference: 'Escaneo QR recibido hace instantes',
+        mapLabelTop: pet.name,
+        mapLabelBottom: possibleLostSighting
+            ? 'Posible avistaje'
+            : 'Escaneo seguro',
+      );
+      return currentState.copyWith(
+        suggestedLocation: nextLocation,
+        activity: <QrActivityEntry>[
+          QrActivityEntry(
+            title: title,
+            detail: detail,
+            timeLabel: 'Ahora',
+            statusLabel: possibleLostSighting
+                ? 'Prioridad alta'
+                : normalizedEvent.locationSource == QrScanLocationSource.manual
+                ? 'Ubicación manual'
+                : 'Ubicación compartida',
+            iconKey: 'location',
+            accentColorHex: possibleLostSighting ? 0xFFFFF2C6 : 0xFFFFE1EA,
+          ),
+          ...currentState.activity,
+        ],
+      );
+    });
+
+    final latestState = _stateForUser(userId);
+    _userStates[userId] = latestState.copyWith(
+      qrScanEvents: <QrScanEvent>[
+        normalizedEvent,
+        ...latestState.qrScanEvents.where((item) => item.id != event.id),
+      ].take(80).toList(),
+      petActivityEvents: _prependPetActivityEvent(
+        latestState.petActivityEvents,
+        _buildPetActivityEvent(
+          userId: userId,
+          petId: pet.id,
+          type: PetActivityEventType.qr,
+          title: possibleLostSighting
+              ? 'Posible avistaje de mascota perdida'
+              : 'QR escaneado con ubicación',
+          description: detail,
+          relatedEntityId: normalizedEvent.id,
+          relatedEntityType: 'qrScanEvent',
+        ),
+      ),
+      notifications: _prependNotification(
+        latestState.notifications,
+        EcosystemNotification(
+          id: _notificationId('notif-qr-scan-${pet.id}'),
+          type: EcosystemNotificationType.qrReport,
+          title: 'Alguien escaneó el QR de ${pet.name}.',
+          description: possibleLostSighting
+              ? 'Posible avistaje de mascota perdida. Ubicación reportada: $locationSummary.'
+              : 'Ubicación reportada: $locationSummary.',
+          timeLabel: 'Ahora',
+          accentColorHex: pet.colorHex,
+          priority: possibleLostSighting
+              ? EcosystemNotificationPriority.attention
+              : EcosystemNotificationPriority.useful,
+          isUnread: true,
+          actionLabel: 'Ver evento QR',
+          action: EcosystemNotificationAction.openPetQrTraceability,
+          petId: pet.id,
+        ),
+      ),
+    );
+    await _persistUserState(userId);
+    return normalizedEvent;
+  }
+
+  @override
   Future<void> setNotificationsEnabled(bool enabled) async {
     final userId = _currentUserId;
     if (userId == null) return;
@@ -1676,6 +1851,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         savedProfiles,
       ),
       petActivityEvents: const <PetActivityEvent>[],
+      qrScanEvents: const <QrScanEvent>[],
       professionalProfile: professionalProfile,
     );
   }
@@ -2328,6 +2504,53 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
 
   bool _isOperationalQrSignal(QrActivityEntry entry) {
     return entry.iconKey == 'qr' || entry.iconKey == 'location';
+  }
+
+  QrScanEvent? _findRecentDuplicateQrScan(
+    List<QrScanEvent> events,
+    QrScanEvent candidate,
+  ) {
+    for (final event in events) {
+      if (event.petId != candidate.petId && event.qrId != candidate.qrId) {
+        continue;
+      }
+      final seconds = candidate.scannedAt.difference(event.scannedAt).abs();
+      if (seconds.inSeconds > 20) continue;
+      if (event.locationSummary == candidate.locationSummary &&
+          event.message.trim() == candidate.message.trim()) {
+        return event;
+      }
+    }
+    return null;
+  }
+
+  bool _isPossibleLostPetSighting(Pet pet, List<LostPet> lostPets) {
+    final petName = pet.name.trim().toLowerCase();
+    if (petName.isEmpty) return false;
+    return lostPets.any(
+      (lostPet) =>
+          !lostPet.isFound && lostPet.name.trim().toLowerCase() == petName,
+    );
+  }
+
+  bool _containsPaymentIntent(String text) {
+    final normalized = text.toLowerCase();
+    const blocked = [
+      'cobro',
+      'cobrar',
+      'pagame',
+      'pago',
+      'plata',
+      'rescate',
+      'recompensa obligatoria',
+      'transferencia',
+      'alias',
+      'cbu',
+      'mercado pago',
+      'depósito',
+      'deposito',
+    ];
+    return blocked.any(normalized.contains);
   }
 
   Map<String, PersistedPetQrState> _buildQrStatesForPets(

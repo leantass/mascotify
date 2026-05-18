@@ -5,6 +5,7 @@ import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/report_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import 'qr_scan_event_detail_screen.dart';
 
 class QrTraceabilityScreen extends StatefulWidget {
   const QrTraceabilityScreen({super.key, required this.pet});
@@ -27,6 +28,7 @@ class _QrTraceabilityScreenState extends State<QrTraceabilityScreen> {
     final currentPet = AppData.findPetById(widget.pet.id) ?? widget.pet;
     final status = AppData.qrStatusSnapshotForPet(currentPet);
     final activity = AppData.qrActivityEntriesForPet(currentPet);
+    final scanEvents = AppData.qrScanEventsForPet(currentPet.id);
     final operationalActivity = activity
         .where((entry) => entry.iconKey == 'qr' || entry.iconKey == 'location')
         .toList();
@@ -184,6 +186,36 @@ class _QrTraceabilityScreenState extends State<QrTraceabilityScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Eventos de escaneo', style: textTheme.titleLarge),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Avisos recibidos desde el QR físico con ubicación compartida o carga manual.',
+                        style: textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      if (scanEvents.isEmpty)
+                        const _EmptyScanEventsState()
+                      else
+                        ...scanEvents.map(
+                          (event) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _QrScanEventTile(
+                              event: event,
+                              pet: currentPet,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -215,6 +247,101 @@ class _EmptyTimelineState extends StatelessWidget {
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           color: AppColors.textPrimary,
           height: 1.45,
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyScanEventsState extends StatelessWidget {
+  const _EmptyScanEventsState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Text(
+        'Todavía no hay avisos enviados desde el QR físico.',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+    );
+  }
+}
+
+class _QrScanEventTile extends StatelessWidget {
+  const _QrScanEventTile({required this.event, required this.pet});
+
+  final QrScanEvent event;
+  final Pet pet;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      key: ValueKey('qr-scan-event-${event.id}'),
+      borderRadius: BorderRadius.circular(20),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => QrScanEventDetailScreen(event: event, pet: pet),
+        ),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceAlt,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: event.possibleLostPetSighting
+                    ? AppColors.supportSoft
+                    : AppColors.primarySoft,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(Icons.location_on_outlined),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    event.possibleLostPetSighting
+                        ? 'Posible avistaje de mascota perdida'
+                        : 'QR escaneado con aviso',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    event.locationSummary,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textPrimary,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    event.sourceLabel,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded),
+          ],
         ),
       ),
     );

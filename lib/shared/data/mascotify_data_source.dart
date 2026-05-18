@@ -19,6 +19,7 @@ abstract interface class MascotifyDataSource {
   AppUser getCurrentUser();
   List<Pet> getPets();
   Pet? findPetById(String id);
+  Pet? findPetByQrId(String qrId);
   List<LostPet> getLostPets();
   LostPet? findLostPetById(String id);
   List<PetActivityEvent> getPetActivityEvents(String petId);
@@ -65,8 +66,11 @@ abstract interface class MascotifyDataSource {
   SightingLocationReference getSuggestedLocationForPet(Pet pet);
   QrStatusSnapshot getQrStatusSnapshotForPet(Pet pet);
   List<QrActivityEntry> getQrActivityEntriesForPet(Pet pet);
+  List<QrScanEvent> getQrScanEventsForPet(String petId);
+  QrScanEvent? findQrScanEventById(String id);
   Future<void> registerQrTraceabilityReview(String petId);
   Future<void> registerQrScan(String petId);
+  Future<QrScanEvent?> submitQrScanEvent(QrScanEvent event);
   Future<void> submitSightingReport(SightingReportDraft draft);
 
   Future<void> syncCurrentUserState();

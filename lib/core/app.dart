@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../features/auth/presentation/auth_session_controller.dart';
 import '../features/auth/presentation/screens/account_onboarding_screen.dart';
 import '../features/auth/presentation/screens/auth_placeholder_screen.dart';
+import '../features/pets/presentation/screens/secure_qr_scan_screen.dart';
 import 'localization/app_locale_controller.dart';
 import 'localization/app_localizations.dart';
 import 'navigation/main_navigation_screen.dart';
@@ -108,6 +109,20 @@ class _LocalizedMascotifyApp extends StatelessWidget {
               ],
               localeResolutionCallback: (locale, supportedLocales) {
                 return AppLocalizations.resolve(locale);
+              },
+              onGenerateRoute: (settings) {
+                final name = settings.name ?? '';
+                const prefix = '/pet/qr/';
+                if (name.startsWith(prefix) && name.length > prefix.length) {
+                  final qrId = Uri.decodeComponent(
+                    name.substring(prefix.length),
+                  );
+                  return MaterialPageRoute<void>(
+                    settings: settings,
+                    builder: (_) => SecureQrScanScreen(qrId: qrId),
+                  );
+                }
+                return null;
               },
               home: const _AppSessionGate(),
             );
