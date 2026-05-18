@@ -20,6 +20,7 @@ class LostPet {
     required this.isFound,
     required this.createdAt,
     this.photoLabel = '',
+    this.privateVerificationNote = '',
   });
 
   final String id;
@@ -42,6 +43,7 @@ class LostPet {
   final bool isFound;
   final DateTime createdAt;
   final String photoLabel;
+  final String privateVerificationNote;
 
   String get statusLabel => isFound ? 'Encontrada' : 'Perdida';
 
@@ -76,6 +78,7 @@ class LostPet {
     bool? isFound,
     DateTime? createdAt,
     String? photoLabel,
+    String? privateVerificationNote,
   }) {
     return LostPet(
       id: id ?? this.id,
@@ -98,6 +101,8 @@ class LostPet {
       isFound: isFound ?? this.isFound,
       createdAt: createdAt ?? this.createdAt,
       photoLabel: photoLabel ?? this.photoLabel,
+      privateVerificationNote:
+          privateVerificationNote ?? this.privateVerificationNote,
     );
   }
 
@@ -123,6 +128,7 @@ class LostPet {
       'isFound': isFound,
       'createdAt': createdAt.toIso8601String(),
       'photoLabel': photoLabel,
+      'privateVerificationNote': privateVerificationNote,
     };
   }
 
@@ -150,6 +156,7 @@ class LostPet {
           DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
       photoLabel: json['photoLabel'] as String? ?? '',
+      privateVerificationNote: json['privateVerificationNote'] as String? ?? '',
     );
   }
 }

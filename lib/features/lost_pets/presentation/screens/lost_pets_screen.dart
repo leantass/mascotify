@@ -9,14 +9,12 @@ import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
 
-class LostPetsScreen extends StatefulWidget {
+const _safetyError =
+    'Mascotify no permite pedir dinero por una mascota perdida. Modificá el texto para continuar.';
+
+class LostPetsScreen extends StatelessWidget {
   const LostPetsScreen({super.key});
 
-  @override
-  State<LostPetsScreen> createState() => _LostPetsScreenState();
-}
-
-class _LostPetsScreenState extends State<LostPetsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,6 +40,18 @@ class LostPetsSection extends StatefulWidget {
 }
 
 class _LostPetsSectionState extends State<LostPetsSection> {
+  final TextEditingController _searchController = TextEditingController();
+  String _speciesFilter = 'Todos';
+  String _regionFilter = 'Todas';
+  String _cityFilter = 'Todas';
+  String _statusFilter = 'Todas';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   Future<void> _openForm({LostPet? lostPet}) async {
     final result = await showDialog<LostPet>(
       context: context,
@@ -68,11 +78,43 @@ class _LostPetsSectionState extends State<LostPetsSection> {
     if (mounted) setState(() {});
   }
 
+  List<LostPet> _filteredPets() {
+    final query = _searchController.text.trim().toLowerCase();
+    final items = AppData.lostPets.where((lostPet) {
+      if (_statusFilter == 'Perdida' && lostPet.isFound) return false;
+      if (_statusFilter == 'Encontrada' && !lostPet.isFound) return false;
+      if (_speciesFilter != 'Todos' && lostPet.species != _speciesFilter) {
+        return false;
+      }
+      if (_regionFilter != 'Todas' && lostPet.region != _regionFilter) {
+        return false;
+      }
+      final city = _displayCity(lostPet);
+      if (_cityFilter != 'Todas' && city != _cityFilter) return false;
+      if (query.isEmpty) return true;
+      final haystack = [
+        lostPet.name,
+        lostPet.species,
+        lostPet.breed,
+        lostPet.distinctiveSigns,
+        lostPet.lostZone,
+        lostPet.city,
+        lostPet.locationFreeText,
+        lostPet.region,
+        lostPet.country,
+      ].join(' ').toLowerCase();
+      return haystack.contains(query);
+    }).toList();
+    items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return items;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final lostPets = AppData.lostPets;
-    final activeCount = lostPets.where((item) => !item.isFound).length;
-    final foundCount = lostPets.where((item) => item.isFound).length;
+    final allPets = AppData.lostPets;
+    final filteredPets = _filteredPets();
+    final activeCount = allPets.where((item) => !item.isFound).length;
+    final foundCount = allPets.where((item) => item.isFound).length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,30 +128,64 @@ class _LostPetsSectionState extends State<LostPetsSection> {
           const SizedBox(height: 20),
         ],
         SectionHeader(
-          eyebrow: 'Comunidad',
+          eyebrow: 'Catálogo solidario',
           title: 'Mascotas perdidas',
           subtitle:
-              'Reportes locales para ayudar a ubicar animales y ordenar la información de contacto.',
+              'Avisos gratuitos para ayudar a reunir mascotas con sus familias.',
           trailing: widget.showHero
               ? null
               : ElevatedButton.icon(
                   key: const ValueKey('lost-pet-add-button'),
                   onPressed: () => _openForm(),
                   icon: const Icon(Icons.add_rounded),
-                  label: const Text('Agregar'),
+                  label: const Text('Reportar'),
                 ),
         ),
+        const SizedBox(height: 12),
+        const _SafetyNotice(),
         const SizedBox(height: 16),
-        if (lostPets.isEmpty)
+        _LostPetsFilters(
+          searchController: _searchController,
+          speciesFilter: _speciesFilter,
+          regionFilter: _regionFilter,
+          cityFilter: _cityFilter,
+          statusFilter: _statusFilter,
+          allPets: allPets,
+          onChanged:
+              ({
+                String? species,
+                String? region,
+                String? city,
+                String? status,
+              }) {
+                setState(() {
+                  if (species != null) _speciesFilter = species;
+                  if (region != null) {
+                    _regionFilter = region;
+                    _cityFilter = 'Todas';
+                  }
+                  if (city != null) _cityFilter = city;
+                  if (status != null) _statusFilter = status;
+                });
+              },
+          onSearchChanged: () => setState(() {}),
+        ),
+        const SizedBox(height: 16),
+        if (allPets.isEmpty)
           _LostPetsEmptyState(onAdd: () => _openForm())
+        else if (filteredPets.isEmpty)
+          _FilteredEmptyState()
         else
           ResponsiveWrapGrid(
-            minItemWidth: 300,
-            children: lostPets
+            minItemWidth: 310,
+            children: filteredPets
                 .map(
                   (lostPet) => _LostPetCard(
                     lostPet: lostPet,
-                    onTap: () => _openDetail(lostPet),
+                    onDetail: () => _openDetail(lostPet),
+                    onSeen: () => _showSeenDialog(context, lostPet),
+                    onContact: () => _showSafeContactDialog(context, lostPet),
+                    onReport: () => _showReportDialog(context, lostPet),
                   ),
                 )
                 .toList(),
@@ -168,10 +244,10 @@ class _LostPetDetailScreenState extends State<LostPetDetailScreen> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Detalle de mascota perdida')),
+      appBar: AppBar(title: const Text('Ficha de mascota perdida')),
       body: SafeArea(
         child: ResponsivePageBody(
-          maxWidth: 900,
+          maxWidth: 980,
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
@@ -181,77 +257,120 @@ class _LostPetDetailScreenState extends State<LostPetDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 64,
-                            height: 64,
-                            decoration: BoxDecoration(
-                              color: Color(_lostPet.colorHex),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Icon(
-                              Icons.pets_rounded,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isCompact = constraints.maxWidth < 620;
+                          final photo = _LostPetPhoto(
+                            colorHex: _lostPet.colorHex,
+                            large: true,
+                          );
+                          final summary = Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _lostPet.name,
+                                style: textTheme.headlineMedium,
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  _StatusPill(lostPet: _lostPet),
+                                  const _SafetyPill(label: 'Ayuda gratuita'),
+                                  const _SafetyPill(label: 'No pagar rescates'),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                _lostPet.description,
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.textSecondary,
+                                  height: 1.45,
+                                ),
+                              ),
+                            ],
+                          );
+                          if (isCompact) {
+                            return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  _lostPet.name,
-                                  style: textTheme.headlineMedium,
-                                ),
-                                const SizedBox(height: 6),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: [
-                                    _StatusPill(lostPet: _lostPet),
-                                    _SoftPill(label: _lostPet.breedSummary),
-                                    _SoftPill(label: _lostPet.sex),
-                                  ],
-                                ),
+                                photo,
+                                const SizedBox(height: 16),
+                                summary,
                               ],
-                            ),
+                            );
+                          }
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              photo,
+                              const SizedBox(width: 18),
+                              Expanded(child: summary),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      const _SafetyNotice(compact: true),
+                      const SizedBox(height: 16),
+                      _DetailGrid(
+                        tiles: [
+                          _DetailTileData(
+                            Icons.pets_outlined,
+                            'Tipo',
+                            _lostPet.species,
+                          ),
+                          _DetailTileData(
+                            Icons.badge_outlined,
+                            'Raza / tipo',
+                            _lostPet.breed,
+                          ),
+                          _DetailTileData(
+                            Icons.cake_outlined,
+                            'Edad',
+                            _lostPet.ageLabel,
+                          ),
+                          _DetailTileData(
+                            Icons.palette_outlined,
+                            'Color',
+                            _lostPet.distinctiveSigns,
+                          ),
+                          _DetailTileData(
+                            Icons.info_outline_rounded,
+                            'Señas particulares',
+                            _lostPet.distinctiveSigns,
+                          ),
+                          _DetailTileData(
+                            Icons.place_outlined,
+                            'Ubicación',
+                            _lostPet.location,
+                          ),
+                          _DetailTileData(
+                            Icons.map_outlined,
+                            'Zona aproximada',
+                            _lostPet.lostZone,
+                          ),
+                          _DetailTileData(
+                            Icons.event_outlined,
+                            'Fecha de pérdida',
+                            _lostPet.lostDateLabel,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 18),
-                      _DetailTile(
-                        icon: Icons.place_outlined,
-                        label: 'Ubicación',
-                        value: _lostPet.readableLocation,
-                      ),
-                      _DetailTile(
-                        icon: Icons.map_outlined,
-                        label: 'Zona donde se perdió',
-                        value: _lostPet.lostZone,
-                      ),
-                      _DetailTile(
-                        icon: Icons.event_outlined,
-                        label: 'Fecha aproximada',
-                        value: _lostPet.lostDateLabel,
-                      ),
-                      _DetailTile(
-                        icon: Icons.info_outline_rounded,
-                        label: 'Señas particulares',
-                        value: _lostPet.distinctiveSigns,
-                      ),
+                      const SizedBox(height: 12),
                       _DetailTile(
                         icon: Icons.description_outlined,
-                        label: 'Descripción',
+                        label: 'Descripción de lo ocurrido',
                         value: _lostPet.description,
                       ),
                       _DetailTile(
-                        icon: Icons.call_outlined,
-                        label: 'Contacto visible',
-                        value: _lostPet.contact,
+                        icon: Icons.verified_user_outlined,
+                        label: 'Contacto seguro',
+                        value:
+                            'Abrí Contacto seguro para ver recomendaciones antes de usar el dato visible.',
                       ),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 16),
                       Wrap(
                         spacing: 10,
                         runSpacing: 10,
@@ -260,6 +379,26 @@ class _LostPetDetailScreenState extends State<LostPetDetailScreen> {
                             onPressed: () => Navigator.of(context).pop(),
                             icon: const Icon(Icons.arrow_back_rounded),
                             label: const Text('Volver'),
+                          ),
+                          ElevatedButton.icon(
+                            key: const ValueKey('lost-pet-seen-button'),
+                            onPressed: () => _showSeenDialog(context, _lostPet),
+                            icon: const Icon(Icons.visibility_outlined),
+                            label: const Text('Creo haberla visto'),
+                          ),
+                          OutlinedButton.icon(
+                            key: const ValueKey('lost-pet-safe-contact-button'),
+                            onPressed: () =>
+                                _showSafeContactDialog(context, _lostPet),
+                            icon: const Icon(Icons.shield_outlined),
+                            label: const Text('Contacto seguro'),
+                          ),
+                          OutlinedButton.icon(
+                            key: const ValueKey('lost-pet-report-button'),
+                            onPressed: () =>
+                                _showReportDialog(context, _lostPet),
+                            icon: const Icon(Icons.flag_outlined),
+                            label: const Text('Reportar'),
                           ),
                           OutlinedButton.icon(
                             key: const ValueKey('lost-pet-edit-button'),
@@ -306,27 +445,12 @@ class _LostPetsHero extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.border),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isCompact = constraints.maxWidth < 520;
-          final metrics = Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              _HeroMetric(label: 'Perdidas', value: '$activeCount'),
-              _HeroMetric(label: 'Encontradas', value: '$foundCount'),
-            ],
-          );
-          final action = ElevatedButton.icon(
-            key: const ValueKey('lost-pet-add-button'),
-            onPressed: onAdd,
-            icon: const Icon(Icons.add_rounded),
-            label: const Text('Agregar mascota perdida'),
-          );
-
+          final isCompact = constraints.maxWidth < 560;
           final text = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -336,7 +460,7 @@ class _LostPetsHero extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Creá reportes locales con ubicación, zona, fecha y contacto para que testers puedan probar el flujo comunitario completo.',
+                'Avisos gratuitos para ayudar a reunir mascotas con sus familias. Sin precios, sin cobros y sin comentarios públicos.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.45,
@@ -344,7 +468,20 @@ class _LostPetsHero extends StatelessWidget {
               ),
             ],
           );
-
+          final action = ElevatedButton.icon(
+            key: const ValueKey('lost-pet-add-button'),
+            onPressed: onAdd,
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Reportar mascota perdida'),
+          );
+          final metrics = Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _HeroMetric(label: 'Perdidas', value: '$activeCount'),
+              _HeroMetric(label: 'Encontradas', value: '$foundCount'),
+            ],
+          );
           if (isCompact) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,7 +494,6 @@ class _LostPetsHero extends StatelessWidget {
               ],
             );
           }
-
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -371,6 +507,199 @@ class _LostPetsHero extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+class _SafetyNotice extends StatelessWidget {
+  const _SafetyNotice({this.compact = false});
+
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(compact ? 14 : 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF8F3),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFB9E5CA)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.volunteer_activism_outlined,
+            color: AppColors.textPrimary,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Este catálogo es solidario y gratuito. No pagues rescates ni transferencias; reportá cualquier intento de cobro.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w700,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LostPetsFilters extends StatelessWidget {
+  const _LostPetsFilters({
+    required this.searchController,
+    required this.speciesFilter,
+    required this.regionFilter,
+    required this.cityFilter,
+    required this.statusFilter,
+    required this.allPets,
+    required this.onChanged,
+    required this.onSearchChanged,
+  });
+
+  final TextEditingController searchController;
+  final String speciesFilter;
+  final String regionFilter;
+  final String cityFilter;
+  final String statusFilter;
+  final List<LostPet> allPets;
+  final void Function({
+    String? species,
+    String? region,
+    String? city,
+    String? status,
+  })
+  onChanged;
+  final VoidCallback onSearchChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final species = [
+      'Todos',
+      ...PetSpeciesCatalog.species.map((item) => item.label),
+    ];
+    final regions = [
+      'Todas',
+      ...{
+        for (final pet in allPets)
+          if (pet.region.trim().isNotEmpty) pet.region,
+      },
+    ];
+    final cities = [
+      'Todas',
+      ...{
+        for (final pet in allPets)
+          if ((regionFilter == 'Todas' || pet.region == regionFilter) &&
+              _displayCity(pet).trim().isNotEmpty)
+            _displayCity(pet),
+      },
+    ];
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              key: const ValueKey('lost-pets-search-field'),
+              controller: searchController,
+              onChanged: (_) => onSearchChanged(),
+              decoration: _lostPetFieldDecoration(
+                'Buscar por nombre, zona, ciudad o seña',
+                prefixIcon: const Icon(Icons.search_rounded),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _FormGrid(
+              children: [
+                _FilterDropdown(
+                  key: const ValueKey('lost-pets-species-filter'),
+                  label: 'Tipo de animal',
+                  value: species.contains(speciesFilter)
+                      ? speciesFilter
+                      : 'Todos',
+                  values: species,
+                  onChanged: (value) => onChanged(species: value),
+                ),
+                _FilterDropdown(
+                  key: const ValueKey('lost-pets-region-filter'),
+                  label: 'Provincia / región',
+                  value: regions.contains(regionFilter)
+                      ? regionFilter
+                      : 'Todas',
+                  values: regions,
+                  onChanged: (value) => onChanged(region: value),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _FormGrid(
+              children: [
+                _FilterDropdown(
+                  key: const ValueKey('lost-pets-city-filter'),
+                  label: 'Ciudad / localidad',
+                  value: cities.contains(cityFilter) ? cityFilter : 'Todas',
+                  values: cities,
+                  onChanged: (value) => onChanged(city: value),
+                ),
+                _FilterDropdown(
+                  key: const ValueKey('lost-pets-status-filter'),
+                  label: 'Estado',
+                  value: statusFilter,
+                  values: const ['Todas', 'Perdida', 'Encontrada'],
+                  onChanged: (value) => onChanged(status: value),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Ordenado por fecha: recientes primero.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterDropdown extends StatelessWidget {
+  const _FilterDropdown({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.values,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String value;
+  final List<String> values;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      initialValue: value,
+      isExpanded: true,
+      decoration: _lostPetFieldDecoration(label),
+      items: values
+          .map(
+            (item) => DropdownMenuItem<String>(value: item, child: Text(item)),
+          )
+          .toList(),
+      onChanged: (value) {
+        if (value != null) onChanged(value);
+      },
     );
   }
 }
@@ -391,12 +720,12 @@ class _LostPetsEmptyState extends StatelessWidget {
             const Icon(Icons.search_off_rounded, color: AppColors.textPrimary),
             const SizedBox(height: 12),
             Text(
-              'Todavía no hay mascotas perdidas reportadas',
+              'Todavía no hay mascotas perdidas reportadas en esta zona.',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             Text(
-              'Cuando cargues el primer reporte, va a aparecer en este listado con acceso a detalle, edición y estado.',
+              'Podés crear un aviso gratuito para ayudar a encontrar una mascota.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textPrimary,
                 height: 1.45,
@@ -404,6 +733,7 @@ class _LostPetsEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             OutlinedButton.icon(
+              key: const ValueKey('lost-pet-empty-add-button'),
               onPressed: onAdd,
               icon: const Icon(Icons.add_rounded),
               label: const Text('Reportar mascota perdida'),
@@ -415,86 +745,126 @@ class _LostPetsEmptyState extends StatelessWidget {
   }
 }
 
+class _FilteredEmptyState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Text(
+          'No encontramos avisos con esos filtros.',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ),
+    );
+  }
+}
+
 class _LostPetCard extends StatelessWidget {
-  const _LostPetCard({required this.lostPet, required this.onTap});
+  const _LostPetCard({
+    required this.lostPet,
+    required this.onDetail,
+    required this.onSeen,
+    required this.onContact,
+    required this.onReport,
+  });
 
   final LostPet lostPet;
-  final VoidCallback onTap;
+  final VoidCallback onDetail;
+  final VoidCallback onSeen;
+  final VoidCallback onContact;
+  final VoidCallback onReport;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: InkWell(
-        key: ValueKey('lost-pet-card-${lostPet.id}'),
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: Color(lostPet.colorHex),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: const Icon(Icons.pets_rounded),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          lostPet.name,
-                          style: Theme.of(context).textTheme.titleLarge,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _LostPetPhoto(colorHex: lostPet.colorHex),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        lostPet.name,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        lostPet.breedSummary,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          lostPet.breedSummary,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  _StatusPill(lostPet: lostPet),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Text(
-                lostPet.readableLocation,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w700,
                 ),
+                _StatusPill(lostPet: lostPet),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: const [
+                _SafetyPill(label: 'Ayuda gratuita'),
+                _SafetyPill(label: 'No pagar rescates'),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _MiniInfo(
+              icon: Icons.palette_outlined,
+              text: lostPet.distinctiveSigns,
+            ),
+            _MiniInfo(icon: Icons.place_outlined, text: lostPet.location),
+            _MiniInfo(icon: Icons.map_outlined, text: lostPet.lostZone),
+            _MiniInfo(icon: Icons.event_outlined, text: lostPet.lostDateLabel),
+            const SizedBox(height: 8),
+            Text(
+              lostPet.description,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.4,
               ),
-              const SizedBox(height: 8),
-              Text(
-                lostPet.description,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: OutlinedButton(
-                  onPressed: onTap,
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ElevatedButton(
+                  key: ValueKey('lost-pet-detail-${lostPet.id}'),
+                  onPressed: onDetail,
                   child: const Text('Ver detalle'),
                 ),
-              ),
-            ],
-          ),
+                OutlinedButton(
+                  key: ValueKey('lost-pet-seen-${lostPet.id}'),
+                  onPressed: onSeen,
+                  child: const Text('Creo haberla visto'),
+                ),
+                OutlinedButton(
+                  key: ValueKey('lost-pet-contact-${lostPet.id}'),
+                  onPressed: onContact,
+                  child: const Text('Contacto seguro'),
+                ),
+                IconButton(
+                  key: ValueKey('lost-pet-report-${lostPet.id}'),
+                  tooltip: 'Reportar',
+                  onPressed: onReport,
+                  icon: const Icon(Icons.flag_outlined),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -520,7 +890,9 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
   late final TextEditingController _lostDateController;
   late final TextEditingController _descriptionController;
   late final TextEditingController _contactController;
+  late final TextEditingController _colorController;
   late final TextEditingController _distinctiveSignsController;
+  late final TextEditingController _privateVerificationController;
 
   late String _selectedSpecies;
   late String _selectedBreed;
@@ -570,14 +942,18 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
     );
     _lostZoneController = TextEditingController(text: initial?.lostZone ?? '');
     _lostDateController = TextEditingController(
-      text: initial?.lostDateLabel ?? 'Hoy',
+      text: initial?.lostDateLabel ?? '',
     );
     _descriptionController = TextEditingController(
       text: initial?.description ?? '',
     );
     _contactController = TextEditingController(text: initial?.contact ?? '');
+    _colorController = TextEditingController(text: _initialColor(initial));
     _distinctiveSignsController = TextEditingController(
-      text: initial?.distinctiveSigns ?? '',
+      text: _initialSigns(initial),
+    );
+    _privateVerificationController = TextEditingController(
+      text: initial?.privateVerificationNote ?? '',
     );
     _selectedSex = initial?.sex ?? 'No informado';
   }
@@ -593,7 +969,9 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
     _lostDateController.dispose();
     _descriptionController.dispose();
     _contactController.dispose();
+    _colorController.dispose();
     _distinctiveSignsController.dispose();
+    _privateVerificationController.dispose();
     super.dispose();
   }
 
@@ -604,7 +982,7 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 720, maxHeight: size.height - 40),
+        constraints: BoxConstraints(maxWidth: 760, maxHeight: size.height - 40),
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(22),
           child: Column(
@@ -612,15 +990,23 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _isEditing
-                    ? 'Editar mascota perdida'
-                    : 'Agregar mascota perdida',
+                _isEditing ? 'Editar aviso solidario' : 'Crear aviso solidario',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 8),
               Text(
-                'Cargá datos claros de identificación, ubicación y contacto visible para que el reporte sea útil.',
-                style: Theme.of(context).textTheme.bodyMedium,
+                'Completá una ficha clara. Este aviso es gratuito y Mascotify no permite cobrar por devolver, rescatar o informar sobre una mascota perdida.',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(height: 1.4),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'No publiques dirección exacta si no querés compartirla.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 18),
               _LostPetField(
@@ -711,6 +1097,20 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
                 ],
               ),
               const SizedBox(height: 12),
+              _LostPetField(
+                fieldKey: const ValueKey('lost-pet-color-field'),
+                controller: _colorController,
+                label: 'Color',
+                hintText: 'Ej: marrón con blanco',
+              ),
+              const SizedBox(height: 12),
+              _LostPetField(
+                fieldKey: const ValueKey('lost-pet-signs-field'),
+                controller: _distinctiveSignsController,
+                label: 'Señas particulares visibles',
+                maxLines: 2,
+              ),
+              const SizedBox(height: 12),
               _LostPetLocationFields(
                 selectedCountry: _selectedCountry,
                 selectedRegion: _selectedRegion,
@@ -725,7 +1125,7 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
               _LostPetField(
                 fieldKey: const ValueKey('lost-pet-zone-field'),
                 controller: _lostZoneController,
-                label: 'Zona donde se perdió',
+                label: 'Zona aproximada donde se perdió',
                 hintText: 'Ej: plaza, barrio, esquina o referencia',
               ),
               const SizedBox(height: 12),
@@ -737,16 +1137,9 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
               ),
               const SizedBox(height: 12),
               _LostPetField(
-                fieldKey: const ValueKey('lost-pet-signs-field'),
-                controller: _distinctiveSignsController,
-                label: 'Color / señas particulares',
-                maxLines: 2,
-              ),
-              const SizedBox(height: 12),
-              _LostPetField(
                 fieldKey: const ValueKey('lost-pet-description-field'),
                 controller: _descriptionController,
-                label: 'Descripción',
+                label: 'Descripción de lo ocurrido',
                 maxLines: 3,
               ),
               const SizedBox(height: 12),
@@ -756,23 +1149,25 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
                 label: 'Contacto visible',
                 hintText: 'Ej: teléfono, email o instrucción de contacto',
               ),
+              const SizedBox(height: 12),
+              _LostPetField(
+                fieldKey: const ValueKey('lost-pet-private-verification-field'),
+                controller: _privateVerificationController,
+                label: 'Dato privado para verificar identidad de la mascota',
+                hintText: 'No se muestra públicamente',
+                maxLines: 2,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'No se muestra públicamente. Sirve para confirmar si alguien realmente vio o encontró a tu mascota.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.35,
+                ),
+              ),
               if (_errorMessage != null) ...[
                 const SizedBox(height: 14),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFE5E5),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Text(
-                    _errorMessage!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+                _ErrorBox(message: _errorMessage!),
               ],
               const SizedBox(height: 20),
               LayoutBuilder(
@@ -785,7 +1180,7 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
                   final save = ElevatedButton(
                     key: const ValueKey('lost-pet-save-button'),
                     onPressed: _save,
-                    child: const Text('Guardar reporte'),
+                    child: const Text('Guardar aviso'),
                   );
                   if (isCompact) {
                     return Column(
@@ -832,11 +1227,13 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
       city: locationParts.city,
       freeText: locationParts.freeText,
     );
+    final color = _colorController.text.trim();
+    final signs = _distinctiveSignsController.text.trim();
     final lostZone = _lostZoneController.text.trim();
     final lostDate = _lostDateController.text.trim();
     final description = _descriptionController.text.trim();
     final contact = _contactController.text.trim();
-    final signs = _distinctiveSignsController.text.trim();
+    final privateVerification = _privateVerificationController.text.trim();
 
     if (name.isEmpty ||
         species.isEmpty ||
@@ -844,10 +1241,10 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
         location.isEmpty ||
         lostZone.isEmpty ||
         contact.isEmpty) {
-      setState(() {
-        _errorMessage =
-            'Completá nombre, tipo de animal, raza, ubicación, zona y contacto.';
-      });
+      setState(
+        () => _errorMessage =
+            'Completá nombre, tipo de animal, raza, ubicación, zona y contacto.',
+      );
       return;
     }
 
@@ -861,8 +1258,24 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
       return;
     }
 
+    final sensitiveText = [
+      lostZone,
+      description,
+      contact,
+      signs,
+      privateVerification,
+    ].join(' ');
+    if (_containsPaymentIntent(sensitiveText)) {
+      setState(() => _errorMessage = _safetyError);
+      return;
+    }
+
     final now = DateTime.now();
     final initial = widget.initialLostPet;
+    final colorAndSigns = [
+      if (color.isNotEmpty) 'Color: $color',
+      if (signs.isNotEmpty) signs,
+    ].join(' · ');
     final lostPet = LostPet(
       id: initial?.id ?? 'lost-pet-${now.microsecondsSinceEpoch}',
       name: name,
@@ -879,13 +1292,16 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
       lostZone: lostZone,
       lostDateLabel: lostDate.isEmpty ? 'Sin fecha exacta' : lostDate,
       description: description.isEmpty
-          ? 'Reporte local creado para ayudar a encontrar a $name.'
+          ? 'Aviso solidario creado para ayudar a encontrar a $name.'
           : description,
       contact: contact,
-      distinctiveSigns: signs.isEmpty ? 'Sin señas informadas' : signs,
+      distinctiveSigns: colorAndSigns.isEmpty
+          ? 'Sin señas informadas'
+          : colorAndSigns,
       isFound: initial?.isFound ?? false,
       createdAt: initial?.createdAt ?? now,
       photoLabel: initial?.photoLabel ?? '',
+      privateVerificationNote: privateVerification,
     );
 
     Navigator.of(context).pop(lostPet);
@@ -909,6 +1325,23 @@ class _LostPetFormDialogState extends State<_LostPetFormDialog> {
       if (option.toLowerCase() == breed.trim().toLowerCase()) return option;
     }
     return PetSpeciesCatalog.other;
+  }
+
+  String _initialColor(LostPet? initial) {
+    final signs = initial?.distinctiveSigns ?? '';
+    if (signs.startsWith('Color: ')) {
+      final value = signs.substring(7).split(' · ').first.trim();
+      return value;
+    }
+    return '';
+  }
+
+  String _initialSigns(LostPet? initial) {
+    final signs = initial?.distinctiveSigns ?? '';
+    if (signs.startsWith('Color: ') && signs.contains(' · ')) {
+      return signs.split(' · ').skip(1).join(' · ');
+    }
+    return signs;
   }
 
   List<String> _citiesForSelection() {
@@ -1096,6 +1529,278 @@ class _LostPetLocationFields extends StatelessWidget {
   }
 }
 
+Future<void> _showSeenDialog(BuildContext context, LostPet lostPet) async {
+  await showDialog<void>(
+    context: context,
+    builder: (_) => _SeenDialog(lostPet: lostPet),
+  );
+}
+
+Future<void> _showSafeContactDialog(
+  BuildContext context,
+  LostPet lostPet,
+) async {
+  await showDialog<void>(
+    context: context,
+    builder: (_) => _SafeContactDialog(lostPet: lostPet),
+  );
+}
+
+Future<void> _showReportDialog(BuildContext context, LostPet lostPet) async {
+  await showDialog<void>(
+    context: context,
+    builder: (_) => _ReportDialog(lostPet: lostPet),
+  );
+}
+
+class _SeenDialog extends StatefulWidget {
+  const _SeenDialog({required this.lostPet});
+
+  final LostPet lostPet;
+
+  @override
+  State<_SeenDialog> createState() => _SeenDialogState();
+}
+
+class _SeenDialogState extends State<_SeenDialog> {
+  final _whereController = TextEditingController();
+  final _whenController = TextEditingController();
+  final _commentController = TextEditingController();
+  final _contactController = TextEditingController();
+  String? _error;
+  bool _sent = false;
+
+  @override
+  void dispose() {
+    _whereController.dispose();
+    _whenController.dispose();
+    _commentController.dispose();
+    _contactController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_sent) {
+      return _SimpleDialogShell(
+        title: 'Información cargada',
+        children: [
+          const Text(
+            'Gracias. Avisamos a la familia con la información cargada.',
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      );
+    }
+    return _SimpleDialogShell(
+      title: 'Creo haberla visto: ${widget.lostPet.name}',
+      children: [
+        const _SafetyNotice(compact: true),
+        const SizedBox(height: 12),
+        _LostPetField(
+          fieldKey: const ValueKey('seen-where-field'),
+          controller: _whereController,
+          label: 'Dónde la viste',
+        ),
+        const SizedBox(height: 12),
+        _LostPetField(
+          fieldKey: const ValueKey('seen-when-field'),
+          controller: _whenController,
+          label: 'Cuándo la viste',
+        ),
+        const SizedBox(height: 12),
+        _LostPetField(
+          fieldKey: const ValueKey('seen-comment-field'),
+          controller: _commentController,
+          label: 'Comentario opcional',
+          maxLines: 2,
+        ),
+        const SizedBox(height: 12),
+        _LostPetField(
+          fieldKey: const ValueKey('seen-contact-field'),
+          controller: _contactController,
+          label: 'Contacto opcional',
+        ),
+        if (_error != null) ...[
+          const SizedBox(height: 12),
+          _ErrorBox(message: _error!),
+        ],
+        const SizedBox(height: 16),
+        ElevatedButton(
+          key: const ValueKey('seen-submit-button'),
+          onPressed: () {
+            final text = [
+              _whereController.text,
+              _whenController.text,
+              _commentController.text,
+              _contactController.text,
+            ].join(' ');
+            if (_whereController.text.trim().isEmpty ||
+                _whenController.text.trim().isEmpty) {
+              setState(() => _error = 'Completá dónde y cuándo la viste.');
+              return;
+            }
+            if (_containsPaymentIntent(text)) {
+              setState(() => _error = _safetyError);
+              return;
+            }
+            setState(() => _sent = true);
+          },
+          child: const Text('Enviar aviso local'),
+        ),
+      ],
+    );
+  }
+}
+
+class _SafeContactDialog extends StatefulWidget {
+  const _SafeContactDialog({required this.lostPet});
+
+  final LostPet lostPet;
+
+  @override
+  State<_SafeContactDialog> createState() => _SafeContactDialogState();
+}
+
+class _SafeContactDialogState extends State<_SafeContactDialog> {
+  bool _showContact = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SimpleDialogShell(
+      title: 'Contacto seguro',
+      children: [
+        const _SafetyBullet(text: 'No pagues rescates ni transferencias.'),
+        const _SafetyBullet(text: 'Verificá señas de la mascota.'),
+        const _SafetyBullet(text: 'Encontrate en un lugar público.'),
+        const _SafetyBullet(text: 'Andá acompañado si podés.'),
+        const _SafetyBullet(text: 'Reportá cualquier intento de cobro.'),
+        const SizedBox(height: 14),
+        if (_showContact)
+          _DetailTile(
+            icon: Icons.call_outlined,
+            label: 'Contacto visible',
+            value: widget.lostPet.contact,
+          )
+        else
+          ElevatedButton(
+            key: const ValueKey('show-safe-contact-button'),
+            onPressed: () => setState(() => _showContact = true),
+            child: const Text('Entiendo, mostrar contacto'),
+          ),
+      ],
+    );
+  }
+}
+
+class _ReportDialog extends StatefulWidget {
+  const _ReportDialog({required this.lostPet});
+
+  final LostPet lostPet;
+
+  @override
+  State<_ReportDialog> createState() => _ReportDialogState();
+}
+
+class _ReportDialogState extends State<_ReportDialog> {
+  String _reason = 'Me pidió dinero';
+  bool _sent = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_sent) {
+      return _SimpleDialogShell(
+        title: 'Reporte recibido',
+        children: [
+          const Text('Gracias. Revisaremos este reporte.'),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      );
+    }
+    return _SimpleDialogShell(
+      title: 'Reportar aviso de ${widget.lostPet.name}',
+      children: [
+        DropdownButtonFormField<String>(
+          key: const ValueKey('report-reason-dropdown'),
+          initialValue: _reason,
+          isExpanded: true,
+          decoration: _lostPetFieldDecoration('Motivo'),
+          items: const [
+            DropdownMenuItem(
+              value: 'Me pidió dinero',
+              child: Text('Me pidió dinero'),
+            ),
+            DropdownMenuItem(
+              value: 'Sospecha de estafa',
+              child: Text('Sospecha de estafa'),
+            ),
+            DropdownMenuItem(
+              value: 'Información falsa',
+              child: Text('Información falsa'),
+            ),
+            DropdownMenuItem(
+              value: 'Contenido ofensivo',
+              child: Text('Contenido ofensivo'),
+            ),
+            DropdownMenuItem(
+              value: 'Mascota duplicada',
+              child: Text('Mascota duplicada'),
+            ),
+            DropdownMenuItem(value: 'Otro', child: Text('Otro')),
+          ],
+          onChanged: (value) {
+            if (value != null) setState(() => _reason = value);
+          },
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          key: const ValueKey('report-submit-button'),
+          onPressed: () => setState(() => _sent = true),
+          child: const Text('Enviar reporte'),
+        ),
+      ],
+    );
+  }
+}
+
+class _SimpleDialogShell extends StatelessWidget {
+  const _SimpleDialogShell({required this.title, required this.children});
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 520, maxHeight: size.height - 40),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 14),
+              ...children,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _FormGrid extends StatelessWidget {
   const _FormGrid({required this.children});
 
@@ -1203,6 +1908,31 @@ class _HeroMetric extends StatelessWidget {
   }
 }
 
+class _LostPetPhoto extends StatelessWidget {
+  const _LostPetPhoto({required this.colorHex, this.large = false});
+
+  final int colorHex;
+  final bool large;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = large ? 150.0 : 70.0;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Color(colorHex),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Icon(
+        Icons.pets_rounded,
+        size: large ? 54 : 30,
+        color: AppColors.textPrimary,
+      ),
+    );
+  }
+}
+
 class _StatusPill extends StatelessWidget {
   const _StatusPill({required this.lostPet});
 
@@ -1227,8 +1957,8 @@ class _StatusPill extends StatelessWidget {
   }
 }
 
-class _SoftPill extends StatelessWidget {
-  const _SoftPill({required this.label});
+class _SafetyPill extends StatelessWidget {
+  const _SafetyPill({required this.label});
 
   final String label;
 
@@ -1244,6 +1974,88 @@ class _SoftPill extends StatelessWidget {
       child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
     );
   }
+}
+
+class _MiniInfo extends StatelessWidget {
+  const _MiniInfo({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    if (text.trim().isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: AppColors.textSecondary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailGrid extends StatelessWidget {
+  const _DetailGrid({required this.tiles});
+
+  final List<_DetailTileData> tiles;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 640;
+        if (isCompact) {
+          return Column(
+            children: tiles
+                .map(
+                  (tile) => _DetailTile(
+                    icon: tile.icon,
+                    label: tile.label,
+                    value: tile.value,
+                  ),
+                )
+                .toList(),
+          );
+        }
+        return Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: tiles
+              .map(
+                (tile) => SizedBox(
+                  width: (constraints.maxWidth - 10) / 2,
+                  child: _DetailTile(
+                    icon: tile.icon,
+                    label: tile.label,
+                    value: tile.value,
+                  ),
+                ),
+              )
+              .toList(),
+        );
+      },
+    );
+  }
+}
+
+class _DetailTileData {
+  const _DetailTileData(this.icon, this.label, this.value);
+
+  final IconData icon;
+  final String label;
+  final String value;
 }
 
 class _DetailTile extends StatelessWidget {
@@ -1300,10 +2112,61 @@ class _DetailTile extends StatelessWidget {
   }
 }
 
-InputDecoration _lostPetFieldDecoration(String label, {String? hintText}) {
+class _SafetyBullet extends StatelessWidget {
+  const _SafetyBullet({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.check_circle_outline, size: 18),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorBox extends StatelessWidget {
+  const _ErrorBox({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFE5E5),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Text(
+        message,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+InputDecoration _lostPetFieldDecoration(
+  String label, {
+  String? hintText,
+  Widget? prefixIcon,
+}) {
   return InputDecoration(
     labelText: label,
     hintText: hintText,
+    prefixIcon: prefixIcon,
     filled: true,
     fillColor: AppColors.surfaceAlt,
     border: OutlineInputBorder(
@@ -1311,4 +2174,29 @@ InputDecoration _lostPetFieldDecoration(String label, {String? hintText}) {
       borderSide: BorderSide.none,
     ),
   );
+}
+
+String _displayCity(LostPet lostPet) {
+  if (lostPet.city.trim().isNotEmpty) return lostPet.city.trim();
+  return lostPet.locationFreeText.trim();
+}
+
+bool _containsPaymentIntent(String text) {
+  final normalized = text.toLowerCase();
+  const blocked = [
+    'cobro',
+    'cobrar',
+    'pagame',
+    'pago',
+    'plata',
+    'rescate',
+    'recompensa obligatoria',
+    'transferencia',
+    'alias',
+    'cbu',
+    'mercado pago',
+    'depósito',
+    'deposito',
+  ];
+  return blocked.any(normalized.contains);
 }

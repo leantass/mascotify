@@ -9,7 +9,7 @@ import 'package:mascotify/theme/app_colors.dart';
 import '../../test_helpers.dart';
 
 void main() {
-  testWidgets('Mascotas contiene Mis mascotas y Mascotas perdidas', (
+  testWidgets('Mascotas perdidas está dentro de Mascotas y no en sidebar', (
     tester,
   ) async {
     _setMobileViewport(tester, const Size(390, 844));
@@ -23,22 +23,17 @@ void main() {
     expect(find.text('Mis mascotas'), findsOneWidget);
     expect(find.text('Mascotas perdidas'), findsOneWidget);
     await _tapText(tester, 'Mascotas perdidas');
+    expect(find.text('Catálogo solidario'), findsOneWidget);
     expect(
-      find.text('Todavía no hay mascotas perdidas reportadas'),
+      find.text('Todavía no hay mascotas perdidas reportadas en esta zona.'),
       findsOneWidget,
     );
     _expectNoLayoutException(tester);
-  });
 
-  testWidgets('navegación principal no muestra Mascotas perdidas', (
-    tester,
-  ) async {
     setDesktopViewport(tester);
-    final session = await _familySession();
-
-    await tester.pumpWidget(session.buildApp());
+    final navSession = await _familySession();
+    await tester.pumpWidget(navSession.buildApp());
     await tester.pumpAndSettle();
-
     expect(find.text('Inicio'), findsOneWidget);
     expect(find.text('Mascotas'), findsOneWidget);
     expect(find.text('Explorar'), findsOneWidget);
@@ -47,7 +42,31 @@ void main() {
     expect(find.text('Mascotas perdidas'), findsNothing);
   });
 
-  testWidgets('estado vacío y validación obligatoria funcionan', (
+  testWidgets(
+    'estado vacío muestra CTA y formulario solidario sin recompensa',
+    (tester) async {
+      _setMobileViewport(tester, const Size(390, 844));
+      final session = await _familySession();
+
+      await tester.pumpWidget(
+        buildTestApp(const PetsScreen(), controller: session.controller),
+      );
+      await tester.pumpAndSettle();
+      await _tapText(tester, 'Mascotas perdidas');
+
+      expect(find.text('Reportar mascota perdida'), findsOneWidget);
+      await _tapByKey(tester, const ValueKey('lost-pet-empty-add-button'));
+      expect(find.text('Crear aviso solidario'), findsOneWidget);
+      expect(find.textContaining('Este aviso es gratuito'), findsOneWidget);
+      expect(find.textContaining('recompensa'), findsNothing);
+
+      await _tapByKey(tester, const ValueKey('lost-pet-save-button'));
+      expect(find.textContaining('Completá nombre'), findsOneWidget);
+      _expectNoLayoutException(tester);
+    },
+  );
+
+  testWidgets('validación anti-cobro bloquea textos de rescate', (
     tester,
   ) async {
     _setMobileViewport(tester, const Size(390, 844));
@@ -58,74 +77,194 @@ void main() {
     );
     await tester.pumpAndSettle();
     await _tapText(tester, 'Mascotas perdidas');
-
-    expect(
-      find.text('Todavía no hay mascotas perdidas reportadas'),
-      findsOneWidget,
-    );
-    await _tapByKey(tester, const ValueKey('lost-pet-add-button'));
-    expect(find.text('Agregar mascota perdida'), findsWidgets);
-
-    await _tapByKey(tester, const ValueKey('lost-pet-save-button'));
-    expect(find.textContaining('Completá nombre'), findsOneWidget);
-    _expectNoLayoutException(tester);
-  });
-
-  testWidgets('permite crear, listar, abrir detalle y marcar encontrada', (
-    tester,
-  ) async {
-    _setMobileViewport(tester, const Size(390, 844));
-    final session = await _familySession();
-
-    await tester.pumpWidget(
-      buildTestApp(const PetsScreen(), controller: session.controller),
-    );
-    await tester.pumpAndSettle();
-    await _tapText(tester, 'Mascotas perdidas');
-
-    await _tapByKey(tester, const ValueKey('lost-pet-add-button'));
-    await _fillLostPetForm(tester, name: 'Luna perdida');
-    await _tapByKey(tester, const ValueKey('lost-pet-save-button'));
-
-    expect(AppData.lostPets, hasLength(1));
-    expect(find.text('Luna perdida'), findsOneWidget);
-    await _tapText(tester, 'Luna perdida');
-    expect(find.text('Detalle de mascota perdida'), findsOneWidget);
-    expect(find.text('Perdida'), findsOneWidget);
-    expect(find.textContaining('Buenos Aires'), findsWidgets);
-    expect(find.textContaining('Argentina'), findsWidgets);
-
-    await _tapByKey(tester, const ValueKey('lost-pet-found-button'));
-    expect(find.text('Encontrada'), findsOneWidget);
-    expect(AppData.lostPets.single.isFound, isTrue);
-    _expectNoLayoutException(tester);
-  });
-
-  testWidgets('raza Otra y localidad manual se guardan en reporte válido', (
-    tester,
-  ) async {
-    _setMobileViewport(tester, const Size(390, 844));
-    final session = await _familySession();
-
-    await tester.pumpWidget(
-      buildTestApp(const PetsScreen(), controller: session.controller),
-    );
-    await tester.pumpAndSettle();
-    await _tapText(tester, 'Mascotas perdidas');
-
     await _tapByKey(tester, const ValueKey('lost-pet-add-button'));
     await _fillLostPetForm(
       tester,
-      name: 'Sol manual',
-      breed: 'Cruza barrial',
-      manualCity: 'Villa Mascotify',
+      name: 'Luna segura',
+      description: 'Pido rescate y transferencia para devolverla.',
     );
     await _tapByKey(tester, const ValueKey('lost-pet-save-button'));
 
-    final lostPet = AppData.lostPets.single;
-    expect(lostPet.breed, 'Cruza barrial');
-    expect(lostPet.locationFreeText, 'Villa Mascotify');
-    expect(lostPet.location, contains('Villa Mascotify'));
+    expect(
+      find.textContaining('Mascotify no permite pedir dinero'),
+      findsOneWidget,
+    );
+    expect(AppData.lostPets, isEmpty);
+  });
+
+  testWidgets('permite guardar aviso válido como card de catálogo', (
+    tester,
+  ) async {
+    _setMobileViewport(tester, const Size(390, 844));
+    final session = await _familySession();
+
+    await tester.pumpWidget(
+      buildTestApp(const PetsScreen(), controller: session.controller),
+    );
+    await tester.pumpAndSettle();
+    await _tapText(tester, 'Mascotas perdidas');
+    await _tapByKey(tester, const ValueKey('lost-pet-add-button'));
+    await _fillLostPetForm(tester, name: 'Luna catálogo');
+    await _tapByKey(tester, const ValueKey('lost-pet-save-button'));
+
+    expect(AppData.lostPets, hasLength(1));
+    expect(find.text('Luna catálogo'), findsOneWidget);
+    expect(find.text('Perdida'), findsOneWidget);
+    expect(find.text('Ayuda gratuita'), findsOneWidget);
+    expect(find.text('No pagar rescates'), findsOneWidget);
+    expect(find.textContaining('Palermo'), findsWidgets);
+    expect(find.textContaining('15/05/2026'), findsOneWidget);
+    expect(find.textContaining('precio'), findsNothing);
+    expect(find.textContaining('comprar'), findsNothing);
+    expect(find.textContaining('recompensa'), findsNothing);
+    expect(
+      AppData.lostPets.single.privateVerificationNote,
+      'Tiene una mancha en forma de luna',
+    );
+    expect(find.text('Tiene una mancha en forma de luna'), findsNothing);
+    _expectNoLayoutException(tester);
+  });
+
+  testWidgets('filtros y buscador funcionan en el catálogo', (tester) async {
+    _setMobileViewport(tester, const Size(390, 844));
+    final session = await _familySession();
+
+    await tester.pumpWidget(
+      buildTestApp(const PetsScreen(), controller: session.controller),
+    );
+    await tester.pumpAndSettle();
+    await _tapText(tester, 'Mascotas perdidas');
+    await _createLostPet(tester, name: 'Luna filtro', city: null);
+    await _createLostPet(
+      tester,
+      name: 'Milo encontrado',
+      species: 'Gato',
+      city: 'Villa Mascotify',
+      markFound: true,
+    );
+
+    await tester.enterText(
+      find.byKey(const ValueKey('lost-pets-search-field')),
+      'Villa Mascotify',
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Milo encontrado'), findsOneWidget);
+    expect(find.text('Luna filtro'), findsNothing);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('lost-pets-search-field')),
+      '',
+    );
+    await tester.pumpAndSettle();
+    await _tapByKey(tester, const ValueKey('lost-pets-status-filter'));
+    await tester.tap(find.text('Encontrada').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Milo encontrado'), findsOneWidget);
+    expect(find.text('Luna filtro'), findsNothing);
+  });
+
+  testWidgets(
+    'detalle muestra ficha completa, acciones seguras y no dato privado',
+    (tester) async {
+      _setMobileViewport(tester, const Size(390, 844));
+      final session = await _familySession();
+
+      await tester.pumpWidget(
+        buildTestApp(const PetsScreen(), controller: session.controller),
+      );
+      await tester.pumpAndSettle();
+      await _tapText(tester, 'Mascotas perdidas');
+      await _createLostPet(tester, name: 'Luna detalle');
+
+      await _tapByKey(
+        tester,
+        ValueKey('lost-pet-detail-${AppData.lostPets.single.id}'),
+      );
+      expect(find.text('Ficha de mascota perdida'), findsOneWidget);
+      expect(find.text('Tipo'), findsOneWidget);
+      expect(find.text('Raza / tipo'), findsOneWidget);
+      expect(find.text('Ubicación'), findsOneWidget);
+      expect(find.text('Zona aproximada'), findsOneWidget);
+      expect(find.text('Creo haberla visto'), findsOneWidget);
+      expect(find.text('Contacto seguro'), findsWidgets);
+      expect(find.text('Reportar'), findsOneWidget);
+      expect(find.text('Tiene una mancha en forma de luna'), findsNothing);
+
+      await _tapByKey(tester, const ValueKey('lost-pet-safe-contact-button'));
+      expect(
+        find.text('No pagues rescates ni transferencias.'),
+        findsOneWidget,
+      );
+      await _tapByKey(tester, const ValueKey('show-safe-contact-button'));
+      expect(find.text('+54 9 11 1234-5678'), findsOneWidget);
+    },
+  );
+
+  testWidgets('Creo haberla visto y Reportar muestran confirmaciones', (
+    tester,
+  ) async {
+    _setMobileViewport(tester, const Size(390, 844));
+    final session = await _familySession();
+
+    await tester.pumpWidget(
+      buildTestApp(const PetsScreen(), controller: session.controller),
+    );
+    await tester.pumpAndSettle();
+    await _tapText(tester, 'Mascotas perdidas');
+    await _createLostPet(tester, name: 'Luna acciones');
+    await _tapByKey(
+      tester,
+      ValueKey('lost-pet-detail-${AppData.lostPets.single.id}'),
+    );
+
+    await _tapByKey(tester, const ValueKey('lost-pet-seen-button'));
+    await tester.enterText(
+      find.byKey(const ValueKey('seen-where-field')),
+      'Cerca de Plaza Italia',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('seen-when-field')),
+      'Hoy a la mañana',
+    );
+    await _tapByKey(tester, const ValueKey('seen-submit-button'));
+    expect(
+      find.text('Gracias. Avisamos a la familia con la información cargada.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Cerrar'));
+    await tester.pumpAndSettle();
+
+    await _tapByKey(tester, const ValueKey('lost-pet-report-button'));
+    expect(find.text('Me pidió dinero'), findsOneWidget);
+    await _tapByKey(tester, const ValueKey('report-submit-button'));
+    expect(find.text('Gracias. Revisaremos este reporte.'), findsOneWidget);
+  });
+
+  testWidgets('reportar mascota perdida no requiere Plus ni Pro', (
+    tester,
+  ) async {
+    _setMobileViewport(tester, const Size(390, 844));
+    final session = await _familySession();
+    await AppData.setPlanName('Mascotify Free');
+
+    await tester.pumpWidget(
+      buildTestApp(const PetsScreen(), controller: session.controller),
+    );
+    await tester.pumpAndSettle();
+    await _tapText(tester, 'Mascotas perdidas');
+    await _createLostPet(tester, name: 'Luna free');
+
+    await _tapByKey(
+      tester,
+      ValueKey('lost-pet-report-${AppData.lostPets.single.id}'),
+    );
+    expect(find.text('Reportar aviso de Luna free'), findsOneWidget);
+    expect(find.textContaining('Mascotify Plus'), findsNothing);
+    expect(find.textContaining('Mascotify Pro'), findsNothing);
+    expect(find.textContaining('publicidad'), findsNothing);
+    expect(find.textContaining('anuncio'), findsNothing);
+    await _tapByKey(tester, const ValueKey('report-submit-button'));
+    expect(find.text('Gracias. Revisaremos este reporte.'), findsOneWidget);
   });
 
   testWidgets('edad 21 no permite guardar mascota perdida', (tester) async {
@@ -199,17 +338,46 @@ Future<TestAppSession> _familySession() async {
   return session;
 }
 
+Future<void> _createLostPet(
+  WidgetTester tester, {
+  required String name,
+  String species = 'Perro',
+  String? city,
+  bool markFound = false,
+}) async {
+  await _tapByKey(tester, const ValueKey('lost-pet-add-button'));
+  await _fillLostPetForm(
+    tester,
+    name: name,
+    species: species,
+    manualCity: city,
+  );
+  await _tapByKey(tester, const ValueKey('lost-pet-save-button'));
+  if (markFound) {
+    await AppData.markLostPetFound(AppData.lostPets.first.id);
+    await tester.pumpAndSettle();
+  }
+}
+
 Future<void> _fillLostPetForm(
   WidgetTester tester, {
   required String name,
+  String species = 'Perro',
   String breed = 'Mestizo / Sin raza definida',
   String age = '4',
   String? manualCity,
+  String description = 'Se perdió durante una caminata familiar.',
 }) async {
   await tester.enterText(
     find.byKey(const ValueKey('lost-pet-name-field')),
     name,
   );
+
+  if (species != 'Perro') {
+    await _tapByKey(tester, const ValueKey('lost-pet-species-dropdown'));
+    await tester.tap(find.text(species).last);
+    await tester.pumpAndSettle();
+  }
 
   if (breed != 'Mestizo / Sin raza definida') {
     await _tapByKey(tester, const ValueKey('lost-pet-breed-dropdown'));
@@ -222,6 +390,14 @@ Future<void> _fillLostPetForm(
   }
 
   await tester.enterText(find.byKey(const ValueKey('lost-pet-age-field')), age);
+  await tester.enterText(
+    find.byKey(const ValueKey('lost-pet-color-field')),
+    'marrón con blanco',
+  );
+  await tester.enterText(
+    find.byKey(const ValueKey('lost-pet-signs-field')),
+    'Collar rojo y mancha blanca',
+  );
 
   if (manualCity != null) {
     await _tapByKey(tester, const ValueKey('lost-pet-city-dropdown'));
@@ -235,19 +411,23 @@ Future<void> _fillLostPetForm(
 
   await tester.enterText(
     find.byKey(const ValueKey('lost-pet-zone-field')),
-    'Plaza principal',
+    'Palermo',
   );
   await tester.enterText(
-    find.byKey(const ValueKey('lost-pet-signs-field')),
-    'Collar rojo y mancha blanca',
+    find.byKey(const ValueKey('lost-pet-date-field')),
+    '15/05/2026',
   );
   await tester.enterText(
     find.byKey(const ValueKey('lost-pet-description-field')),
-    'Se perdió durante una caminata familiar.',
+    description,
   );
   await tester.enterText(
     find.byKey(const ValueKey('lost-pet-contact-field')),
     '+54 9 11 1234-5678',
+  );
+  await tester.enterText(
+    find.byKey(const ValueKey('lost-pet-private-verification-field')),
+    'Tiene una mancha en forma de luna',
   );
 }
 
