@@ -20,6 +20,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: "3.41.7"
           channel: stable
           cache: true
 
@@ -32,7 +33,18 @@ jobs:
 
       - name: Analyze Flutter project
         id: analyze
-        run: flutter analyze
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter analyze 2>&1 | tee flutter_analyze.log
+
+      - name: Upload Flutter analyze log
+        if: failure() && steps.analyze.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-analyze-log
+          path: flutter_analyze.log
+          if-no-files-found: ignore
 
       - name: Run Flutter tests
         id: test
@@ -77,6 +89,15 @@ jobs:
             echo "- Evento: ${{ github.event_name }}"
             echo "- Workflow: ${{ github.workflow }}"
             echo "- Fecha/hora: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+
+            if [ -f flutter_analyze.log ]; then
+              echo ""
+              echo "## Ultimas lineas de flutter analyze"
+              echo ""
+              echo '```'
+              tail -n 80 flutter_analyze.log
+              echo '```'
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
   backend:
