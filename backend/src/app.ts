@@ -7,12 +7,14 @@ import express, {
 
 import { loadEnv } from './config/env';
 import { createHealthRouter } from './modules/health/health.routes';
+import { createQrRouter } from './modules/qr/qr.routes';
 import { createSocialClipsRouter } from './modules/social-clips/social-clips.routes';
 
 export function createApp(): Express {
   const app = express();
   const env = loadEnv();
   const healthRouter = createHealthRouter();
+  const qrRouter = createQrRouter();
   const socialClipsRouter = createSocialClipsRouter();
 
   app.disable('x-powered-by');
@@ -21,6 +23,7 @@ export function createApp(): Express {
 
   app.use('/health', healthRouter);
   app.use('/api/v1/health', healthRouter);
+  app.use('/api/v1', qrRouter);
   app.use('/api/v1', socialClipsRouter);
 
   app.use((_request: Request, response: Response) => {

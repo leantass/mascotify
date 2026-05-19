@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
@@ -126,6 +129,19 @@ class QrScanEventDetailScreen extends StatelessWidget {
                           spacing: 10,
                           runSpacing: 10,
                           children: [
+                            OutlinedButton.icon(
+                              key: const ValueKey('open-google-maps-button'),
+                              onPressed: () {
+                                unawaited(
+                                  launchUrlString(
+                                    currentEvent.mapUrl,
+                                    mode: LaunchMode.externalApplication,
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.map_rounded),
+                              label: const Text('Abrir en Google Maps'),
+                            ),
                             OutlinedButton.icon(
                               key: const ValueKey('copy-qr-coordinates-button'),
                               onPressed: () {

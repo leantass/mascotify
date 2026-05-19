@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mascotify/core/app_environment.dart';
 import 'package:mascotify/features/home/presentation/screens/activity_feed_screen.dart';
+import 'package:mascotify/features/pets/presentation/screens/qr_scan_event_detail_screen.dart';
 import 'package:mascotify/features/pets/presentation/screens/qr_traceability_screen.dart';
 import 'package:mascotify/features/pets/presentation/screens/secure_qr_scan_screen.dart';
 import 'package:mascotify/shared/data/app_data_source.dart';
@@ -42,6 +44,17 @@ void main() {
     final codes = AppData.pets.map((pet) => pet.qrCodeLabel).toSet();
 
     expect(codes.length, 2);
+  });
+
+  testWidgets('QR generates configurable public URL fallback', (tester) async {
+    await _buildQrSession(email: 'qr-public-url@mascotify.local');
+    final pet = _pet(id: 'pet-qr-public-url', name: 'QR Link Publico');
+    await AppData.addPet(pet);
+
+    expect(
+      AppEnvironment.publicQrUrlFor(pet.qrCodeLabel),
+      '/pet/qr/${pet.qrCodeLabel}',
+    );
   });
 
   testWidgets('opening traceability registers pet history event', (
@@ -191,6 +204,48 @@ void main() {
     expect(find.text('Detalle del evento QR'), findsOneWidget);
     expect(find.textContaining('Parque Chacabuco'), findsWidgets);
     expect(find.text('No pagues rescates ni transferencias.'), findsOneWidget);
+  });
+
+  testWidgets('QR event detail shows Google Maps action for coordinates', (
+    tester,
+  ) async {
+    _setMobileViewport(tester);
+    final session = await _buildQrSession(email: 'qr-maps@mascotify.local');
+    final pet = _pet(id: 'pet-qr-maps', name: 'QR Maps');
+    final event = QrScanEvent(
+      id: 'scan-with-coordinates',
+      petId: pet.id,
+      qrId: pet.qrCodeLabel,
+      ownerUserId: AppData.currentUser.id,
+      scannedAt: DateTime(2026, 5, 19, 12),
+      locationSource: QrScanLocationSource.deviceGeolocation,
+      latitude: -34.6037,
+      longitude: -58.3816,
+      accuracyMeters: 15,
+      city: 'CABA',
+      area: 'Microcentro',
+    );
+
+    expect(
+      event.mapUrl,
+      'https://www.google.com/maps/search/?api=1&query=-34.6037,-58.3816',
+    );
+
+    await tester.pumpWidget(
+      buildTestApp(
+        QrScanEventDetailScreen(event: event, pet: pet),
+        controller: session.controller,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Abrir en Google Maps'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('open-google-maps-button')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('-34.6037'), findsWidgets);
+    _expectNoLayoutException(tester);
   });
 
   testWidgets('secure QR scan blocks payment intent', (tester) async {

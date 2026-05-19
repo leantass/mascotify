@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../../../core/app_environment.dart';
+import '../../data/qr_api_client.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/report_models.dart';
@@ -30,9 +34,22 @@ class _SecureQrScanScreenState extends State<SecureQrScanScreen> {
   final _contactController = TextEditingController();
 
   QrDeviceLocation? _deviceLocation;
+  late final QrApiClient _qrApiClient;
+  PublicQrPet? _remotePet;
   bool _requestingLocation = false;
+  bool _loadingRemotePet = false;
   String? _errorMessage;
   QrScanEvent? _sentEvent;
+
+  @override
+  void initState() {
+    super.initState();
+    _qrApiClient = QrApiClient(baseUrl: AppEnvironment.qrApiBaseUrl);
+    if (widget.initialPet == null &&
+        AppData.findPetByQrId(widget.qrId) == null) {
+      unawaited(_loadRemotePet());
+    }
+  }
 
   @override
   void dispose() {
@@ -48,25 +65,28 @@ class _SecureQrScanScreenState extends State<SecureQrScanScreen> {
   @override
   Widget build(BuildContext context) {
     final pet = AppData.findPetByQrId(widget.qrId) ?? widget.initialPet;
+    final publicPet = pet != null
+        ? _LocalQrPetView(pet)
+        : (_remotePet == null ? null : _RemoteQrPetView(_remotePet!));
     final textTheme = Theme.of(context).textTheme;
 
-    if (pet == null) {
+    if (publicPet == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('QR seguro')),
-        body: const Center(
+        body: Center(
           child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text('No encontramos una mascota registrada para este QR.'),
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              _loadingRemotePet
+                  ? 'Buscando mascota registrada para este QR...'
+                  : 'No encontramos una mascota registrada para este QR.',
+            ),
           ),
         ),
       );
     }
 
-    final isLost = AppData.lostPets.any(
-      (lostPet) =>
-          !lostPet.isFound &&
-          lostPet.name.trim().toLowerCase() == pet.name.trim().toLowerCase(),
-    );
+    final isLost = publicPet.isLost;
 
     return Scaffold(
       appBar: AppBar(title: const Text('QR seguro')),
@@ -81,7 +101,7 @@ class _SecureQrScanScreenState extends State<SecureQrScanScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Color(pet.colorHex),
+                      Color(publicPet.colorHex),
                       AppColors.surface,
                       AppColors.primarySoft,
                     ],
@@ -104,10 +124,12 @@ class _SecureQrScanScreenState extends State<SecureQrScanScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Text(pet.name, style: textTheme.headlineLarge),
+                    Text(publicPet.name, style: textTheme.headlineLarge),
                     const SizedBox(height: 8),
                     Text(
-                      '${pet.species} - ${pet.breed}',
+                      publicPet.breed.trim().isEmpty
+                          ? publicPet.species
+                          : '${publicPet.species} - ${publicPet.breed}',
                       style: textTheme.bodyLarge?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -245,7 +267,7 @@ class _SecureQrScanScreenState extends State<SecureQrScanScreen> {
                       const SizedBox(height: 18),
                       ElevatedButton.icon(
                         key: const ValueKey('submit-secure-qr-scan-button'),
-                        onPressed: () => _submit(pet),
+                        onPressed: () => _submit(pet, publicPet),
                         icon: const Icon(Icons.send_rounded),
                         label: const Text('Enviar aviso'),
                       ),
@@ -259,8 +281,10 @@ class _SecureQrScanScreenState extends State<SecureQrScanScreen> {
                   key: const ValueKey('open-qr-event-detail-button'),
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) =>
-                          QrScanEventDetailScreen(event: _sentEvent!, pet: pet),
+                      builder: (_) => QrScanEventDetailScreen(
+                        event: _sentEvent!,
+                        pet: pet ?? publicPet.asPlaceholderPet(),
+                      ),
                     ),
                   ),
                   icon: const Icon(Icons.open_in_new_rounded),
@@ -291,6 +315,26 @@ class _SecureQrScanScreenState extends State<SecureQrScanScreen> {
     });
   }
 
+  Future<void> _loadRemotePet() async {
+    setState(() {
+      _loadingRemotePet = true;
+      _errorMessage = null;
+    });
+    try {
+      final remotePet = await _qrApiClient.fetchPublicPet(widget.qrId);
+      if (!mounted) return;
+      setState(() {
+        _remotePet = remotePet;
+        _loadingRemotePet = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loadingRemotePet = false;
+      });
+    }
+  }
+
   void _scrollToManualFields(BuildContext context) {
     Scrollable.ensureVisible(
       context,
@@ -299,7 +343,7 @@ class _SecureQrScanScreenState extends State<SecureQrScanScreen> {
     );
   }
 
-  Future<void> _submit(Pet pet) async {
+  Future<void> _submit(Pet? pet, _QrPetViewData publicPet) async {
     final text = [
       _areaController.text,
       _messageController.text,
@@ -321,9 +365,9 @@ class _SecureQrScanScreenState extends State<SecureQrScanScreen> {
 
     final now = DateTime.now();
     final event = QrScanEvent(
-      id: 'qr-scan-${pet.id}-${now.microsecondsSinceEpoch}',
-      petId: pet.id,
-      qrId: pet.qrCodeLabel,
+      id: 'qr-scan-${publicPet.petId}-${now.microsecondsSinceEpoch}',
+      petId: publicPet.petId,
+      qrId: publicPet.qrId,
       ownerUserId: AppData.currentUser.id,
       scannedAt: now,
       locationSource: _deviceLocation == null
@@ -339,7 +383,19 @@ class _SecureQrScanScreenState extends State<SecureQrScanScreen> {
       message: _messageController.text.trim(),
       scannerContact: _contactController.text.trim(),
     );
-    final saved = await AppData.submitQrScanEvent(event);
+    QrScanEvent? saved;
+    try {
+      saved = pet == null
+          ? await _qrApiClient.submitPublicScan(qrId: widget.qrId, draft: event)
+          : await AppData.submitQrScanEvent(event);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage =
+            'No pudimos enviar el aviso ahora. Probá nuevamente en unos segundos.';
+      });
+      return;
+    }
     if (!mounted) return;
     setState(() {
       _sentEvent = saved;
@@ -516,4 +572,123 @@ bool _containsPaymentIntent(String text) {
     'deposito',
   ];
   return blocked.any(normalized.contains);
+}
+
+abstract class _QrPetViewData {
+  String get qrId;
+  String get petId;
+  String get name;
+  String get species;
+  String get breed;
+  bool get isLost;
+  int get colorHex;
+  Pet asPlaceholderPet();
+}
+
+class _LocalQrPetView implements _QrPetViewData {
+  const _LocalQrPetView(this.pet);
+
+  final Pet pet;
+
+  @override
+  String get qrId => pet.qrCodeLabel;
+
+  @override
+  String get petId => pet.id;
+
+  @override
+  String get name => pet.name;
+
+  @override
+  String get species => pet.species;
+
+  @override
+  String get breed => pet.breed;
+
+  @override
+  bool get isLost {
+    return AppData.lostPets.any(
+      (lostPet) =>
+          !lostPet.isFound &&
+          lostPet.name.trim().toLowerCase() == pet.name.trim().toLowerCase(),
+    );
+  }
+
+  @override
+  int get colorHex => pet.colorHex;
+
+  @override
+  Pet asPlaceholderPet() => pet;
+}
+
+class _RemoteQrPetView implements _QrPetViewData {
+  const _RemoteQrPetView(this.pet);
+
+  final PublicQrPet pet;
+
+  @override
+  String get qrId => pet.qrId;
+
+  @override
+  String get petId => pet.petId;
+
+  @override
+  String get name => pet.publicName;
+
+  @override
+  String get species => pet.species;
+
+  @override
+  String get breed => pet.breed ?? '';
+
+  @override
+  bool get isLost => pet.isLost;
+
+  @override
+  int get colorHex => 0xFFDDF6F6;
+
+  @override
+  Pet asPlaceholderPet() {
+    return Pet(
+      id: pet.petId,
+      name: pet.publicName,
+      species: pet.species,
+      breed: pet.breed ?? 'No informado',
+      ageLabel: 'No informada',
+      status: pet.isLost ? 'Perdida' : 'Registrada',
+      colorHex: 0xFFDDF6F6,
+      profileId: pet.petId,
+      identitySummary: 'Ficha publica segura',
+      documentStatus: 'Publico',
+      qrStatus: 'QR publico seguro',
+      healthSummary: 'No informado',
+      quickActions: const [],
+      qrCodeLabel: pet.qrId,
+      qrEnabled: true,
+      qrLastUpdate: 'QR publico',
+      qrPrimaryAction: 'Avisar ubicacion',
+      qrSecondaryAction: 'Contacto seguro',
+      sex: 'No informado',
+      location: 'No publica',
+      biography: pet.publicNotes ?? '',
+      personalityTags: const [],
+      seekingBreeding: false,
+      socialInterest: 'Contacto seguro',
+      socialProfileStatus: 'Publico seguro',
+      featuredMoments: const [],
+      matchingPreferences: const PetMatchingPreferences(
+        preferredBondType: 'No aplica',
+        matchSummary: 'No aplica',
+        rhythmLabel: 'No aplica',
+        locationRadiusLabel: 'No aplica',
+        acceptsGradualMeet: false,
+        compatibilitySignals: [],
+        desiredCompatibilities: [],
+        softLimits: [],
+        idealContext: 'No aplica',
+        importantNotes: 'No aplica',
+        suggestedApproach: 'No aplica',
+      ),
+    );
+  }
 }

@@ -20,6 +20,24 @@ enum ClipStatus {
   DELETED
 }
 
+enum QrPetStatus {
+  NORMAL
+  LOST
+  FOUND
+}
+
+enum QrLocationSource {
+  DEVICE_GEOLOCATION
+  MANUAL
+  UNKNOWN
+}
+
+enum QrScanStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+}
+
 model User {
   id          String        @id @default(cuid())
   email       String        @unique
@@ -103,4 +121,53 @@ model UserFollow {
 
   @@unique([followerId, followingId])
   @@index([followingId])
+}
+
+model QrRegisteredPet {
+  id          String      @id @default(cuid())
+  qrId        String      @unique
+  petId       String
+  ownerUserId String
+  publicName  String
+  species     String
+  breed       String?
+  color       String?
+  publicNotes String?
+  status      QrPetStatus @default(NORMAL)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  scans QrScanEvent[]
+
+  @@index([ownerUserId])
+  @@index([petId])
+  @@index([status])
+}
+
+model QrScanEvent {
+  id              String           @id @default(cuid())
+  qrId            String
+  registeredPetId String
+  ownerUserId     String
+  scannedAt       DateTime         @default(now())
+  locationSource  QrLocationSource @default(UNKNOWN)
+  latitude        Float?
+  longitude       Float?
+  accuracyMeters  Float?
+  country         String?
+  region          String?
+  city            String?
+  area            String?
+  message         String?
+  scannerContact  String?
+  safetyFlag      Boolean          @default(false)
+  readAt          DateTime?
+  status          QrScanStatus     @default(PENDING)
+  fingerprint     String
+
+  registeredPet QrRegisteredPet @relation(fields: [registeredPetId], references: [id], onDelete: Cascade)
+
+  @@index([qrId, scannedAt])
+  @@index([ownerUserId, scannedAt])
+  @@index([ownerUserId, readAt])
 }

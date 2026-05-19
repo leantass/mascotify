@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/app_environment.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/pet_activity_event.dart';
@@ -545,6 +546,7 @@ class _QrExperienceCard extends StatelessWidget {
     final currentPet = AppData.findPetById(pet.id) ?? pet;
     final textTheme = Theme.of(context).textTheme;
     final snapshot = AppData.qrStatusSnapshotForPet(currentPet);
+    final publicQrUrl = AppEnvironment.publicQrUrlFor(currentPet.qrCodeLabel);
     final activity = AppData.qrActivityEntriesForPet(currentPet);
     final recentQrActivity = activity
         .where((entry) => entry.iconKey == 'qr' || entry.iconKey == 'location')
@@ -638,6 +640,15 @@ class _QrExperienceCard extends StatelessWidget {
                     style: textTheme.titleMedium?.copyWith(
                       color: Colors.white,
                       letterSpacing: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SelectableText(
+                    publicQrUrl,
+                    textAlign: TextAlign.center,
+                    key: const ValueKey('public-qr-url-label'),
+                    style: textTheme.bodySmall?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.82),
                     ),
                   ),
                   const SizedBox(height: 8),

@@ -8,6 +8,14 @@ class AppEnvironment {
     'MASCOTIFY_CLIPS_API_BASE_URL',
     defaultValue: 'http://localhost:4000/api/v1',
   );
+  static const String qrApiBaseUrl = String.fromEnvironment(
+    'MASCOTIFY_QR_API_BASE_URL',
+    defaultValue: 'http://localhost:4000/api/v1',
+  );
+  static const String publicQrBaseUrl = String.fromEnvironment(
+    'MASCOTIFY_PUBLIC_QR_BASE_URL',
+    defaultValue: '',
+  );
 
   static bool get isDemoLocal => runtimeMode == AppRuntimeMode.demoLocal;
   static bool get isProduction => runtimeMode == AppRuntimeMode.production;
@@ -46,5 +54,16 @@ class AppEnvironment {
       case AppRuntimeMode.production:
         return 'Integracion real activa.';
     }
+  }
+
+  static bool get hasPublicQrBaseUrl => publicQrBaseUrl.trim().isNotEmpty;
+
+  static String publicQrUrlFor(String qrId) {
+    final normalizedQrId = Uri.encodeComponent(qrId.trim());
+    if (hasPublicQrBaseUrl) {
+      final base = publicQrBaseUrl.trim().replaceFirst(RegExp(r'/+$'), '');
+      return '$base/q/$normalizedQrId';
+    }
+    return '/pet/qr/$normalizedQrId';
   }
 }
