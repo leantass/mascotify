@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../core/app_environment.dart';
 import '../../../../shared/data/app_data_source.dart';
@@ -547,6 +548,7 @@ class _QrExperienceCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final snapshot = AppData.qrStatusSnapshotForPet(currentPet);
     final publicQrUrl = AppEnvironment.publicQrUrlFor(currentPet.qrCodeLabel);
+    final qrMode = AppEnvironment.qrPublicLinkMode();
     final activity = AppData.qrActivityEntriesForPet(currentPet);
     final recentQrActivity = activity
         .where((entry) => entry.iconKey == 'qr' || entry.iconKey == 'location')
@@ -610,7 +612,7 @@ class _QrExperienceCard extends StatelessWidget {
                     minItemWidth: 180,
                     children: [
                       _QrStatusBadge(
-                        label: currentPet.qrEnabled ? 'Activo' : 'Pendiente',
+                        label: qrMode.statusLabel,
                         backgroundColor: currentPet.qrEnabled
                             ? AppColors.primarySoft
                             : AppColors.supportSoft,
@@ -632,7 +634,7 @@ class _QrExperienceCard extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(24),
                     ),
-                    child: _MockQrCode(label: pet.qrCodeLabel),
+                    child: _PublicQrCode(data: publicQrUrl),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -649,6 +651,27 @@ class _QrExperienceCard extends StatelessWidget {
                     key: const ValueKey('public-qr-url-label'),
                     style: textTheme.bodySmall?.copyWith(
                       color: Colors.white.withValues(alpha: 0.82),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: qrMode == QrPublicLinkMode.publicReady
+                          ? AppColors.primarySoft
+                          : AppColors.supportSoft,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Text(
+                      qrMode.helpText,
+                      textAlign: TextAlign.center,
+                      key: const ValueKey('public-qr-status-help'),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                        height: 1.35,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -1424,10 +1447,10 @@ class _PetActivityTile extends StatelessWidget {
   }
 }
 
-class _MockQrCode extends StatelessWidget {
-  const _MockQrCode({required this.label});
+class _PublicQrCode extends StatelessWidget {
+  const _PublicQrCode({required this.data});
 
-  final String label;
+  final String data;
 
   @override
   Widget build(BuildContext context) {
@@ -1440,24 +1463,20 @@ class _MockQrCode extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         child: Stack(
           children: [
-            GridView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(10),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 11,
-                crossAxisSpacing: 2,
-                mainAxisSpacing: 2,
+            QrImageView(
+              key: const ValueKey('public-qr-image'),
+              data: data,
+              version: QrVersions.auto,
+              gapless: false,
+              backgroundColor: Colors.white,
+              eyeStyle: const QrEyeStyle(
+                eyeShape: QrEyeShape.square,
+                color: AppColors.dark,
               ),
-              itemCount: 121,
-              itemBuilder: (context, index) {
-                final isDark = _isDarkCell(index);
-                return DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.dark : Colors.white,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                );
-              },
+              dataModuleStyle: const QrDataModuleStyle(
+                dataModuleShape: QrDataModuleShape.square,
+                color: AppColors.dark,
+              ),
             ),
             Align(
               alignment: Alignment.center,
@@ -1490,10 +1509,12 @@ class _MockQrCode extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.92),
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Text(
-                  label,
+                  data,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textPrimary,
@@ -1506,43 +1527,6 @@ class _MockQrCode extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  bool _isDarkCell(int index) {
-    const anchors = {
-      0,
-      1,
-      2,
-      11,
-      13,
-      22,
-      23,
-      24,
-      8,
-      9,
-      10,
-      19,
-      21,
-      30,
-      31,
-      32,
-      88,
-      89,
-      90,
-      99,
-      101,
-      110,
-      111,
-      112,
-    };
-
-    if (anchors.contains(index)) {
-      return true;
-    }
-
-    final row = index ~/ 11;
-    final col = index % 11;
-    return (row + col).isEven || (row * col) % 3 == 0;
   }
 }
 

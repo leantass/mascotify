@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mascotify/core/app_environment.dart';
 import 'package:mascotify/features/home/presentation/screens/activity_feed_screen.dart';
+import 'package:mascotify/features/pets/presentation/screens/pet_detail_screen.dart';
 import 'package:mascotify/features/pets/presentation/screens/qr_scan_event_detail_screen.dart';
 import 'package:mascotify/features/pets/presentation/screens/qr_traceability_screen.dart';
 import 'package:mascotify/features/pets/presentation/screens/secure_qr_scan_screen.dart';
@@ -11,6 +12,7 @@ import 'package:mascotify/shared/models/account_identity_models.dart';
 import 'package:mascotify/shared/models/lost_pet.dart';
 import 'package:mascotify/shared/models/pet.dart';
 import 'package:mascotify/shared/models/report_models.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../test_helpers.dart';
 
@@ -55,6 +57,89 @@ void main() {
       AppEnvironment.publicQrUrlFor(pet.qrCodeLabel),
       '/pet/qr/${pet.qrCodeLabel}',
     );
+  });
+
+  testWidgets('QR URL helper supports public and LAN base URLs', (
+    tester,
+  ) async {
+    expect(
+      AppEnvironment.publicQrUrlFor(
+        'MSC-123',
+        overrideBaseUrl: 'https://mascotify.example',
+      ),
+      'https://mascotify.example/q/MSC-123',
+    );
+    expect(
+      AppEnvironment.qrPublicLinkMode(
+        overrideBaseUrl: 'https://mascotify.example',
+      ),
+      QrPublicLinkMode.publicReady,
+    );
+    expect(
+      AppEnvironment.qrPublicLinkMode(
+        overrideBaseUrl: 'http://192.168.1.20:53177',
+      ),
+      QrPublicLinkMode.lanTesting,
+    );
+    expect(
+      AppEnvironment.qrPublicLinkMode(
+        overrideBaseUrl: 'http://127.0.0.1:53177',
+      ),
+      QrPublicLinkMode.localDemo,
+    );
+  });
+
+  testWidgets('pet QR screen encodes visible local demo URL', (tester) async {
+    setDesktopViewport(tester);
+    final session = await _buildQrSession(email: 'qr-screen@mascotify.local');
+    final pet = _pet(id: 'pet-qr-screen', name: 'QR Pantalla');
+    await AppData.addPet(pet);
+
+    await tester.pumpWidget(
+      buildTestApp(PetDetailScreen(pet: pet), controller: session.controller),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('QR Mascotify'),
+      320,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    final encodedUrl = '/pet/qr/${pet.qrCodeLabel}';
+    expect(find.text('QR local/demo'), findsOneWidget);
+    expect(find.text(encodedUrl), findsWidgets);
+    expect(find.byType(QrImageView), findsOneWidget);
+    expect(find.byKey(const ValueKey('public-qr-image')), findsOneWidget);
+    expect(
+      find.textContaining('necesita una URL pública configurada'),
+      findsOneWidget,
+    );
+    _expectNoLayoutException(tester);
+  });
+
+  testWidgets('public /q route opens secure scan without private data', (
+    tester,
+  ) async {
+    _setMobileViewport(tester);
+    final session = await _buildQrSession(
+      ownerName: 'Dueña Ruta Privada',
+      email: 'duenia-ruta@mascotify.local',
+    );
+    final pet = _pet(id: 'pet-qr-route', name: 'QR Ruta');
+    await AppData.addPet(pet);
+
+    await tester.pumpWidget(session.buildApp());
+    await tester.pumpAndSettle();
+    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+    navigator.pushNamed('/q/${pet.qrCodeLabel}');
+    await tester.pumpAndSettle();
+
+    expect(find.text('QR Ruta'), findsOneWidget);
+    expect(find.text('Dueña Ruta Privada'), findsNothing);
+    expect(find.text('duenia-ruta@mascotify.local'), findsNothing);
+    expect(find.text('Cargar ubicación manual'), findsOneWidget);
+    _expectNoLayoutException(tester);
   });
 
   testWidgets('opening traceability registers pet history event', (

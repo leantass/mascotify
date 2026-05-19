@@ -112,7 +112,11 @@ class _LocalizedMascotifyApp extends StatelessWidget {
               },
               onGenerateRoute: (settings) {
                 final name = settings.name ?? '';
-                const prefix = '/pet/qr/';
+                const petQrPrefix = '/pet/qr/';
+                const publicQrPrefix = '/q/';
+                final prefix = name.startsWith(publicQrPrefix)
+                    ? publicQrPrefix
+                    : petQrPrefix;
                 if (name.startsWith(prefix) && name.length > prefix.length) {
                   final qrId = Uri.decodeComponent(
                     name.substring(prefix.length),
