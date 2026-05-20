@@ -39,6 +39,12 @@ La idea es construir un ecosistema real, claro, premium y util.
 - ✅ Persistencia local aislada por cuenta y mascota.
 - ✅ Tests automaticos.
 - ✅ Fix para eliminar copy viejo de datos demo.
+- ✅ Vacunas sugeridas por especie.
+- ✅ Catálogo local de plantillas por tipo de animal.
+- ✅ Prevención de sugerencias cruzadas entre especies.
+- ✅ Avisos de responsabilidad veterinaria.
+- ⏳ Validación veterinaria profesional del catálogo antes de producción.
+- ⏳ Configuración regional futura por país/provincia.
 - ⏳ Backend real de salud/vacunas pendiente.
 - ⏳ Adjuntos/comprobantes reales pendientes.
 - ⏳ Sincronizacion multi-dispositivo pendiente.
@@ -202,6 +208,7 @@ Volver mas potente la comunidad experta:
 
 | Fecha | Hito | Commit/PR | Estado | Observaciones |
 | --- | --- | --- | --- | --- |
+| 2026-05-20 | Vacunas sugeridas por especie | feature/species-vaccine-suggestions | ✅ Hecho | Se agregaron plantillas locales orientativas filtradas por especie, sin convertirlas en indicación médica obligatoria. |
 | 2026-05-20 | Salud y vacunas visible en detalle de mascota | 13af729 + 88d73f8 | ✅ Hecho | Se agrego libreta sanitaria local/demo y se corrigio copy legacy en MockData para evitar que el usuario vea la card vieja en builds nuevos. |
 | 2026-05-20 | Libreta sanitaria simple de vacunas | 13af729 | ✅ Hecho | Implementacion local/demo con persistencia por cuenta/mascota, historial, tests y CI verde. |
 

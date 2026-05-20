@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/data/app_data_source.dart';
+import '../../../../shared/data/pet_vaccine_suggestion_catalog.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/pet_activity_event.dart';
 import '../../../../shared/models/pet_vaccine.dart';
+import '../../../../shared/models/pet_vaccine_suggestion.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 
@@ -44,7 +46,11 @@ class _PetHealthScreenState extends State<PetHealthScreen> {
                 lastUpdate: lastUpdate,
               ),
               const SizedBox(height: 16),
-              _SuggestedVaccinesCard(pet: pet, onAdd: _openForm),
+              _SpeciesSuggestedVaccinesCard(
+                pet: pet,
+                onAddPending: _addSuggestedPending,
+                onRegisterApplied: _openForm,
+              ),
               const SizedBox(height: 16),
               if (vaccines.isEmpty)
                 _EmptyVaccinesCard(onAdd: () => _openForm())
@@ -90,6 +96,11 @@ class _PetHealthScreenState extends State<PetHealthScreen> {
       builder: (context) => _VaccineFormSheet(pet: _pet, vaccine: vaccine),
     );
     if (saved == true && mounted) setState(() {});
+  }
+
+  Future<void> _addSuggestedPending(PetVaccine vaccine) async {
+    await AppData.upsertPetVaccine(vaccine);
+    if (mounted) setState(() {});
   }
 
   Future<void> _markPendingAsApplied(PetVaccine vaccine) async {
@@ -222,15 +233,21 @@ class _HeaderCard extends StatelessWidget {
   }
 }
 
-class _SuggestedVaccinesCard extends StatelessWidget {
-  const _SuggestedVaccinesCard({required this.pet, required this.onAdd});
+class _SpeciesSuggestedVaccinesCard extends StatelessWidget {
+  const _SpeciesSuggestedVaccinesCard({
+    required this.pet,
+    required this.onAddPending,
+    required this.onRegisterApplied,
+  });
 
   final Pet pet;
-  final ValueChanged<PetVaccine?> onAdd;
+  final ValueChanged<PetVaccine> onAddPending;
+  final ValueChanged<PetVaccine> onRegisterApplied;
 
   @override
   Widget build(BuildContext context) {
-    final suggestions = _suggestionsFor(pet.species);
+    final suggestionSet = PetVaccineSuggestionCatalog.forSpecies(pet.species);
+    final suggestions = suggestionSet.suggestions;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -238,26 +255,42 @@ class _SuggestedVaccinesCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Plantillas sugeridas para registrar',
+              'Vacunas sugeridas para ${suggestionSet.speciesLabel}',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             Text(
-              'Las vacunas sugeridas son una ayuda de carga. Confirmá siempre el esquema con tu veterinario.',
+              'La libreta sanitaria ayuda a organizar información. Las vacunas sugeridas son orientativas y no reemplazan la indicación de un veterinario.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
+            Text(
+              suggestionSet.note,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
+            ),
+            const SizedBox(height: 16),
             if (suggestions.isEmpty)
-              const Text('Para este tipo de mascota, usá carga manual.')
+              _NoGeneralScheduleNotice(suggestionSet: suggestionSet)
             else
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+              Column(
                 children: suggestions
                     .map(
-                      (name) => ActionChip(
-                        label: Text(name),
-                        onPressed: () => onAdd(_template(pet.id, name)),
+                      (suggestion) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _SuggestionTile(
+                          suggestion: suggestion,
+                          onAddPending: () =>
+                              onAddPending(_template(pet.id, suggestion)),
+                          onRegisterApplied: () => onRegisterApplied(
+                            _template(
+                              pet.id,
+                              suggestion,
+                              status: PetVaccineStatus.applied,
+                            ),
+                          ),
+                        ),
                       ),
                     )
                     .toList(),
@@ -268,31 +301,126 @@ class _SuggestedVaccinesCard extends StatelessWidget {
     );
   }
 
-  List<String> _suggestionsFor(String species) {
-    final normalized = species.toLowerCase();
-    if (normalized.contains('perro')) {
-      return const [
-        'Antirrábica',
-        'Séxtuple / múltiple',
-        'Bordetella',
-        'Giardia',
-      ];
-    }
-    if (normalized.contains('gato')) {
-      return const ['Antirrábica', 'Triple felina', 'Leucemia felina'];
-    }
-    return const <String>[];
-  }
-
-  PetVaccine _template(String petId, String name) {
+  PetVaccine _template(
+    String petId,
+    PetVaccineSuggestion suggestion, {
+    PetVaccineStatus status = PetVaccineStatus.pending,
+  }) {
     final now = DateTime.now();
     return PetVaccine(
       id: 'vaccine-${now.microsecondsSinceEpoch}',
       petId: petId,
-      name: name,
-      status: PetVaccineStatus.pending,
+      name: suggestion.vaccineName,
+      status: status,
       createdAt: now,
       updatedAt: now,
+      notes: suggestion.note,
+    );
+  }
+}
+
+class _NoGeneralScheduleNotice extends StatelessWidget {
+  const _NoGeneralScheduleNotice({required this.suggestionSet});
+
+  final PetVaccineSuggestionSet suggestionSet;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            suggestionSet.emptyTitle ?? 'Sin sugerencias automáticas',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            suggestionSet.emptyMessage ??
+                'Podés registrar manualmente vacunas indicadas por un veterinario.',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SuggestionTile extends StatelessWidget {
+  const _SuggestionTile({
+    required this.suggestion,
+    required this.onAddPending,
+    required this.onRegisterApplied,
+  });
+
+  final PetVaccineSuggestion suggestion;
+  final VoidCallback onAddPending;
+  final VoidCallback onRegisterApplied;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                suggestion.vaccineName,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              Chip(
+                label: Text(suggestion.categoryLabel),
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(suggestion.description),
+          if (suggestion.note.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              suggestion.note,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
+            ),
+          ],
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                onPressed: onAddPending,
+                icon: const Icon(Icons.pending_actions_outlined),
+                label: const Text('Agregar como pendiente'),
+              ),
+              FilledButton.icon(
+                onPressed: onRegisterApplied,
+                icon: const Icon(Icons.check_circle_outline),
+                label: const Text('Registrar como aplicada'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -628,6 +756,26 @@ class _VaccineFormSheetState extends State<_VaccineFormSheet> {
                     return 'Ingresá el nombre de la vacuna.';
                   }
                   return null;
+                },
+              ),
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _nameController,
+                builder: (context, value, _) {
+                  final warning =
+                      PetVaccineSuggestionCatalog.crossSpeciesWarningFor(
+                        currentSpeciesLabel: widget.pet.species,
+                        vaccineName: value.text,
+                      );
+                  if (warning == null) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      warning,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: AppColors.support),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 12),

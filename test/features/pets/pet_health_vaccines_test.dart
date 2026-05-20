@@ -107,14 +107,235 @@ void main() {
 
     expect(find.text('Salud y vacunas'), findsWidgets);
     expect(find.text('Salud Vacía'), findsOneWidget);
+    await _scrollToText(tester, 'Vacunas sugeridas para Perro');
+    expect(find.textContaining('orientativas'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Todavía no cargaste vacunas'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('Todavía no cargaste vacunas'), findsOneWidget);
+  });
+
+  testWidgets('muestra sugerencias de vacunas solo para perro', (tester) async {
+    setDesktopViewport(tester);
+    final pet = await _seedPet(
+      email: 'health-dog-suggestions@mascotify.local',
+      petId: 'pet-health-dog-suggestions',
+      petName: 'Salud Perro',
+      species: 'Perro',
+    );
+
+    await tester.pumpWidget(buildTestApp(PetHealthScreen(pet: pet)));
+    await tester.pumpAndSettle();
+    await _scrollToText(tester, 'Vacunas sugeridas para Perro');
+
+    expect(find.text('Vacunas sugeridas para Perro'), findsOneWidget);
+    expect(find.text('Antirrábica'), findsOneWidget);
+    expect(find.text('Múltiple canina / quíntuple / séxtuple'), findsOneWidget);
+    expect(find.text('Triple felina'), findsNothing);
+    expect(find.text('Tétanos'), findsNothing);
+  });
+
+  testWidgets('muestra sugerencias de vacunas solo para gato', (tester) async {
+    setDesktopViewport(tester);
+    final pet = await _seedPet(
+      email: 'health-cat-suggestions@mascotify.local',
+      petId: 'pet-health-cat-suggestions',
+      petName: 'Salud Gato',
+      species: 'Gato',
+    );
+
+    await tester.pumpWidget(buildTestApp(PetHealthScreen(pet: pet)));
+    await tester.pumpAndSettle();
+    await _scrollToText(tester, 'Vacunas sugeridas para Gato');
+
+    expect(find.text('Vacunas sugeridas para Gato'), findsOneWidget);
+    expect(find.text('Triple felina'), findsOneWidget);
+    expect(find.text('Antirrábica'), findsOneWidget);
+    expect(find.text('Múltiple canina / quíntuple / séxtuple'), findsNothing);
+    expect(find.text('Encefalomielitis equina Este/Oeste'), findsNothing);
+  });
+
+  testWidgets('muestra sugerencias de vacunas solo para caballo', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    final pet = await _seedPet(
+      email: 'health-horse-suggestions@mascotify.local',
+      petId: 'pet-health-horse-suggestions',
+      petName: 'Salud Caballo',
+      species: 'Caballo',
+    );
+
+    await tester.pumpWidget(buildTestApp(PetHealthScreen(pet: pet)));
+    await tester.pumpAndSettle();
+    await _scrollToText(tester, 'Vacunas sugeridas para Caballo');
+
+    expect(find.text('Vacunas sugeridas para Caballo'), findsOneWidget);
+    expect(find.text('Tétanos'), findsOneWidget);
+    expect(find.text('Encefalomielitis equina Este/Oeste'), findsOneWidget);
+    expect(find.text('Múltiple canina / quíntuple / séxtuple'), findsNothing);
+    expect(find.text('Triple felina'), findsNothing);
+  });
+
+  testWidgets('muestra sugerencias de vacunas solo para conejo', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    final pet = await _seedPet(
+      email: 'health-rabbit-suggestions@mascotify.local',
+      petId: 'pet-health-rabbit-suggestions',
+      petName: 'Salud Conejo',
+      species: 'Conejo',
+    );
+
+    await tester.pumpWidget(buildTestApp(PetHealthScreen(pet: pet)));
+    await tester.pumpAndSettle();
+    await _scrollToText(tester, 'Vacunas sugeridas para Conejo');
+
+    expect(find.text('Vacunas sugeridas para Conejo'), findsOneWidget);
+    expect(find.text('Mixomatosis'), findsOneWidget);
     expect(
-      find.textContaining('no reemplaza la indicación de un veterinario'),
+      find.text('Enfermedad hemorrágica viral del conejo / RHD / RVHD'),
+      findsOneWidget,
+    );
+    expect(find.text('Triple felina'), findsNothing);
+    expect(find.text('Múltiple canina / quíntuple / séxtuple'), findsNothing);
+  });
+
+  testWidgets('muestra sugerencias de vacunas solo para hurón', (tester) async {
+    setDesktopViewport(tester);
+    final pet = await _seedPet(
+      email: 'health-ferret-suggestions@mascotify.local',
+      petId: 'pet-health-ferret-suggestions',
+      petName: 'Salud Huron',
+      species: 'Hurón',
+    );
+
+    await tester.pumpWidget(buildTestApp(PetHealthScreen(pet: pet)));
+    await tester.pumpAndSettle();
+    await _scrollToText(tester, 'Vacunas sugeridas para Hurón');
+
+    expect(find.text('Vacunas sugeridas para Hurón'), findsOneWidget);
+    expect(find.text('Moquillo canino / distemper'), findsOneWidget);
+    expect(find.text('Rabia'), findsOneWidget);
+    expect(find.text('Triple felina'), findsNothing);
+  });
+
+  testWidgets('aves reptiles peces y roedores no muestran vacunas cruzadas', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    for (final entry in <String, String>{
+      'Ave': 'Sin esquema general automático',
+      'Reptil doméstico': 'Sin vacunas rutinarias generales registradas',
+      'Pez': 'Sin vacunas hogareñas rutinarias',
+      'Hámster': 'Sin vacunas rutinarias generales registradas',
+    }.entries) {
+      final pet = await _seedPet(
+        email: 'health-${entry.key.hashCode}@mascotify.local',
+        petId: 'pet-health-${entry.key.hashCode}',
+        petName: 'Salud ${entry.key}',
+        species: entry.key,
+      );
+
+      await tester.pumpWidget(buildTestApp(PetHealthScreen(pet: pet)));
+      await tester.pumpAndSettle();
+      await _scrollToText(tester, entry.value);
+
+      expect(find.text(entry.value), findsOneWidget);
+      expect(find.text('Múltiple canina / quíntuple / séxtuple'), findsNothing);
+      expect(find.text('Triple felina'), findsNothing);
+      expect(find.text('Encefalomielitis equina Este/Oeste'), findsNothing);
+    }
+  });
+
+  testWidgets('sugerencias permiten crear pendiente y aplicada', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    final pendingPet = await _seedPet(
+      email: 'health-suggested-pending@mascotify.local',
+      petId: 'pet-health-suggested-pending',
+      petName: 'Salud Pendiente Sugerida',
+      species: 'Perro',
+    );
+
+    await tester.pumpWidget(buildTestApp(PetHealthScreen(pet: pendingPet)));
+    await tester.pumpAndSettle();
+    await _scrollToText(tester, 'Agregar como pendiente');
+    await tester.tap(find.text('Agregar como pendiente').first);
+    await tester.pumpAndSettle();
+
+    expect(
+      AppData.petVaccinesForPet(
+        pendingPet.id,
+      ).where((item) => item.name == 'Antirrábica' && item.isPending),
+      isNotEmpty,
+    );
+
+    final appliedPet = await _seedPet(
+      email: 'health-suggested-applied@mascotify.local',
+      petId: 'pet-health-suggested-applied',
+      petName: 'Salud Aplicada Sugerida',
+      species: 'Gato',
+    );
+
+    await tester.pumpWidget(buildTestApp(PetHealthScreen(pet: appliedPet)));
+    await tester.pumpAndSettle();
+    await _scrollToText(tester, 'Registrar como aplicada');
+    await tester.tap(find.text('Registrar como aplicada').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Agregar vacuna'), findsOneWidget);
+    expect(
+      tester
+          .widget<TextFormField>(
+            find.byKey(const ValueKey('vaccine-name-field')),
+          )
+          .controller
+          ?.text,
+      'Triple felina',
+    );
+
+    await tester.enterText(
+      find.byKey(const ValueKey('vaccine-application-date-field')),
+      '12/08/2026',
+    );
+    await _tapSaveVaccine(tester);
+    await tester.pumpAndSettle();
+
+    expect(
+      AppData.petVaccinesForPet(
+        appliedPet.id,
+      ).where((item) => item.name == 'Triple felina' && item.isApplied),
+      isNotEmpty,
+    );
+  });
+
+  testWidgets('advierte si la carga manual parece de otra especie', (
+    tester,
+  ) async {
+    final pet = await _seedPet(
+      email: 'health-cross-warning@mascotify.local',
+      petId: 'pet-health-cross-warning',
+      petName: 'Salud Cruzada',
+      species: 'Caballo',
+    );
+
+    await tester.pumpWidget(buildTestApp(PetHealthScreen(pet: pet)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('add-vaccine-button')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('vaccine-name-field')),
+      'Múltiple canina / quíntuple / séxtuple',
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('suele figurar asociada a otra especie'),
       findsOneWidget,
     );
   });
@@ -299,9 +520,10 @@ Future<Pet> _seedPet({
   required String email,
   required String petId,
   required String petName,
+  String species = 'Perro',
 }) async {
   await _buildHealthSession(email: email);
-  final pet = _pet(id: petId, name: petName);
+  final pet = _pet(id: petId, name: petName, species: species);
   await AppData.addPet(pet);
   return pet;
 }
@@ -336,8 +558,14 @@ Future<void> _openHealthFromDetail(WidgetTester tester) async {
 }
 
 Future<void> _scrollToText(WidgetTester tester, String text) async {
+  final finder = find.text(text);
+  if (finder.evaluate().isNotEmpty) {
+    await tester.ensureVisible(finder.first);
+    await tester.pumpAndSettle();
+    return;
+  }
   await tester.scrollUntilVisible(
-    find.text(text),
+    finder,
     500,
     scrollable: find.byType(Scrollable).first,
   );
@@ -391,11 +619,11 @@ Future<void> _tapSaveVaccine(WidgetTester tester) async {
   tester.widget<FilledButton>(saveButton).onPressed?.call();
 }
 
-Pet _pet({required String id, required String name}) {
+Pet _pet({required String id, required String name, String species = 'Perro'}) {
   return MockData.pets.first.copyWith(
     id: id,
     name: name,
-    species: 'Perro',
+    species: species,
     profileId: 'MSC-$id',
     qrCodeLabel: 'MSC-$id',
   );
