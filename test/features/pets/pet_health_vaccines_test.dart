@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mascotify/features/auth/data/local_auth_models.dart';
 import 'package:mascotify/features/pets/presentation/screens/pet_detail_screen.dart';
 import 'package:mascotify/features/pets/presentation/screens/pet_health_screen.dart';
 import 'package:mascotify/shared/data/app_data_source.dart';
@@ -27,6 +28,15 @@ void main() {
 
     expect(find.text('Salud'), findsOneWidget);
     expect(
+      find.text('Resumen inicial para controles y seguimiento.'),
+      findsNothing,
+    );
+    expect(
+      find.text('Controles recientes registrados y seguimiento estable.'),
+      findsNothing,
+    );
+    expect(find.text('Seguimiento'), findsNothing);
+    expect(
       find.text('Vacunas, controles y seguimiento sanitario.'),
       findsOneWidget,
     );
@@ -35,6 +45,50 @@ void main() {
     expect(find.text('Pendientes'), findsOneWidget);
     expect(find.text('Próxima dosis'), findsOneWidget);
     expect(find.text('Ver salud y vacunas'), findsOneWidget);
+  });
+
+  testWidgets('el flujo real desde Mascotas abre Salud y vacunas', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    final session = await buildPersistentTestAppSession();
+    await session.controller.login(
+      email: LocalAuthSeedData.familyEmail,
+      password: LocalAuthSeedData.demoPassword,
+    );
+
+    await tester.pumpWidget(session.buildApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Mascotas'));
+    await tester.pumpAndSettle();
+    expect(find.text('Centro de mascotas'), findsOneWidget);
+
+    await tester.tap(find.text('Milo').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Detalle de mascota'), findsOneWidget);
+
+    await _scrollToHealthCard(tester);
+    expect(
+      find.text('Resumen inicial para controles y seguimiento.'),
+      findsNothing,
+    );
+    expect(
+      find.text('Controles recientes registrados y seguimiento estable.'),
+      findsNothing,
+    );
+    expect(
+      find.text('Vacunas, controles y seguimiento sanitario.'),
+      findsOneWidget,
+    );
+    expect(find.text('Aplicadas'), findsOneWidget);
+    expect(find.text('Pendientes'), findsOneWidget);
+    expect(find.text('Próxima dosis'), findsOneWidget);
+    expect(find.text('Ver salud y vacunas'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('open-pet-health-button')));
+    await tester.pumpAndSettle();
+    expect(find.text('Salud y vacunas'), findsWidgets);
   });
 
   testWidgets('Ver salud y vacunas abre la libreta sanitaria vacía', (
