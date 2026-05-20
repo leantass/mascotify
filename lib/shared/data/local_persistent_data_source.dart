@@ -530,6 +530,32 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  Future<void> syncHealthReminderNotifications(
+    String petId,
+    List<EcosystemNotification> notifications,
+  ) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+
+    final prefix = 'notif-health-$petId-';
+    await _updateNotifications(userId, (currentNotifications) {
+      final previousById = <String, EcosystemNotification>{
+        for (final item in currentNotifications) item.id: item,
+      };
+      final healthNotifications = notifications.map((notification) {
+        final previous = previousById[notification.id];
+        return previous == null
+            ? notification
+            : notification.copyWith(isUnread: previous.isUnread);
+      });
+      return <EcosystemNotification>[
+        ...healthNotifications,
+        ...currentNotifications.where((item) => !item.id.startsWith(prefix)),
+      ].take(50).toList();
+    });
+  }
+
+  @override
   List<MessageThread> getMessageThreads() {
     return List.unmodifiable(_stateForCurrentUser().threads);
   }

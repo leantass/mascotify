@@ -36,6 +36,10 @@ abstract interface class MascotifyDataSource {
   int getUnreadNotificationsCount();
   Future<void> markNotificationRead(String notificationId);
   Future<void> markAllNotificationsRead();
+  Future<void> syncHealthReminderNotifications(
+    String petId,
+    List<EcosystemNotification> notifications,
+  );
 
   List<MessageThread> getMessageThreads();
   MessageThread? findMessageThreadById(String id);

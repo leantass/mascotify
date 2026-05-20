@@ -6,6 +6,7 @@ import '../../../../features/explore/presentation/screens/messages_inbox_screen.
 import '../../../../features/explore/presentation/screens/professional_content_detail_screen.dart';
 import '../../../../features/explore/presentation/screens/professionals_screen.dart';
 import '../../../../features/pets/presentation/screens/pet_detail_screen.dart';
+import '../../../../features/pets/presentation/screens/pet_health_screen.dart';
 import '../../../../features/pets/presentation/screens/qr_traceability_screen.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/notification_models.dart';
@@ -273,6 +274,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         await Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => PetDetailScreen(pet: pet)));
+        return true;
+      case EcosystemNotificationAction.openPetHealth:
+        final pet = _findPet(notification.petId);
+        if (pet == null) return false;
+        await Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => PetHealthScreen(pet: pet)));
         return true;
       case EcosystemNotificationAction.openPetQrTraceability:
         final pet = _findPet(notification.petId);
