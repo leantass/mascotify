@@ -4,6 +4,7 @@ import '../models/ecosystem_activity_feed_item.dart';
 import '../models/notification_models.dart';
 import '../models/pet.dart';
 import '../models/pet_activity_event.dart';
+import '../models/pet_vaccine.dart';
 import '../models/lost_pet.dart';
 import '../models/profile_option_item.dart';
 import '../models/professional_models.dart';
@@ -22,6 +23,7 @@ abstract interface class MascotifyDataSource {
   Pet? findPetByQrId(String qrId);
   List<LostPet> getLostPets();
   LostPet? findLostPetById(String id);
+  List<PetVaccine> getPetVaccines(String petId);
   List<PetActivityEvent> getPetActivityEvents(String petId);
   List<EcosystemActivityFeedItem> getEcosystemActivityFeedItems();
   List<ProfileOptionItem> getProfileOptions();
@@ -77,6 +79,8 @@ abstract interface class MascotifyDataSource {
   Future<void> addPet(Pet pet);
   Future<void> updatePet(Pet pet);
   Future<void> deletePet(String petId);
+  Future<void> upsertPetVaccine(PetVaccine vaccine);
+  Future<void> deletePetVaccine(String petId, String vaccineId);
   Future<void> addLostPet(LostPet lostPet);
   Future<void> updateLostPet(LostPet lostPet);
   Future<void> markLostPetFound(String lostPetId);

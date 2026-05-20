@@ -23,9 +23,24 @@ La idea es construir un ecosistema real, claro, premium y util.
 ### 2. Identidad de mascota
 - Ficha interna de mascota
 - Datos de identidad
-- salud
+- Salud / vacunas local-demo
 - documentacion
 - acciones rapidas
+
+### 2.1 Mascotas / Salud
+- ✅ Card Salud mejorada.
+- ✅ Libreta sanitaria local/demo.
+- ✅ Vacunas aplicadas.
+- ✅ Vacunas pendientes.
+- ✅ Proxima dosis/refuerzo.
+- ✅ Alta, edicion, eliminacion y marcado como aplicada.
+- ✅ Historial sanitario integrado con actividad/historial de mascota.
+- ✅ Persistencia local aislada por cuenta y mascota.
+- ✅ Tests automaticos.
+- ⏳ Backend real de salud/vacunas pendiente.
+- ⏳ Adjuntos/comprobantes reales pendientes.
+- ⏳ Sincronizacion multi-dispositivo pendiente.
+- 🔐 No reemplaza indicacion veterinaria.
 
 ### 3. QR y rastreo
 - Bloque QR dentro de la ficha
@@ -104,6 +119,21 @@ Preparar el proyecto para pasar de mock a real sin romper UX:
 - estados
 - providers o solucion elegida a futuro
 
+### Bloque D.1 Salud / vacunas local-demo
+Estado: ✅ Hecho
+
+Objetivo cerrado:
+- Card Salud mejorada.
+- Libreta sanitaria simple de vacunas.
+- Persistencia local por cuenta y mascota.
+- Historial sanitario dentro del historial/actividad de mascota.
+- Tests automaticos y CI verde.
+
+Pendiente para fase real:
+- Backend de salud/vacunas.
+- Adjuntos/comprobantes reales.
+- Sincronizacion multi-dispositivo.
+
 ### Bloque E. Matching mas profundo
 Objetivo:
 Mejorar la logica y expresividad del matching:
@@ -163,6 +193,14 @@ Volver mas potente la comunidad experta:
 - evitar duplicacion de logica
 - separar mejor datos y pantallas
 - preparar el terreno para backend real
+
+---
+
+## Historial de hitos
+
+| Fecha | Hito | Commit/PR | Estado | Observaciones |
+| --- | --- | --- | --- | --- |
+| 2026-05-20 | Libreta sanitaria simple de vacunas | 13af729 | ✅ Hecho | Implementacion local/demo con persistencia por cuenta/mascota, historial, tests y CI verde. |
 
 ---
 

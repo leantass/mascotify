@@ -4,6 +4,7 @@ import '../models/ecosystem_activity_feed_item.dart';
 import '../models/notification_models.dart';
 import '../models/pet.dart';
 import '../models/pet_activity_event.dart';
+import '../models/pet_vaccine.dart';
 import '../models/lost_pet.dart';
 import '../models/profile_option_item.dart';
 import '../models/professional_models.dart';
@@ -73,6 +74,11 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   @override
   List<PetActivityEvent> getPetActivityEvents(String petId) {
     return const <PetActivityEvent>[];
+  }
+
+  @override
+  List<PetVaccine> getPetVaccines(String petId) {
+    return const <PetVaccine>[];
   }
 
   @override
@@ -254,6 +260,12 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   Future<void> deletePet(String petId) async {}
 
   @override
+  Future<void> upsertPetVaccine(PetVaccine vaccine) async {}
+
+  @override
+  Future<void> deletePetVaccine(String petId, String vaccineId) async {}
+
+  @override
   Future<void> addLostPet(LostPet lostPet) async {}
 
   @override
@@ -333,6 +345,10 @@ class AppData {
   static List<LostPet> get lostPets => source.getLostPets();
 
   static LostPet? findLostPetById(String id) => source.findLostPetById(id);
+
+  static List<PetVaccine> petVaccinesForPet(String petId) {
+    return source.getPetVaccines(petId);
+  }
 
   static List<PetActivityEvent> petActivityEventsForPet(String petId) {
     return source.getPetActivityEvents(petId);
@@ -493,6 +509,14 @@ class AppData {
 
   static Future<void> deletePet(String petId) {
     return source.deletePet(petId);
+  }
+
+  static Future<void> upsertPetVaccine(PetVaccine vaccine) {
+    return source.upsertPetVaccine(vaccine);
+  }
+
+  static Future<void> deletePetVaccine(String petId, String vaccineId) {
+    return source.deletePetVaccine(petId, vaccineId);
   }
 
   static Future<void> addLostPet(LostPet lostPet) {
