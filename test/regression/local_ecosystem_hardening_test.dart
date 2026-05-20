@@ -302,12 +302,13 @@ Future<void> _createPetFromUi(WidgetTester tester, String name) async {
 
 Future<void> _logoutFromProfile(WidgetTester tester) async {
   final logoutButton = find.widgetWithText(OutlinedButton, 'Cerrar sesión');
+  final mainScroll = find.byType(Scrollable).first;
   for (
     var attempt = 0;
     attempt < 6 && logoutButton.evaluate().isEmpty;
     attempt++
   ) {
-    await tester.drag(find.byType(Scrollable).last, const Offset(0, -900));
+    await tester.drag(mainScroll, const Offset(0, -900), warnIfMissed: false);
     await tester.pumpAndSettle();
   }
   await tester.ensureVisible(logoutButton);

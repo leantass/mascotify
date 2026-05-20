@@ -11,6 +11,7 @@ import '../../../../shared/models/plan_entitlements.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
+import 'support_contacts_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key, this.experience = AccountExperience.family});
@@ -968,6 +969,21 @@ class _ConfigurationTab extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         _SettingsAction(
+          actionKey: const ValueKey('settings-contacts-action'),
+          title: 'Contactos',
+          subtitle: 'Soporte, reportes, ayuda y canales oficiales.',
+          icon: Icons.contact_support_outlined,
+          label: 'Abrir',
+          onPressed: isBusy
+              ? null
+              : () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const SupportContactsScreen(),
+                  ),
+                ),
+        ),
+        const SizedBox(height: 14),
+        _SettingsAction(
           title: 'Correo electrónico',
           subtitle: user.email,
           icon: Icons.alternate_email_rounded,
@@ -1101,6 +1117,7 @@ class _SettingsInfo extends StatelessWidget {
 
 class _SettingsAction extends StatelessWidget {
   const _SettingsAction({
+    this.actionKey,
     required this.title,
     required this.subtitle,
     required this.icon,
@@ -1108,6 +1125,7 @@ class _SettingsAction extends StatelessWidget {
     required this.onPressed,
   });
 
+  final Key? actionKey;
   final String title;
   final String subtitle;
   final IconData icon;
@@ -1120,7 +1138,11 @@ class _SettingsAction extends StatelessWidget {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      trailing: OutlinedButton(onPressed: onPressed, child: Text(label)),
+      trailing: OutlinedButton(
+        key: actionKey,
+        onPressed: onPressed,
+        child: Text(label),
+      ),
     );
   }
 }
