@@ -10,6 +10,7 @@ import '../models/ecosystem_activity_feed_item.dart';
 import '../models/notification_models.dart';
 import '../models/pet.dart';
 import '../models/pet_activity_event.dart';
+import '../models/pet_vaccine.dart';
 import '../models/lost_pet.dart';
 import '../models/profile_option_item.dart';
 import '../models/professional_models.dart';
@@ -89,6 +90,7 @@ class PersistedLocalUserState {
     required this.savedProfiles,
     required this.notifications,
     required this.petActivityEvents,
+    required this.petVaccines,
     required this.qrScanEvents,
     required this.professionalProfile,
   });
@@ -112,6 +114,7 @@ class PersistedLocalUserState {
   final List<SavedProfileEntry> savedProfiles;
   final List<EcosystemNotification> notifications;
   final List<PetActivityEvent> petActivityEvents;
+  final List<PetVaccine> petVaccines;
   final List<QrScanEvent> qrScanEvents;
   final ProfessionalProfile? professionalProfile;
 
@@ -135,6 +138,7 @@ class PersistedLocalUserState {
     List<SavedProfileEntry>? savedProfiles,
     List<EcosystemNotification>? notifications,
     List<PetActivityEvent>? petActivityEvents,
+    List<PetVaccine>? petVaccines,
     List<QrScanEvent>? qrScanEvents,
     ProfessionalProfile? professionalProfile,
     bool clearProfessionalProfile = false,
@@ -167,6 +171,7 @@ class PersistedLocalUserState {
       savedProfiles: savedProfiles ?? this.savedProfiles,
       notifications: notifications ?? this.notifications,
       petActivityEvents: petActivityEvents ?? this.petActivityEvents,
+      petVaccines: petVaccines ?? this.petVaccines,
       qrScanEvents: qrScanEvents ?? this.qrScanEvents,
       professionalProfile: clearProfessionalProfile
           ? null
@@ -200,6 +205,7 @@ class PersistedLocalUserState {
       'petActivityEvents': petActivityEvents
           .map((item) => item.toJson())
           .toList(),
+      'petVaccines': petVaccines.map((item) => item.toJson()).toList(),
       'qrScanEvents': qrScanEvents.map((item) => item.toJson()).toList(),
       'professionalProfile': professionalProfile?.toJson(),
     };
@@ -290,6 +296,13 @@ class PersistedLocalUserState {
                 ),
               )
               .toList(),
+      petVaccines: (json['petVaccines'] as List<dynamic>? ?? const <dynamic>[])
+          .map(
+            (item) => PetVaccine.fromJson(
+              Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+            ),
+          )
+          .toList(),
       qrScanEvents:
           (json['qrScanEvents'] as List<dynamic>? ?? const <dynamic>[])
               .map(
@@ -555,6 +568,23 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
             .toList()
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return List.unmodifiable(events);
+  }
+
+  @override
+  List<PetVaccine> getPetVaccines(String petId) {
+    final userId = _currentUserId;
+    if (userId == null) return const <PetVaccine>[];
+
+    final vaccines =
+        _stateForUser(
+            userId,
+          ).petVaccines.where((vaccine) => vaccine.petId == petId).toList()
+          ..sort((a, b) {
+            final aDate = a.applicationDate ?? a.nextDoseDate ?? a.updatedAt;
+            final bDate = b.applicationDate ?? b.nextDoseDate ?? b.updatedAt;
+            return bDate.compareTo(aDate);
+          });
+    return List.unmodifiable(vaccines);
   }
 
   @override
@@ -1017,6 +1047,95 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
   }
 
   @override
+  Future<void> upsertPetVaccine(PetVaccine vaccine) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+    final pet = findPetById(vaccine.petId);
+    if (pet == null) return;
+
+    final currentState = _stateForUser(userId);
+    final existingIndex = currentState.petVaccines.indexWhere(
+      (item) => item.id == vaccine.id && item.petId == vaccine.petId,
+    );
+    final wasPending =
+        existingIndex != -1 &&
+        currentState.petVaccines[existingIndex].status ==
+            PetVaccineStatus.pending;
+    final updatedVaccines = <PetVaccine>[...currentState.petVaccines];
+    if (existingIndex == -1) {
+      updatedVaccines.add(vaccine);
+    } else {
+      updatedVaccines[existingIndex] = vaccine;
+    }
+
+    final eventTitle = existingIndex == -1
+        ? 'Vacuna registrada'
+        : wasPending && vaccine.status == PetVaccineStatus.applied
+        ? 'Vacuna pendiente aplicada'
+        : 'Registro sanitario actualizado';
+    final eventDescription = existingIndex == -1
+        ? 'Se registró la vacuna ${vaccine.name} para ${pet.name}.'
+        : wasPending && vaccine.status == PetVaccineStatus.applied
+        ? 'Se marcó como aplicada una vacuna pendiente de ${pet.name}.'
+        : 'Se actualizó el registro sanitario de ${pet.name}.';
+
+    _userStates[userId] = currentState.copyWith(
+      petVaccines: updatedVaccines,
+      petActivityEvents: _prependPetActivityEvent(
+        currentState.petActivityEvents,
+        _buildPetActivityEvent(
+          userId: userId,
+          petId: pet.id,
+          type: PetActivityEventType.health,
+          title: eventTitle,
+          description: eventDescription,
+          relatedEntityId: vaccine.id,
+          relatedEntityType: 'petVaccine',
+        ),
+      ),
+    );
+    await _persistUserState(userId);
+  }
+
+  @override
+  Future<void> deletePetVaccine(String petId, String vaccineId) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
+    final pet = findPetById(petId);
+    if (pet == null) return;
+
+    final currentState = _stateForUser(userId);
+    PetVaccine? vaccine;
+    for (final item in currentState.petVaccines) {
+      if (item.petId == petId && item.id == vaccineId) {
+        vaccine = item;
+        break;
+      }
+    }
+    if (vaccine == null) return;
+
+    _userStates[userId] = currentState.copyWith(
+      petVaccines: currentState.petVaccines
+          .where((item) => item.id != vaccineId)
+          .toList(),
+      petActivityEvents: _prependPetActivityEvent(
+        currentState.petActivityEvents,
+        _buildPetActivityEvent(
+          userId: userId,
+          petId: pet.id,
+          type: PetActivityEventType.health,
+          title: 'Vacuna eliminada',
+          description:
+              'Se eliminó la vacuna ${vaccine.name} del registro sanitario de ${pet.name}.',
+          relatedEntityId: vaccine.id,
+          relatedEntityType: 'petVaccine',
+        ),
+      ),
+    );
+    await _persistUserState(userId);
+  }
+
+  @override
   Future<void> updatePet(Pet pet) async {
     final userId = _currentUserId;
     if (userId == null) return;
@@ -1125,6 +1244,9 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           .toList(),
       savedProfiles: currentState.savedProfiles
           .where((entry) => entry.pet.id != petId)
+          .toList(),
+      petVaccines: currentState.petVaccines
+          .where((vaccine) => vaccine.petId != petId)
           .toList(),
       petActivityEvents: currentState.petActivityEvents
           .where((event) => event.petId != petId)
@@ -1851,6 +1973,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         savedProfiles,
       ),
       petActivityEvents: const <PetActivityEvent>[],
+      petVaccines: const <PetVaccine>[],
       qrScanEvents: const <QrScanEvent>[],
       professionalProfile: professionalProfile,
     );
@@ -2056,6 +2179,10 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         nextPets,
         state.petActivityEvents,
       );
+      final nextPetVaccines = _normalizePetVaccines(
+        nextPets,
+        state.petVaccines,
+      );
       return state.copyWith(
         pets: nextPets,
         threads: nextThreads,
@@ -2064,6 +2191,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         savedProfiles: nextSavedProfiles,
         notifications: nextNotifications,
         petActivityEvents: nextPetActivityEvents,
+        petVaccines: nextPetVaccines,
       );
     }
 
@@ -2094,12 +2222,17 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
       state.pets,
       state.petActivityEvents,
     );
+    final nextPetVaccines = _normalizePetVaccines(
+      state.pets,
+      state.petVaccines,
+    );
     if (nextThreads != state.threads ||
         nextQrStates != state.qrStates ||
         nextSocialInboxEntries != state.socialInboxEntries ||
         nextSavedProfiles != state.savedProfiles ||
         nextNotifications != state.notifications ||
-        nextPetActivityEvents != state.petActivityEvents) {
+        nextPetActivityEvents != state.petActivityEvents ||
+        nextPetVaccines != state.petVaccines) {
       return state.copyWith(
         threads: nextThreads,
         qrStates: nextQrStates,
@@ -2107,6 +2240,7 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         savedProfiles: nextSavedProfiles,
         notifications: nextNotifications,
         petActivityEvents: nextPetActivityEvents,
+        petVaccines: nextPetVaccines,
       );
     }
 
@@ -2203,6 +2337,15 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
           (event) => event.accountId == userId && petIds.contains(event.petId),
         )
         .toList();
+  }
+
+  List<PetVaccine> _normalizePetVaccines(
+    List<Pet> pets,
+    List<PetVaccine> vaccines,
+  ) {
+    if (pets.isEmpty) return const <PetVaccine>[];
+    final petIds = pets.map((pet) => pet.id).toSet();
+    return vaccines.where((vaccine) => petIds.contains(vaccine.petId)).toList();
   }
 
   List<SavedProfileEntry> _normalizeSavedProfiles(
@@ -2354,6 +2497,8 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         return EcosystemActivityFeedType.message;
       case PetActivityEventType.qr:
         return EcosystemActivityFeedType.qr;
+      case PetActivityEventType.health:
+        return EcosystemActivityFeedType.pet;
       case PetActivityEventType.notification:
         return EcosystemActivityFeedType.notification;
     }
@@ -2371,6 +2516,8 @@ class PersistentLocalMascotifyDataSource implements MascotifyDataSource {
         return 'Mensajeria';
       case PetActivityEventType.qr:
         return 'QR';
+      case PetActivityEventType.health:
+        return 'Salud';
       case PetActivityEventType.notification:
         return 'Notificacion';
     }

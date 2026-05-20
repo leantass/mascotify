@@ -5,19 +5,27 @@ import '../../../../core/app_environment.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/pet_activity_event.dart';
+import '../../../../shared/models/pet_vaccine.dart';
 import '../../../../shared/models/report_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import 'pet_health_screen.dart';
 import 'qr_scan_preview_screen.dart';
 import 'qr_traceability_screen.dart';
 
-class PetDetailScreen extends StatelessWidget {
+class PetDetailScreen extends StatefulWidget {
   const PetDetailScreen({super.key, required this.pet});
 
   final Pet pet;
 
   @override
+  State<PetDetailScreen> createState() => _PetDetailScreenState();
+}
+
+class _PetDetailScreenState extends State<PetDetailScreen> {
+  @override
   Widget build(BuildContext context) {
+    final pet = AppData.findPetById(widget.pet.id) ?? widget.pet;
     return Scaffold(
       appBar: AppBar(title: const Text('Detalle de mascota')),
       body: SafeArea(
@@ -63,14 +71,16 @@ class PetDetailScreen extends StatelessWidget {
               const SizedBox(height: 16),
               _PetActivityHistoryCard(pet: pet),
               const SizedBox(height: 16),
-              _SectionCard(
-                title: 'Salud',
-                subtitle: 'Resumen inicial para controles y seguimiento.',
-                icon: Icons.favorite_border_rounded,
-                accentColor: AppColors.surfaceAlt,
-                children: [
-                  _DetailRow(label: 'Seguimiento', value: pet.healthSummary),
-                ],
+              _PetHealthSummaryCard(
+                pet: pet,
+                onOpenHealth: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => PetHealthScreen(pet: pet),
+                    ),
+                  );
+                  if (mounted) setState(() {});
+                },
               ),
               const SizedBox(height: 16),
               _SectionCard(
@@ -1349,6 +1359,81 @@ class _PetActivityHistoryCard extends StatelessWidget {
   }
 }
 
+class _PetHealthSummaryCard extends StatelessWidget {
+  const _PetHealthSummaryCard({required this.pet, required this.onOpenHealth});
+
+  final Pet pet;
+  final VoidCallback onOpenHealth;
+
+  @override
+  Widget build(BuildContext context) {
+    final vaccines = AppData.petVaccinesForPet(pet.id);
+    final applied = vaccines.where((vaccine) => vaccine.isApplied).length;
+    final pending = vaccines.where((vaccine) => vaccine.isPending).length;
+    final nextDose = _nextDose(vaccines);
+    final status = vaccines.isEmpty
+        ? 'Sin vacunas cargadas'
+        : pending > 0
+        ? 'Vacunas pendientes'
+        : 'Vacunas al día';
+
+    return _SectionCard(
+      title: 'Salud',
+      subtitle: 'Vacunas, controles y seguimiento sanitario.',
+      icon: Icons.vaccines_outlined,
+      accentColor: AppColors.surfaceAlt,
+      children: [
+        _DetailRow(label: 'Estado general', value: status),
+        ResponsiveWrapGrid(
+          minItemWidth: 160,
+          children: [
+            _SocialStatTile(
+              label: 'Aplicadas',
+              value: '$applied',
+              color: AppColors.primarySoft,
+            ),
+            _SocialStatTile(
+              label: 'Pendientes',
+              value: '$pending',
+              color: pending > 0 ? AppColors.supportSoft : AppColors.surfaceAlt,
+            ),
+            _SocialStatTile(
+              label: 'Próxima dosis',
+              value: nextDose == null ? 'Sin fecha' : _formatDate(nextDose),
+              color: AppColors.accentSoft,
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            key: const ValueKey('open-pet-health-button'),
+            onPressed: onOpenHealth,
+            icon: const Icon(Icons.vaccines_outlined),
+            label: const Text('Ver salud y vacunas'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  DateTime? _nextDose(List<PetVaccine> vaccines) {
+    final dates =
+        vaccines
+            .map((vaccine) => vaccine.nextDoseDate)
+            .whereType<DateTime>()
+            .toList()
+          ..sort();
+    if (dates.isEmpty) return null;
+    return dates.first;
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+}
+
 class _PetActivityTile extends StatelessWidget {
   const _PetActivityTile({required this.event});
 
@@ -1413,6 +1498,8 @@ class _PetActivityTile extends StatelessWidget {
         return Icons.forum_outlined;
       case PetActivityEventType.qr:
         return Icons.qr_code_2_rounded;
+      case PetActivityEventType.health:
+        return Icons.vaccines_outlined;
       case PetActivityEventType.deleted:
         return Icons.delete_outline;
       case PetActivityEventType.notification:
@@ -1427,6 +1514,8 @@ class _PetActivityTile extends StatelessWidget {
         return AppColors.accentSoft;
       case PetActivityEventType.qr:
         return AppColors.primarySoft;
+      case PetActivityEventType.health:
+        return AppColors.accentSoft;
       case PetActivityEventType.deleted:
         return AppColors.supportSoft;
       case PetActivityEventType.created:

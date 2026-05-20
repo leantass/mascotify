@@ -5,6 +5,7 @@ enum PetActivityEventType {
   message,
   notification,
   qr,
+  health,
   deleted,
 }
 
