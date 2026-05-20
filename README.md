@@ -43,6 +43,12 @@ Roadmap ejecutivo:
 docs/demo/mascotify_roadmap_ejecutivo.md
 ```
 
+Roadmap operativo del proyecto:
+
+```text
+ROADMAP.md
+```
+
 Comandos principales desde la raiz del proyecto:
 
 ```bat
