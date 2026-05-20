@@ -29,6 +29,7 @@ La idea es construir un ecosistema real, claro, premium y util.
 
 ### 2.1 Mascotas / Salud
 - ✅ Card Salud mejorada.
+- ✅ Card Salud con acceso visible a Salud y vacunas.
 - ✅ Libreta sanitaria local/demo.
 - ✅ Vacunas aplicadas.
 - ✅ Vacunas pendientes.
@@ -37,6 +38,7 @@ La idea es construir un ecosistema real, claro, premium y util.
 - ✅ Historial sanitario integrado con actividad/historial de mascota.
 - ✅ Persistencia local aislada por cuenta y mascota.
 - ✅ Tests automaticos.
+- ✅ Fix para eliminar copy viejo de datos demo.
 - ⏳ Backend real de salud/vacunas pendiente.
 - ⏳ Adjuntos/comprobantes reales pendientes.
 - ⏳ Sincronizacion multi-dispositivo pendiente.
@@ -200,6 +202,7 @@ Volver mas potente la comunidad experta:
 
 | Fecha | Hito | Commit/PR | Estado | Observaciones |
 | --- | --- | --- | --- | --- |
+| 2026-05-20 | Salud y vacunas visible en detalle de mascota | 13af729 + 88d73f8 | ✅ Hecho | Se agrego libreta sanitaria local/demo y se corrigio copy legacy en MockData para evitar que el usuario vea la card vieja en builds nuevos. |
 | 2026-05-20 | Libreta sanitaria simple de vacunas | 13af729 | ✅ Hecho | Implementacion local/demo con persistencia por cuenta/mascota, historial, tests y CI verde. |
 
 ---
