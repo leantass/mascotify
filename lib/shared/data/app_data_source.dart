@@ -165,6 +165,12 @@ class MockMascotifyDataSource implements MascotifyDataSource {
   Future<void> markAllNotificationsRead() async {}
 
   @override
+  Future<void> syncHealthReminderNotifications(
+    String petId,
+    List<EcosystemNotification> notifications,
+  ) async {}
+
+  @override
   Future<void> markNotificationRead(String notificationId) async {}
 
   @override
@@ -383,6 +389,13 @@ class AppData {
 
   static Future<void> markAllNotificationsRead() {
     return source.markAllNotificationsRead();
+  }
+
+  static Future<void> syncHealthReminderNotifications(
+    String petId,
+    List<EcosystemNotification> notifications,
+  ) {
+    return source.syncHealthReminderNotifications(petId, notifications);
   }
 
   static List<MessageThread> get messageThreads => source.getMessageThreads();

@@ -12,6 +12,7 @@ enum EcosystemNotificationAction {
   openConnectionsInbox,
   openMessagesInbox,
   openPetDetail,
+  openPetHealth,
   openPetQrTraceability,
   openProfessionals,
   openProfessionalContent,

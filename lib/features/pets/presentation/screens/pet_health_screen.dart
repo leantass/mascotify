@@ -5,7 +5,12 @@ import '../../../../shared/data/pet_vaccine_suggestion_catalog.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/pet_activity_event.dart';
 import '../../../../shared/models/pet_vaccine.dart';
+import '../../../../shared/models/pet_vaccine_guidance.dart';
+import '../../../../shared/models/pet_vaccine_reminder.dart';
+import '../../../../shared/models/pet_vaccine_schedule_rule.dart';
 import '../../../../shared/models/pet_vaccine_suggestion.dart';
+import '../../../../shared/services/pet_health_reminder_engine.dart';
+import '../../../../shared/services/pet_vaccine_guidance_engine.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 
@@ -19,6 +24,8 @@ class PetHealthScreen extends StatefulWidget {
 }
 
 class _PetHealthScreenState extends State<PetHealthScreen> {
+  String? _lastSyncedReminderSignature;
+
   Pet get _pet => AppData.findPetById(widget.pet.id) ?? widget.pet;
 
   @override
@@ -29,6 +36,16 @@ class _PetHealthScreenState extends State<PetHealthScreen> {
     final pending = vaccines.where((vaccine) => vaccine.isPending).toList();
     final nextDose = _nextDose(vaccines);
     final lastUpdate = _lastUpdate(vaccines);
+    final guidance = PetVaccineGuidanceEngine.buildVaccineGuidanceForPet(
+      pet,
+      vaccines,
+    );
+    final reminders = PetHealthReminderEngine.buildPetHealthReminders(
+      pet,
+      vaccines,
+      guidance,
+    );
+    _syncHealthNotifications(pet, reminders);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Salud y vacunas')),
@@ -51,6 +68,31 @@ class _PetHealthScreenState extends State<PetHealthScreen> {
                 onAddPending: _addSuggestedPending,
                 onRegisterApplied: _openForm,
               ),
+              const SizedBox(height: 16),
+              _GuidanceOverviewCard(guidance: guidance),
+              const SizedBox(height: 16),
+              _ReviewNowCard(
+                guidance: guidance,
+                reminders: reminders,
+                onAddPending: (rule) =>
+                    _addSuggestedPending(_templateFromRule(pet.id, rule)),
+                onRegisterApplied: (rule) => _openForm(
+                  _templateFromRule(
+                    pet.id,
+                    rule,
+                    status: PetVaccineStatus.applied,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _UpcomingRemindersCard(
+                reminders: reminders,
+                onOpenForm: () => _openForm(),
+              ),
+              const SizedBox(height: 16),
+              _RiskGuidanceCard(guidance: guidance),
+              const SizedBox(height: 16),
+              _HealthInfoCard(guidance: guidance),
               const SizedBox(height: 16),
               if (vaccines.isEmpty)
                 _EmptyVaccinesCard(onAdd: () => _openForm())
@@ -101,6 +143,37 @@ class _PetHealthScreenState extends State<PetHealthScreen> {
   Future<void> _addSuggestedPending(PetVaccine vaccine) async {
     await AppData.upsertPetVaccine(vaccine);
     if (mounted) setState(() {});
+  }
+
+  void _syncHealthNotifications(Pet pet, List<PetVaccineReminder> reminders) {
+    final notifications = PetHealthReminderEngine.buildHealthNotifications(
+      pet,
+      reminders,
+    );
+    final signature = notifications.map((item) => item.id).join('|');
+    if (_lastSyncedReminderSignature == signature) return;
+    _lastSyncedReminderSignature = signature;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      AppData.syncHealthReminderNotifications(pet.id, notifications);
+    });
+  }
+
+  PetVaccine _templateFromRule(
+    String petId,
+    PetVaccineScheduleRule rule, {
+    PetVaccineStatus status = PetVaccineStatus.pending,
+  }) {
+    final now = DateTime.now();
+    return PetVaccine(
+      id: 'vaccine-${now.microsecondsSinceEpoch}',
+      petId: petId,
+      name: rule.displayName,
+      status: status,
+      createdAt: now,
+      updatedAt: now,
+      notes: rule.disclaimer,
+    );
   }
 
   Future<void> _markPendingAsApplied(PetVaccine vaccine) async {
@@ -228,6 +301,395 @@ class _HeaderCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _GuidanceOverviewCard extends StatelessWidget {
+  const _GuidanceOverviewCard({required this.guidance});
+
+  final PetVaccineGuidance guidance;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Calendario orientativo',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'La libreta sanitaria ayuda a organizar información. Las vacunas y calendarios sugeridos son orientativos y pueden variar por país, edad, estado de salud, exposición, producto usado y criterio veterinario.',
+            ),
+            const SizedBox(height: 14),
+            ResponsiveWrapGrid(
+              minItemWidth: 160,
+              children: [
+                _MetricTile(label: 'Especie', value: guidance.speciesLabel),
+                _MetricTile(
+                  label: 'Etapa sanitaria',
+                  value: guidance.ageStageLabel,
+                ),
+                _MetricTile(label: 'Región usada', value: guidance.regionLabel),
+                _MetricTile(
+                  label: 'Versión catálogo',
+                  value: guidance.knowledgeVersion.version,
+                ),
+                _MetricTile(
+                  label: 'Actualización',
+                  value: _formatDate(guidance.knowledgeVersion.publishedAt),
+                ),
+              ],
+            ),
+            if (guidance.warnings.isNotEmpty ||
+                guidance.seniorWarnings.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              ...[...guidance.warnings, ...guidance.seniorWarnings].map(
+                (warning) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _NoticeCard(text: warning),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReviewNowCard extends StatelessWidget {
+  const _ReviewNowCard({
+    required this.guidance,
+    required this.reminders,
+    required this.onAddPending,
+    required this.onRegisterApplied,
+  });
+
+  final PetVaccineGuidance guidance;
+  final List<PetVaccineReminder> reminders;
+  final ValueChanged<PetVaccineScheduleRule> onAddPending;
+  final ValueChanged<PetVaccineScheduleRule> onRegisterApplied;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = guidance.reviewNow;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Para revisar ahora',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            if (!guidance.hasUniversalCalendar)
+              Text(guidance.noGeneralCalendarMessage!)
+            else if (items.isEmpty)
+              const Text(
+                'No hay vacunas pendientes, vencidas o con historial incompleto detectadas en la libreta.',
+              )
+            else
+              ...items
+                  .take(6)
+                  .map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _GuidanceItemTile(
+                        item: item,
+                        onAddPending: () => onAddPending(item.rule),
+                        onRegisterApplied: () => onRegisterApplied(item.rule),
+                      ),
+                    ),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _UpcomingRemindersCard extends StatelessWidget {
+  const _UpcomingRemindersCard({
+    required this.reminders,
+    required this.onOpenForm,
+  });
+
+  final List<PetVaccineReminder> reminders;
+  final VoidCallback onOpenForm;
+
+  @override
+  Widget build(BuildContext context) {
+    final upcoming = reminders
+        .where(
+          (item) =>
+              item.status == PetVaccineReminderStatus.proxima ||
+              item.status == PetVaccineReminderStatus.vencida,
+        )
+        .toList();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Próximos avisos',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            if (upcoming.isEmpty)
+              const Text(
+                'Sin próximos avisos calculados. Si cargás próxima dosis, Mascotify puede ayudarte a recordarla.',
+              )
+            else
+              ...upcoming.map(
+                (reminder) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _ReminderTile(
+                    reminder: reminder,
+                    onOpenForm: onOpenForm,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RiskGuidanceCard extends StatelessWidget {
+  const _RiskGuidanceCard({required this.guidance});
+
+  final PetVaccineGuidance guidance;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Según riesgo', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            const Text(
+              'Completá información de estilo de vida para orientar mejor las vacunas según riesgo.',
+            ),
+            const SizedBox(height: 12),
+            if (guidance.riskRules.isEmpty)
+              const Text(
+                'Sin vacunas según riesgo para esta especie en el catálogo local.',
+              )
+            else
+              ...guidance.riskRules.map(
+                (rule) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _RuleLine(rule: rule),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HealthInfoCard extends StatelessWidget {
+  const _HealthInfoCard({required this.guidance});
+
+  final PetVaccineGuidance guidance;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Información sanitaria',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(guidance.knowledgeVersion.disclaimer),
+            const SizedBox(height: 8),
+            const Text(
+              'Si tu mascota está enferma, es senior, tuvo reacciones previas, está preñada o tiene tratamientos en curso, consultá con un veterinario antes de vacunar.',
+            ),
+            const SizedBox(height: 12),
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              title: const Text('Ver límites de la orientación'),
+              childrenPadding: const EdgeInsets.only(bottom: 8),
+              children: [
+                Text(guidance.knowledgeVersion.sourceSummary),
+                const SizedBox(height: 8),
+                Text('Revisión: ${guidance.knowledgeVersion.reviewedBy}'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GuidanceItemTile extends StatelessWidget {
+  const _GuidanceItemTile({
+    required this.item,
+    required this.onAddPending,
+    required this.onRegisterApplied,
+  });
+
+  final PetVaccineGuidanceItem item;
+  final VoidCallback onAddPending;
+  final VoidCallback onRegisterApplied;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                item.rule.displayName,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              Chip(
+                label: Text(_guidanceStatusLabel(item.status)),
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(item.message),
+          if (item.dueDate != null) ...[
+            const SizedBox(height: 6),
+            Text('Fecha sugerida: ${_formatDate(item.dueDate!)}'),
+          ],
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton(
+                onPressed: onAddPending,
+                child: const Text('Agregar como pendiente'),
+              ),
+              FilledButton(
+                onPressed: onRegisterApplied,
+                child: const Text('Registrar como aplicada'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReminderTile extends StatelessWidget {
+  const _ReminderTile({required this.reminder, required this.onOpenForm});
+
+  final PetVaccineReminder reminder;
+  final VoidCallback onOpenForm;
+
+  @override
+  Widget build(BuildContext context) {
+    final days = reminder.daysUntilDue;
+    final date = reminder.dueDate == null
+        ? 'Sin fecha'
+        : _formatDate(reminder.dueDate!);
+    final daysText = days == null
+        ? ''
+        : days < 0
+        ? 'Hace ${days.abs()} días'
+        : 'Faltan $days días';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: reminder.severity == PetVaccineReminderSeverity.important
+            ? AppColors.supportSoft
+            : AppColors.primarySoft,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            reminder.vaccineName,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 4),
+          Text(reminder.message),
+          const SizedBox(height: 6),
+          Text([date, if (daysText.isNotEmpty) daysText].join(' - ')),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton(
+                onPressed: onOpenForm,
+                child: const Text('Ver detalle'),
+              ),
+              FilledButton(
+                onPressed: onOpenForm,
+                child: const Text('Registrar como aplicada'),
+              ),
+              OutlinedButton(
+                onPressed: onOpenForm,
+                child: const Text('Agregar como pendiente'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RuleLine extends StatelessWidget {
+  const _RuleLine({required this.rule});
+
+  final PetVaccineScheduleRule rule;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(rule.displayName),
+      subtitle: Text(
+        [
+          rule.categoryLabel,
+          if (rule.riskFactors.isNotEmpty)
+            'Factores: ${rule.riskFactors.join(', ')}',
+          if (rule.frequencyLabel.isNotEmpty) rule.frequencyLabel,
+        ].join(' · '),
       ),
     );
   }
@@ -707,6 +1169,32 @@ class _VaccineFormSheetState extends State<_VaccineFormSheet> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final crossSpeciesWarning =
+        PetVaccineSuggestionCatalog.crossSpeciesWarningFor(
+          currentSpeciesLabel: widget.pet.species,
+          vaccineName: _nameController.text,
+        );
+    if (crossSpeciesWarning != null) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Confirmar vacuna manual'),
+          content: Text(crossSpeciesWarning),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              key: const ValueKey('confirm-cross-species-vaccine-button'),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Lo indicó un veterinario'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
     final now = DateTime.now();
     final previous = widget.vaccine;
     final vaccine = PetVaccine(
@@ -1081,6 +1569,27 @@ String _formatDate(DateTime date) {
 
 String _formatOptionalDate(DateTime? date) {
   return date == null ? '' : _formatDate(date);
+}
+
+String _guidanceStatusLabel(PetVaccineGuidanceStatus status) {
+  switch (status) {
+    case PetVaccineGuidanceStatus.alDia:
+      return 'Al día';
+    case PetVaccineGuidanceStatus.pendiente:
+      return 'Pendiente';
+    case PetVaccineGuidanceStatus.proxima:
+      return 'Próxima';
+    case PetVaccineGuidanceStatus.vencida:
+      return 'Para revisar';
+    case PetVaccineGuidanceStatus.historialIncompleto:
+      return 'Historial incompleto';
+    case PetVaccineGuidanceStatus.segunRiesgo:
+      return 'Según riesgo';
+    case PetVaccineGuidanceStatus.consultarVeterinario:
+      return 'Consultar veterinario';
+    case PetVaccineGuidanceStatus.noHayCalendarioUniversal:
+      return 'Sin calendario universal';
+  }
 }
 
 String? _optionalText(String value) {

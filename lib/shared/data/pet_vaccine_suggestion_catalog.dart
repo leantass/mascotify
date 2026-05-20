@@ -68,6 +68,18 @@ class PetVaccineSuggestionCatalog {
     final normalizedName = _normalize(vaccineName);
     if (normalizedName.length < 4) return null;
 
+    final currentSet = _sets[currentKey];
+    if (currentSet != null) {
+      for (final suggestion in currentSet.suggestions) {
+        final suggestionName = _normalize(suggestion.vaccineName);
+        if (suggestionName == normalizedName ||
+            suggestionName.contains(normalizedName) ||
+            normalizedName.contains(suggestionName)) {
+          return null;
+        }
+      }
+    }
+
     for (final entry in _sets.entries) {
       final speciesKey = entry.key;
       if (speciesKey == currentKey || speciesKey == 'other') continue;

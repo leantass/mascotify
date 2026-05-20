@@ -400,7 +400,7 @@ void main() {
 
     await tester.pumpWidget(buildTestApp(PetHealthScreen(pet: pet)));
     await tester.pumpAndSettle();
-    await _addPendingVaccine(tester, name: 'Triple felina');
+    await _addPendingVaccine(tester, name: 'Bordetella');
 
     await _scrollToText(tester, 'Estado: Pendiente');
     expect(find.text('Vacunas pendientes'), findsWidgets);
