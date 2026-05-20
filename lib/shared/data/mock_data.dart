@@ -39,7 +39,8 @@ class MockData {
           'Perfil completo con datos de contacto, verificación activa y presencia lista para crecer dentro del ecosistema.',
       documentStatus: 'Vacunas y datos base cargados, revisión al día.',
       qrStatus: 'QR activo y listo para compartir contacto seguro.',
-      healthSummary: 'Controles recientes registrados y seguimiento estable.',
+      healthSummary:
+          'Libreta sanitaria local/demo preparada para vacunas y seguimiento.',
       quickActions: ['Compartir perfil', 'Actualizar datos', 'Activar QR'],
       qrCodeLabel: 'MSC-MILO-1042',
       qrEnabled: true,
