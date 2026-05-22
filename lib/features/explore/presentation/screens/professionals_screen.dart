@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../features/monetization/domain/ad_placement.dart';
+import '../../../../features/monetization/presentation/sponsored_card.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/professional_models.dart';
 import '../../../../theme/app_colors.dart';
@@ -24,6 +26,14 @@ class ProfessionalsScreen extends StatelessWidget {
               profileCount: profiles.length,
               serviceCount: AppData.professionalServiceSpotlights.length,
               contentCount: contents.length,
+            ),
+            const SizedBox(height: 16),
+            const SponsoredCard(
+              placement: AdPlacement.sponsoredProfessionalCard,
+              badgeLabel: 'Profesional destacado',
+              title: 'Profesional destacado',
+              description:
+                  'Espacio reservado para sponsor directo. Siempre identificado como patrocinado.',
             ),
             const SizedBox(height: 16),
             const _DifferenceCard(),

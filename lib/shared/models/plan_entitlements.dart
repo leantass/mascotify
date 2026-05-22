@@ -7,6 +7,12 @@ class PlanEntitlement {
     required this.positioningLabel,
     required this.adsLabel,
     required this.maxPets,
+    required this.adsEnabled,
+    required this.nativeAdsEnabled,
+    required this.bannerAdsEnabled,
+    required this.rewardedAdsEnabled,
+    required this.interstitialAdsEnabled,
+    required this.sponsorsEnabled,
     this.usesFairUsePolicy = false,
   });
 
@@ -17,6 +23,12 @@ class PlanEntitlement {
   final String positioningLabel;
   final String adsLabel;
   final int? maxPets;
+  final bool adsEnabled;
+  final bool nativeAdsEnabled;
+  final bool bannerAdsEnabled;
+  final bool rewardedAdsEnabled;
+  final bool interstitialAdsEnabled;
+  final bool sponsorsEnabled;
   final bool usesFairUsePolicy;
 
   bool get hasUnlimitedPets => maxPets == null;
@@ -40,6 +52,12 @@ const List<PlanEntitlement> planEntitlements = [
     positioningLabel: 'Plan base gratuito para empezar con una mascota.',
     adsLabel: 'Publicidad principalmente en Free.',
     maxPets: 1,
+    adsEnabled: true,
+    nativeAdsEnabled: true,
+    bannerAdsEnabled: true,
+    rewardedAdsEnabled: true,
+    interstitialAdsEnabled: false,
+    sponsorsEnabled: true,
   ),
   PlanEntitlement(
     planName: 'Mascotify Plus',
@@ -50,6 +68,12 @@ const List<PlanEntitlement> planEntitlements = [
         'Plan familiar accesible para hogares con varias mascotas.',
     adsLabel: 'Sin publicidad o con presencia minima no invasiva.',
     maxPets: 5,
+    adsEnabled: false,
+    nativeAdsEnabled: false,
+    bannerAdsEnabled: false,
+    rewardedAdsEnabled: false,
+    interstitialAdsEnabled: false,
+    sponsorsEnabled: false,
   ),
   PlanEntitlement(
     planName: 'Mascotify Pro',
@@ -60,6 +84,12 @@ const List<PlanEntitlement> planEntitlements = [
         'Plan profesional con mas visibilidad y perfiles ilimitados.',
     adsLabel: 'Sin publicidad o con presencia minima no invasiva.',
     maxPets: null,
+    adsEnabled: false,
+    nativeAdsEnabled: false,
+    bannerAdsEnabled: false,
+    rewardedAdsEnabled: false,
+    interstitialAdsEnabled: false,
+    sponsorsEnabled: false,
     usesFairUsePolicy: true,
   ),
 ];

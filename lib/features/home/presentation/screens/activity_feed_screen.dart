@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../features/explore/presentation/screens/conversation_screen.dart';
+import '../../../../features/monetization/domain/ad_placement.dart';
+import '../../../../features/monetization/presentation/ad_slot.dart';
 import '../../../../features/pets/presentation/screens/pet_detail_screen.dart';
 import '../../../../features/pets/presentation/screens/qr_traceability_screen.dart';
 import '../../../../shared/data/app_data_source.dart';
@@ -54,6 +56,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                 messagesCount: messagesCount,
                 notificationsCount: notificationsCount,
               ),
+              const SizedBox(height: 16),
+              const AdSlot(placement: AdPlacement.activityFeedBanner),
               const SizedBox(height: 16),
               Card(
                 child: Padding(

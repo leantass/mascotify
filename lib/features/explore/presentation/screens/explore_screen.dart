@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
+import '../../../../features/monetization/domain/ad_placement.dart';
+import '../../../../features/monetization/presentation/ad_slot.dart';
+import '../../../../features/monetization/presentation/rewarded_action_button.dart';
 import '../../../../features/pets/presentation/screens/express_interest_screen.dart';
 import '../../../../features/pets/presentation/screens/pet_public_profile_screen.dart';
 import '../../../../features/explore/data/social_clips_api_client.dart';
@@ -120,6 +123,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
               const SizedBox(height: 16),
               const _ExploreHero(),
+              const SizedBox(height: 16),
+              const AdSlot(placement: AdPlacement.exploreFeedNative),
               const SizedBox(height: 16),
               ResponsiveWrapGrid(
                 minItemWidth: 340,
@@ -638,6 +643,8 @@ class _ExploreClipsFeed extends StatelessWidget {
           statusMessage: statusMessage,
           onUploadClip: onUploadClip,
         ),
+        const SizedBox(height: 12),
+        const AdSlot(placement: AdPlacement.clipsFeedNative),
         const SizedBox(height: 16),
         _ClipCategoryFilters(
           categories: categories,
@@ -752,6 +759,14 @@ class _ClipsHero extends StatelessWidget {
               onPressed: onUploadClip,
               icon: const Icon(Icons.cloud_upload_rounded),
               label: const Text('Subir clip'),
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: RewardedActionButton(
+              placement: AdPlacement.clipExtraRewarded,
+              label: 'Ver anuncio para subir un clip extra',
             ),
           ),
         ],
