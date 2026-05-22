@@ -4,7 +4,7 @@
 
 Mascotify puede monetizar con publicidad, pero la experiencia debe seguir siendo confiable, clara y segura. La publicidad se reserva para zonas de consumo pasivo o descubrimiento, y queda excluida de pantallas sensibles donde la persona resuelve identidad, salud, seguridad, mensajes, privacidad o pagos.
 
-Esta fase no activa anuncios reales. Solo prepara placements, placeholders, reglas por plan, sponsors identificados y rewarded ads en modo demo/local.
+Esta fase registra la integracion AdMob en modo seguro/test. Los IDs reales quedan centralizados, pero Mascotify no activa anuncios reales por defecto: `ADMOB_ENABLED=false` y `ADMOB_USE_REAL_IDS=false`.
 
 ## Criterio Por Plan
 
@@ -19,6 +19,17 @@ Esta fase no activa anuncios reales. Solo prepara placements, placeholders, regl
 - Rewarded ads: acciones opcionales como subir un clip extra, destacar un clip por 24 horas o probar una funcion Plus temporalmente.
 - Sponsors directos: profesional destacado, sponsor de categoria, banner local, clip patrocinado, campana de adopcion patrocinada, cupon exclusivo o beneficio para Plus.
 - Interstitials: modelados pero deshabilitados hasta revision de UX y politicas.
+
+## Integracion AdMob Test-Safe
+
+- El SDK `google_mobile_ads` queda disponible para la app mobile.
+- Android puede inicializar AdMob con test ads; iOS queda pendiente hasta tener App ID y `Info.plist`.
+- Web y desktop no inicializan AdMob.
+- Banner Ads pueden cargar test ads en Android si se compila con `ADMOB_ENABLED=true` y `ADMOB_USE_REAL_IDS=false`.
+- Rewarded Ads se muestran solo por accion voluntaria del usuario y no otorgan recompensa si el anuncio no termina.
+- Native real queda pendiente de una fase especifica con `NativeAdFactory` Android/iOS; mientras tanto se mantienen placeholders identificados.
+- Sponsors directos siguen separados de AdMob y siempre identificados.
+- Los IDs reales no se usan en debug normal ni en builds tester por defecto.
 
 ## Identificacion Obligatoria
 
@@ -90,4 +101,4 @@ Los sponsors directos pueden usarse para profesional destacado, sponsor de categ
 
 ## Por Que No Activar Ads Reales Todavia
 
-La app todavia esta en modo local/demo y no tiene la preparacion completa de AdMob real: cuenta, app IDs, ad units, SDK, consentimiento UMP, Data Safety, app-ads.txt ni revision de politicas. Primero corresponde validar arquitectura, ubicaciones, frecuencia y exclusion de pantallas sensibles.
+Aunque la app ya tiene App ID Android, Ad Unit IDs y SDK, todavia faltan consentimiento UMP, politica de privacidad final, Data Safety, app-ads.txt, revision de Play Store y revision AdMob. Primero corresponde validar arquitectura, ubicaciones, frecuencia y exclusion de pantallas sensibles con test ads.

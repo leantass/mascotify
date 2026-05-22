@@ -4,10 +4,13 @@ import '../../../shared/models/plan_entitlements.dart';
 import '../domain/ad_format.dart';
 import '../domain/ad_placement.dart';
 import '../domain/monetization_entitlement.dart';
+import 'admob_ad_units.dart';
 
 class MonetizationFeatureFlags {
   const MonetizationFeatureFlags({
     required this.adsEnabled,
+    required this.admobEnabled,
+    required this.useRealAdMobIds,
     required this.admobTestModeEnabled,
     required this.nativeAdsEnabled,
     required this.bannerAdsEnabled,
@@ -20,6 +23,8 @@ class MonetizationFeatureFlags {
   factory MonetizationFeatureFlags.demoDefaults() {
     return MonetizationFeatureFlags(
       adsEnabled: AppEnvironment.isDemoLocal,
+      admobEnabled: AdMobAdUnits.admobEnabled,
+      useRealAdMobIds: AdMobAdUnits.useRealAdMobIds,
       admobTestModeEnabled: true,
       nativeAdsEnabled: true,
       bannerAdsEnabled: true,
@@ -31,6 +36,8 @@ class MonetizationFeatureFlags {
   }
 
   final bool adsEnabled;
+  final bool admobEnabled;
+  final bool useRealAdMobIds;
   final bool admobTestModeEnabled;
   final bool nativeAdsEnabled;
   final bool bannerAdsEnabled;
@@ -81,6 +88,14 @@ class LocalMonetizationRepository {
     if (blockedSurface != null) return false;
     final format = placement.format;
     return flags.allowsFormat(format) && entitlement.allowsFormat(format);
+  }
+
+  bool shouldRequestAdMobPlacement(
+    AdPlacement placement, {
+    AdBlockedSurface? blockedSurface,
+  }) {
+    if (!flags.admobEnabled) return false;
+    return shouldShowPlacement(placement, blockedSurface: blockedSurface);
   }
 
   bool shouldShowRewardedAction(AdPlacement placement) {

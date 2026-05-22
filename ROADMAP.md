@@ -100,13 +100,19 @@ La idea es construir un ecosistema real, claro, premium y util.
 - ✅ Rewarded ads preparados en modo demo.
 - ✅ Sponsors directos preparados como placeholders identificados.
 - ✅ Documentacion AdMob/AdSense/Google Ads.
-- ⏳ Integracion real AdMob pendiente.
-- ⏳ Cuenta AdMob pendiente.
-- ⏳ App IDs y Ad Unit IDs pendientes.
+- ✅ AdMob App ID Android configurado.
+- ✅ Ad Unit IDs registrados para Banner, Native y Rewarded.
+- ✅ SDK AdMob preparado.
+- ✅ Test ads por defecto.
+- ✅ Real IDs protegidos por feature flags.
+- ✅ Ads solo para Free.
+- ✅ Plus y Pro sin ads.
+- ✅ Rewarded Ads conectados en modo seguro/test.
+- ⏳ Ads reales pendientes de Play Store, app-ads.txt, privacidad y revision.
+- ⏳ Native real Android/iOS pendiente de factory completa.
 - ⏳ app-ads.txt pendiente.
 - ⏳ Politica de privacidad/Data Safety pendiente.
 - ⏳ UMP/consentimiento pendiente.
-- ⏳ Ads reales pendientes de Play Store y revision.
 - ⏳ AdSense web pendiente cuando haya web publica.
 
 ### 7. Estructura interna preparada a futuro
@@ -239,6 +245,7 @@ Volver mas potente la comunidad experta:
 
 | Fecha | Hito | Commit/PR | Estado | Observaciones |
 | --- | --- | --- | --- | --- |
+| 2026-05-22 | Integracion AdMob test-safe | feature/admob-test-integration | ✅ Hecho | Se registraron IDs reales de AdMob, pero la app usa test ads por defecto y protege pantallas sensibles. |
 | 2026-05-22 | Base de monetizacion con espacios publicitarios seguros | feature/monetization-ad-slots-foundation | ✅ Hecho | Se agregaron placements, placeholders, entitlements por plan, exclusion de pantallas sensibles y documentacion para futura integracion AdMob. |
 | 2026-05-20 | Motor de calendario sanitario y recordatorios de vacunas | feature/pet-health-reminders-knowledge-base | ✅ Hecho | Se agregó guía local/demo por especie, edad e historial, con recordatorios internos y arquitectura futura de actualización validada. |
 | 2026-05-20 | Vacunas sugeridas por especie | feature/species-vaccine-suggestions | ✅ Hecho | Se agregaron plantillas locales orientativas filtradas por especie, sin convertirlas en indicación médica obligatoria. |

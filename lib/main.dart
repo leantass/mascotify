@@ -5,11 +5,13 @@ import 'core/app.dart';
 import 'core/localization/app_locale_controller.dart';
 import 'features/auth/data/local_auth_repository.dart';
 import 'features/auth/presentation/auth_session_controller.dart';
+import 'features/monetization/data/admob_ads_service.dart';
 import 'shared/data/app_data_source.dart';
 import 'shared/data/local_persistent_data_source.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AdMobAdsService.instance.initialize();
 
   final preferences = await SharedPreferences.getInstance();
   final localeController = AppLocaleController(preferences: preferences);

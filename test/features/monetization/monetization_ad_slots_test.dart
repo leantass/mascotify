@@ -9,8 +9,10 @@ import 'package:mascotify/features/explore/presentation/screens/professionals_sc
 import 'package:mascotify/features/auth/data/local_auth_models.dart';
 import 'package:mascotify/features/home/presentation/screens/activity_feed_screen.dart';
 import 'package:mascotify/features/lost_pets/presentation/screens/lost_pets_screen.dart';
+import 'package:mascotify/features/monetization/data/admob_ad_units.dart';
 import 'package:mascotify/features/monetization/data/local_monetization_repository.dart';
 import 'package:mascotify/features/monetization/domain/ad_placement.dart';
+import 'package:mascotify/features/monetization/domain/ads_service.dart';
 import 'package:mascotify/features/monetization/presentation/ad_slot.dart';
 import 'package:mascotify/features/monetization/presentation/rewarded_action_button.dart';
 import 'package:mascotify/features/monetization/presentation/sponsored_card.dart';
@@ -42,6 +44,39 @@ void main() {
       isTrue,
     );
   });
+
+  test(
+    'AdMob configuration keeps real IDs registered but disabled by default',
+    () {
+      final repository = const LocalMonetizationRepository(
+        planNameOverride: 'Mascotify Free',
+      );
+
+      expect(
+        AdMobAdUnits.androidAppId,
+        'ca-app-pub-7918381399703521~3080162315',
+      );
+      expect(
+        AdMobAdUnits.realBannerAndroid,
+        'ca-app-pub-7918381399703521/2571375944',
+      );
+      expect(
+        AdMobAdUnits.realNativeAndroid,
+        'ca-app-pub-7918381399703521/2786998366',
+      );
+      expect(
+        AdMobAdUnits.realRewardedAndroid,
+        'ca-app-pub-7918381399703521/3651007955',
+      );
+      expect(AdMobAdUnits.admobEnabled, isFalse);
+      expect(AdMobAdUnits.useRealAdMobIds, isFalse);
+      expect(AdMobAdUnits.bannerAndroid, AdMobAdUnits.testBannerAndroid);
+      expect(AdMobAdUnits.nativeAndroid, AdMobAdUnits.testNativeAndroid);
+      expect(AdMobAdUnits.rewardedAndroid, AdMobAdUnits.testRewardedAndroid);
+      expect(repository.flags.admobEnabled, isFalse);
+      expect(repository.flags.useRealAdMobIds, isFalse);
+    },
+  );
 
   testWidgets('AdSlot is hidden on explicitly blocked sensitive surfaces', (
     tester,
@@ -98,6 +133,53 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Recompensa demo aplicada.'), findsOneWidget);
   });
+
+  testWidgets('rewarded action only grants test reward after completion', (
+    tester,
+  ) async {
+    final service = _FakeAdsService(RewardedAdOutcome.earned);
+    await tester.pumpWidget(
+      buildTestApp(
+        RewardedActionButton(
+          placement: AdPlacement.clipExtraRewarded,
+          label: 'Ver anuncio para subir un clip extra',
+          repository: _admobEnabledFreeRepository,
+          adsService: service,
+        ),
+      ),
+    );
+
+    expect(service.showCount, 0);
+    await tester.tap(find.text('Ver anuncio para subir un clip extra'));
+    await tester.pumpAndSettle();
+
+    expect(service.showCount, 1);
+    expect(find.text('Recompensa de prueba aplicada.'), findsOneWidget);
+  });
+
+  testWidgets(
+    'rewarded action does not grant reward when ad is not completed',
+    (tester) async {
+      final service = _FakeAdsService(RewardedAdOutcome.failed);
+      await tester.pumpWidget(
+        buildTestApp(
+          RewardedActionButton(
+            placement: AdPlacement.clipExtraRewarded,
+            label: 'Ver anuncio para subir un clip extra',
+            repository: _admobEnabledFreeRepository,
+            adsService: service,
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Ver anuncio para subir un clip extra'));
+      await tester.pumpAndSettle();
+
+      expect(service.showCount, 1);
+      expect(find.text('No se aplico la recompensa.'), findsOneWidget);
+      expect(find.text('Recompensa de prueba aplicada.'), findsNothing);
+    },
+  );
 
   testWidgets('Free can see activity feed controlled banner', (tester) async {
     setDesktopViewport(tester);
@@ -247,6 +329,42 @@ class _PlanDataSource extends MockMascotifyDataSource {
       showBasicInfoOnPublicProfile: user.showBasicInfoOnPublicProfile,
       ecosystemSuggestionsEnabled: user.ecosystemSuggestionsEnabled,
     );
+  }
+}
+
+const _admobEnabledFreeRepository = LocalMonetizationRepository(
+  planNameOverride: 'Mascotify Free',
+  flags: MonetizationFeatureFlags(
+    adsEnabled: true,
+    admobEnabled: true,
+    useRealAdMobIds: false,
+    admobTestModeEnabled: true,
+    nativeAdsEnabled: true,
+    bannerAdsEnabled: true,
+    rewardedAdsEnabled: true,
+    interstitialAdsEnabled: false,
+    sponsorsEnabled: true,
+    placeholderModeEnabled: true,
+  ),
+);
+
+class _FakeAdsService implements AdsService {
+  _FakeAdsService(this.outcome);
+
+  final RewardedAdOutcome outcome;
+  int showCount = 0;
+
+  @override
+  bool get isMobileAdsSupported => true;
+
+  @override
+  Future<bool> initialize() async => true;
+
+  @override
+  Future<RewardedAdOutcome> showRewardedAd({required String adUnitId}) async {
+    showCount += 1;
+    expect(adUnitId, AdMobAdUnits.testRewardedAndroid);
+    return outcome;
   }
 }
 
