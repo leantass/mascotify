@@ -307,9 +307,9 @@ class _ViewerClipPage extends StatelessWidget {
         : clip.isDemoContent
         ? 'Demo'
         : 'Video remoto';
-    final creatorLabel = clip.authorId == null
-        ? clip.sourceLabel
-        : 'Creador ${clip.authorId}';
+    final creatorLabel =
+        clip.authorDisplayName ??
+        (clip.authorId == null ? clip.sourceLabel : 'Creador ${clip.authorId}');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
@@ -578,7 +578,7 @@ class _ReelActionRail extends StatelessWidget {
             selected: false,
             onPressed: onShare,
           ),
-          if (clip.authorId != null)
+          if (clip.authorId != null && !clip.isDemoContent)
             _ReelActionButton(
               icon: clip.isFollowingAuthor
                   ? Icons.check_circle_rounded

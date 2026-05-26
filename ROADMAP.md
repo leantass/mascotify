@@ -78,6 +78,15 @@ La idea es construir un ecosistema real, claro, premium y util.
 - Compartir perfil
 - Preferencias de matching dentro de la ficha interna
 
+### 4.1 Social / Clips / Explorar
+- ✅ Cuentas demo iniciales.
+- ✅ Clips demo para poblar feed.
+- ✅ Variedad de especies y categorías.
+- ✅ Contenido inicial para evitar app vacía.
+- ✅ Datos marcados como demo/seeded.
+- ⏳ Seed backend real pendiente si se productiviza.
+- ⏳ Curaduría oficial/sponsors/contenido real pendiente.
+
 ### 5. Bandeja social y conversaciones
 - Bandeja social mock
 - Inbox de mensajeria mock
@@ -245,6 +254,7 @@ Volver mas potente la comunidad experta:
 
 | Fecha | Hito | Commit/PR | Estado | Observaciones |
 | --- | --- | --- | --- | --- |
+| 2026-05-26 | Cuentas demo y clips iniciales | feature/demo-creator-accounts-clips | ✅ Hecho | Se agregaron cuentas y clips demo para mejorar experiencia inicial sin depender de usuarios reales. |
 | 2026-05-22 | Integracion AdMob test-safe | feature/admob-test-integration | ✅ Hecho | Se registraron IDs reales de AdMob, pero la app usa test ads por defecto y protege pantallas sensibles. |
 | 2026-05-22 | Base de monetizacion con espacios publicitarios seguros | feature/monetization-ad-slots-foundation | ✅ Hecho | Se agregaron placements, placeholders, entitlements por plan, exclusion de pantallas sensibles y documentacion para futura integracion AdMob. |
 | 2026-05-20 | Motor de calendario sanitario y recordatorios de vacunas | feature/pet-health-reminders-knowledge-base | ✅ Hecho | Se agregó guía local/demo por especie, edad e historial, con recordatorios internos y arquitectura futura de actualización validada. |
