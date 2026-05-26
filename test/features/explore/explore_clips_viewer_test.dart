@@ -88,8 +88,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Perro aprende a usar su QR'), findsOneWidget);
-    expect(find.text('1/6'), findsNothing);
-    expect(find.text('2/6'), findsOneWidget);
+    expect(find.text('1/${ClipsMockData.clips.length}'), findsNothing);
+    expect(find.text('2/${ClipsMockData.clips.length}'), findsOneWidget);
   });
 
   testWidgets('botones de navegacion del visor usan estilo principal', (

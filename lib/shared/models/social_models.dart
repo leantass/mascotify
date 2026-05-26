@@ -7,13 +7,19 @@ class ExploreClip {
     required this.description,
     required this.category,
     required this.animalType,
+    this.petName,
     this.videoAssetPath,
     this.thumbnailAssetPath,
     this.authorId,
+    this.authorDisplayName,
+    this.authorUsername,
     this.cloudinaryPublicId,
+    this.demoVideoKey,
     required this.likes,
     required this.comments,
     this.shares = 0,
+    this.createdAt,
+    this.tags = const <String>[],
     this.sourceLabel,
     this.isDemoContent = true,
     this.isLiked = false,
@@ -26,13 +32,19 @@ class ExploreClip {
   final String description;
   final String category;
   final String animalType;
+  final String? petName;
   final String? videoAssetPath;
   final String? thumbnailAssetPath;
   final String? authorId;
+  final String? authorDisplayName;
+  final String? authorUsername;
   final String? cloudinaryPublicId;
+  final String? demoVideoKey;
   final int likes;
   final int comments;
   final int shares;
+  final DateTime? createdAt;
+  final List<String> tags;
   final String? sourceLabel;
   final bool isDemoContent;
   final bool isLiked;
@@ -45,13 +57,19 @@ class ExploreClip {
     String? description,
     String? category,
     String? animalType,
+    String? petName,
     String? videoAssetPath,
     String? thumbnailAssetPath,
     String? authorId,
+    String? authorDisplayName,
+    String? authorUsername,
     String? cloudinaryPublicId,
+    String? demoVideoKey,
     int? likes,
     int? comments,
     int? shares,
+    DateTime? createdAt,
+    List<String>? tags,
     String? sourceLabel,
     bool? isDemoContent,
     bool? isLiked,
@@ -64,13 +82,19 @@ class ExploreClip {
       description: description ?? this.description,
       category: category ?? this.category,
       animalType: animalType ?? this.animalType,
+      petName: petName ?? this.petName,
       videoAssetPath: videoAssetPath ?? this.videoAssetPath,
       thumbnailAssetPath: thumbnailAssetPath ?? this.thumbnailAssetPath,
       authorId: authorId ?? this.authorId,
+      authorDisplayName: authorDisplayName ?? this.authorDisplayName,
+      authorUsername: authorUsername ?? this.authorUsername,
       cloudinaryPublicId: cloudinaryPublicId ?? this.cloudinaryPublicId,
+      demoVideoKey: demoVideoKey ?? this.demoVideoKey,
       likes: likes ?? this.likes,
       comments: comments ?? this.comments,
       shares: shares ?? this.shares,
+      createdAt: createdAt ?? this.createdAt,
+      tags: tags ?? this.tags,
       sourceLabel: sourceLabel ?? this.sourceLabel,
       isDemoContent: isDemoContent ?? this.isDemoContent,
       isLiked: isLiked ?? this.isLiked,
@@ -86,13 +110,19 @@ class ExploreClip {
       'description': description,
       'category': category,
       'animalType': animalType,
+      'petName': petName,
       'videoAssetPath': videoAssetPath,
       'thumbnailAssetPath': thumbnailAssetPath,
       'authorId': authorId,
+      'authorDisplayName': authorDisplayName,
+      'authorUsername': authorUsername,
       'cloudinaryPublicId': cloudinaryPublicId,
+      'demoVideoKey': demoVideoKey,
       'likes': likes,
       'comments': comments,
       'shares': shares,
+      'createdAt': createdAt?.toIso8601String(),
+      'tags': tags,
       'sourceLabel': sourceLabel,
       'isDemoContent': isDemoContent,
       'isLiked': isLiked,
@@ -108,13 +138,25 @@ class ExploreClip {
       description: json['description'] as String,
       category: json['category'] as String,
       animalType: json['animalType'] as String,
+      petName: json['petName'] as String?,
       videoAssetPath: json['videoAssetPath'] as String?,
       thumbnailAssetPath: json['thumbnailAssetPath'] as String?,
       authorId: json['authorId'] as String?,
+      authorDisplayName: json['authorDisplayName'] as String?,
+      authorUsername: json['authorUsername'] as String?,
       cloudinaryPublicId: json['cloudinaryPublicId'] as String?,
+      demoVideoKey: json['demoVideoKey'] as String?,
       likes: json['likes'] as int,
       comments: json['comments'] as int,
       shares: json['shares'] as int? ?? 0,
+      createdAt: json['createdAt'] == null
+          ? null
+          : DateTime.parse(json['createdAt'] as String),
+      tags:
+          (json['tags'] as List<dynamic>?)
+              ?.map((item) => item as String)
+              .toList() ??
+          const <String>[],
       sourceLabel: json['sourceLabel'] as String?,
       isDemoContent: json['isDemoContent'] as bool? ?? true,
       isLiked: json['isLiked'] as bool? ?? false,
@@ -122,6 +164,36 @@ class ExploreClip {
       isFollowingAuthor: json['isFollowingAuthor'] as bool? ?? false,
     );
   }
+}
+
+class DemoCreatorAccount {
+  const DemoCreatorAccount({
+    required this.id,
+    required this.displayName,
+    required this.username,
+    required this.avatarAsset,
+    required this.bio,
+    required this.location,
+    required this.profileType,
+    required this.createdAt,
+    required this.followersCount,
+    required this.clipsCount,
+    this.isDemoAccount = true,
+    this.isVerifiedDemo = true,
+  });
+
+  final String id;
+  final String displayName;
+  final String username;
+  final String avatarAsset;
+  final String bio;
+  final String location;
+  final String profileType;
+  final bool isDemoAccount;
+  final bool isVerifiedDemo;
+  final DateTime createdAt;
+  final int followersCount;
+  final int clipsCount;
 }
 
 class MessageThread {

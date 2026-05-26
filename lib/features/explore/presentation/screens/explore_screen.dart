@@ -337,7 +337,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         (category) => category != _allClipCategories,
       ),
       ...clips.map((clip) => clip.category),
-    }.toList()..sort();
+    }.toList();
     return <String>[_allClipCategories, ...categories];
   }
 
@@ -419,7 +419,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Future<void> _toggleClipFollow(String clipId) async {
     final clip = _clipById(clipId);
-    if (clip == null || clip.authorId == null) return;
+    if (clip == null || clip.authorId == null || clip.isDemoContent) return;
     final optimisticClip = clip.copyWith(
       isFollowingAuthor: !clip.isFollowingAuthor,
     );
@@ -1055,6 +1055,7 @@ class _ExploreClipCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasVideo = clip.videoAssetPath != null;
     final thumbnail = clip.thumbnailAssetPath;
+    final authorLabel = clip.authorDisplayName ?? clip.sourceLabel;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -1135,6 +1136,20 @@ class _ExploreClipCard extends StatelessWidget {
                     clip.title,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
+                  if (authorLabel != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      clip.authorUsername == null
+                          ? authorLabel
+                          : '$authorLabel @${clip.authorUsername}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   Text(
                     clip.description,
@@ -1178,7 +1193,7 @@ class _ExploreClipCard extends StatelessWidget {
                         selected: false,
                         onPressed: onShare,
                       ),
-                      if (clip.authorId != null)
+                      if (clip.authorId != null && !clip.isDemoContent)
                         _ClipActionButton(
                           icon: clip.isFollowingAuthor
                               ? Icons.check_circle_rounded

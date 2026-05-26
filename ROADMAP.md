@@ -78,6 +78,15 @@ La idea es construir un ecosistema real, claro, premium y util.
 - Compartir perfil
 - Preferencias de matching dentro de la ficha interna
 
+### 4.1 Social / Clips / Explorar
+- Cuentas demo iniciales.
+- Clips demo para poblar feed.
+- Variedad de especies y categorias.
+- Contenido inicial para evitar app vacia.
+- Datos marcados como demo/seeded.
+- Seed backend real pendiente si se productiviza.
+- Curaduria oficial/sponsors/contenido real pendiente.
+
 ### 5. Bandeja social y conversaciones
 - Bandeja social mock
 - Inbox de mensajeria mock
@@ -221,6 +230,7 @@ Volver mas potente la comunidad experta:
 
 | Fecha | Hito | Commit/PR | Estado | Observaciones |
 | --- | --- | --- | --- | --- |
+| 2026-05-26 | Cuentas demo y clips iniciales | feature/demo-creator-accounts-clips | Hecho | Se agregaron cuentas y clips demo para mejorar experiencia inicial sin depender de usuarios reales. |
 | 2026-05-20 | Motor de calendario sanitario y recordatorios de vacunas | feature/pet-health-reminders-knowledge-base | ✅ Hecho | Se agregó guía local/demo por especie, edad e historial, con recordatorios internos y arquitectura futura de actualización validada. |
 | 2026-05-20 | Vacunas sugeridas por especie | feature/species-vaccine-suggestions | ✅ Hecho | Se agregaron plantillas locales orientativas filtradas por especie, sin convertirlas en indicación médica obligatoria. |
 | 2026-05-20 | Salud y vacunas visible en detalle de mascota | 13af729 + 88d73f8 | ✅ Hecho | Se agrego libreta sanitaria local/demo y se corrigio copy legacy en MockData para evitar que el usuario vea la card vieja en builds nuevos. |
