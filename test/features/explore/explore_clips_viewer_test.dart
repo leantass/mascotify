@@ -39,11 +39,11 @@ void main() {
     expect(find.text('Perro aprende a usar su QR'), findsOneWidget);
     expect(
       find.text(
-        'Milo espera su premio despues de mostrar la placa como todo un profesional.',
+        'Le cargue el QR en el collar para que, si se pierde, puedan avisarme sin ver mis datos privados.',
       ),
       findsOneWidget,
     );
-    expect(find.text('Consejos'), findsWidgets);
+    expect(find.text('QR'), findsWidgets);
     expect(find.text('Perro'), findsWidgets);
   });
 
