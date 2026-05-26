@@ -19,7 +19,9 @@ class ExploreClip {
     required this.comments,
     this.shares = 0,
     this.createdAt,
+    this.seededAt,
     this.tags = const <String>[],
+    this.source = 'seeded_demo',
     this.sourceLabel,
     this.isDemoContent = true,
     this.isLiked = false,
@@ -44,7 +46,9 @@ class ExploreClip {
   final int comments;
   final int shares;
   final DateTime? createdAt;
+  final DateTime? seededAt;
   final List<String> tags;
+  final String source;
   final String? sourceLabel;
   final bool isDemoContent;
   final bool isLiked;
@@ -69,7 +73,9 @@ class ExploreClip {
     int? comments,
     int? shares,
     DateTime? createdAt,
+    DateTime? seededAt,
     List<String>? tags,
+    String? source,
     String? sourceLabel,
     bool? isDemoContent,
     bool? isLiked,
@@ -94,7 +100,9 @@ class ExploreClip {
       comments: comments ?? this.comments,
       shares: shares ?? this.shares,
       createdAt: createdAt ?? this.createdAt,
+      seededAt: seededAt ?? this.seededAt,
       tags: tags ?? this.tags,
+      source: source ?? this.source,
       sourceLabel: sourceLabel ?? this.sourceLabel,
       isDemoContent: isDemoContent ?? this.isDemoContent,
       isLiked: isLiked ?? this.isLiked,
@@ -122,7 +130,9 @@ class ExploreClip {
       'comments': comments,
       'shares': shares,
       'createdAt': createdAt?.toIso8601String(),
+      'seededAt': seededAt?.toIso8601String(),
       'tags': tags,
+      'source': source,
       'sourceLabel': sourceLabel,
       'isDemoContent': isDemoContent,
       'isLiked': isLiked,
@@ -152,11 +162,15 @@ class ExploreClip {
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
+      seededAt: json['seededAt'] == null
+          ? null
+          : DateTime.parse(json['seededAt'] as String),
       tags:
           (json['tags'] as List<dynamic>?)
               ?.map((item) => item as String)
               .toList() ??
           const <String>[],
+      source: json['source'] as String? ?? 'seeded_demo',
       sourceLabel: json['sourceLabel'] as String?,
       isDemoContent: json['isDemoContent'] as bool? ?? true,
       isLiked: json['isLiked'] as bool? ?? false,
@@ -176,10 +190,15 @@ class DemoCreatorAccount {
     required this.location,
     required this.profileType,
     required this.createdAt,
+    required this.seededAt,
     required this.followersCount,
+    required this.followingCount,
     required this.clipsCount,
+    required this.likesTotal,
+    this.demoDisclosureMode = 'demo_mode_badge',
+    this.source = 'seeded_demo',
     this.isDemoAccount = true,
-    this.isVerifiedDemo = true,
+    this.isVerifiedDemo = false,
   });
 
   final String id;
@@ -192,8 +211,47 @@ class DemoCreatorAccount {
   final bool isDemoAccount;
   final bool isVerifiedDemo;
   final DateTime createdAt;
+  final DateTime seededAt;
   final int followersCount;
+  final int followingCount;
   final int clipsCount;
+  final int likesTotal;
+  final String demoDisclosureMode;
+  final String source;
+}
+
+class DemoPetProfile {
+  const DemoPetProfile({
+    required this.petId,
+    required this.ownerDemoAccountId,
+    required this.name,
+    required this.species,
+    required this.breedOrType,
+    required this.age,
+    required this.ageUnit,
+    required this.personality,
+    required this.routine,
+    required this.careNotes,
+    required this.healthNotesGeneral,
+    required this.locationGeneral,
+    required this.tags,
+    this.source = 'seeded_demo',
+  });
+
+  final String petId;
+  final String ownerDemoAccountId;
+  final String name;
+  final String species;
+  final String breedOrType;
+  final int? age;
+  final String ageUnit;
+  final String personality;
+  final String routine;
+  final String careNotes;
+  final String healthNotesGeneral;
+  final String locationGeneral;
+  final List<String> tags;
+  final String source;
 }
 
 class MessageThread {

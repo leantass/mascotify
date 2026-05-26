@@ -80,12 +80,19 @@ La idea es construir un ecosistema real, claro, premium y util.
 
 ### 4.1 Social / Clips / Explorar
 - ✅ Cuentas demo iniciales.
+- ✅ Cuentas demo realistas.
+- ✅ Mascotas demo con datos coherentes.
 - ✅ Clips demo para poblar feed.
-- ✅ Variedad de especies y categorías.
+- ✅ Clips iniciales útiles.
+- ✅ Contenido educativo general.
+- ✅ Variedad de especies.
+- ✅ Variedad de categorías.
+- ✅ Métricas realistas.
 - ✅ Contenido inicial para evitar app vacía.
-- ✅ Datos marcados como demo/seeded.
+- ✅ Contenido marcado internamente como demo/seeded.
+- ⏳ Contenido real/curado pendiente para producción.
+- ⏳ Moderación de contenido real pendiente.
 - ⏳ Seed backend real pendiente si se productiviza.
-- ⏳ Curaduría oficial/sponsors/contenido real pendiente.
 
 ### 5. Bandeja social y conversaciones
 - Bandeja social mock
@@ -254,6 +261,7 @@ Volver mas potente la comunidad experta:
 
 | Fecha | Hito | Commit/PR | Estado | Observaciones |
 | --- | --- | --- | --- | --- |
+| 2026-05-26 | Comunidad demo realista y clips útiles | feature/realistic-demo-community-content | ✅ Hecho | Se agregaron perfiles ficticios realistas con mascotas, clips útiles y datos demo marcados internamente para mejorar la experiencia inicial. |
 | 2026-05-26 | Cuentas demo y clips iniciales | feature/demo-creator-accounts-clips | ✅ Hecho | Se agregaron cuentas y clips demo para mejorar experiencia inicial sin depender de usuarios reales. |
 | 2026-05-22 | Integracion AdMob test-safe | feature/admob-test-integration | ✅ Hecho | Se registraron IDs reales de AdMob, pero la app usa test ads por defecto y protege pantallas sensibles. |
 | 2026-05-22 | Base de monetizacion con espacios publicitarios seguros | feature/monetization-ad-slots-foundation | ✅ Hecho | Se agregaron placements, placeholders, entitlements por plan, exclusion de pantallas sensibles y documentacion para futura integracion AdMob. |
