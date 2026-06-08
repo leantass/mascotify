@@ -20,7 +20,7 @@ void main() {
     await _openFirstClipFromExplore(tester);
 
     expect(find.byType(PageView), findsOneWidget);
-    expect(find.text('Volver a Clips'), findsOneWidget);
+    expect(find.text('Volver'), findsOneWidget);
   });
 
   testWidgets('el visor muestra datos del clip seleccionado', (tester) async {
@@ -109,10 +109,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.widgetWithText(ElevatedButton, 'Volver a Clips'),
-      findsOneWidget,
-    );
+    expect(find.widgetWithText(TextButton, 'Volver'), findsOneWidget);
     final pageView = tester.widget<PageView>(find.byType(PageView));
     expect(pageView.scrollDirection, Axis.vertical);
     expect(find.text('Clip anterior'), findsNothing);
@@ -129,7 +126,7 @@ void main() {
 
     await tester.pumpWidget(buildTestApp(const ExploreScreen()));
     await _openFirstClipFromExplore(tester);
-    await tester.tap(find.text('Volver a Clips'));
+    await tester.tap(find.text('Volver'));
     await tester.pumpAndSettle();
 
     expect(find.text('Clips demo locales'), findsOneWidget);
@@ -171,6 +168,7 @@ void main() {
 
     expect(find.text('Video local'), findsOneWidget);
     expect(find.text('Clip demo local'), findsNothing);
+    expect(find.text('Video demo no disponible'), findsNothing);
     expect(find.byIcon(Icons.volume_off_rounded), findsOneWidget);
   });
 

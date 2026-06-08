@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../shared/models/social_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import 'clip_web_asset_video_view.dart'
+    if (dart.library.js_interop) 'clip_web_asset_video_view_web.dart';
 
 class ExploreClipViewerScreen extends StatefulWidget {
   const ExploreClipViewerScreen({
@@ -92,34 +95,36 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
               ),
             ),
             Positioned(
-              left: 12,
-              right: 12,
-              top: 10,
+              left: 14,
+              right: 14,
+              top: 12,
               child: Row(
                 children: [
-                  ElevatedButton.icon(
+                  TextButton.icon(
                     onPressed: _close,
                     icon: const Icon(Icons.arrow_back_rounded),
-                    label: const Text('Volver a Clips'),
-                    style: _viewerNavigationButtonStyle(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                    ),
+                    label: const Text('Volver'),
+                    style: _viewerNavigationButtonStyle(),
                   ),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 7,
+                      horizontal: 11,
+                      vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.38),
+                      color: Colors.black.withValues(alpha: 0.34),
                       borderRadius: BorderRadius.circular(999),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.18),
+                        color: Colors.white.withValues(alpha: 0.14),
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.22),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
                     child: Text(
                       '${_currentIndex + 1}/${_clips.length}',
@@ -133,9 +138,9 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
               ),
             ),
             Positioned(
-              right: 20,
-              top: 74,
-              bottom: 22,
+              right: 17,
+              top: 96,
+              bottom: 28,
               child: RotatedBox(
                 quarterTurns: 1,
                 child: LinearProgressIndicator(
@@ -329,9 +334,9 @@ class _ViewerClipPage extends StatelessWidget {
         (clip.authorId == null ? clip.sourceLabel : 'Creador ${clip.authorId}');
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+      padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -344,10 +349,12 @@ class _ViewerClipPage extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.black.withValues(alpha: 0.18),
-                    Colors.black.withValues(alpha: 0.16),
-                    Colors.black.withValues(alpha: 0.82),
+                    Colors.black.withValues(alpha: 0.22),
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.28),
+                    Colors.black.withValues(alpha: 0.84),
                   ],
+                  stops: const [0, 0.32, 0.58, 1],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -355,11 +362,11 @@ class _ViewerClipPage extends StatelessWidget {
             ),
             Positioned(
               left: 18,
-              right: 96,
-              top: 64,
+              right: 86,
+              top: 82,
               child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: 7,
+                runSpacing: 7,
                 children: [
                   _ViewerBadge(label: topMediaLabel),
                   if (clip.sourceLabel != null)
@@ -370,8 +377,8 @@ class _ViewerClipPage extends StatelessWidget {
               ),
             ),
             Positioned(
-              right: 12,
-              bottom: 22,
+              right: 10,
+              bottom: 24,
               child: _ReelActionRail(
                 clip: clip,
                 onToggleLike: onToggleLike,
@@ -383,44 +390,105 @@ class _ViewerClipPage extends StatelessWidget {
             ),
             Positioned(
               left: 18,
-              right: 96,
-              bottom: 18,
+              right: 90,
+              bottom: 22,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (!hasVideo) const _ViewerBadge(label: 'Clip demo local'),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   if (creatorLabel != null) ...[
-                    Text(
-                      creatorLabel,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.82),
-                        fontWeight: FontWeight.w800,
-                      ),
+                    Row(
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: AppColors.accent.withValues(alpha: 0.9),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.58),
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.pets_rounded,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            creatorLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.86),
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 7),
                   ],
                   Text(
                     clip.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
+                      height: 1.05,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.65),
+                          blurRadius: 12,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 7),
                   Text(
                     clip.description,
                     maxLines: 4,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.88),
-                      height: 1.4,
+                      color: Colors.white.withValues(alpha: 0.9),
+                      height: 1.34,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.72),
+                          blurRadius: 10,
+                        ),
+                      ],
                     ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.swap_vert_rounded,
+                        color: Colors.white.withValues(alpha: 0.74),
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          'Desliza para ver mas clips',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.74),
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -432,17 +500,18 @@ class _ViewerClipPage extends StatelessWidget {
   }
 }
 
-ButtonStyle _viewerNavigationButtonStyle({EdgeInsetsGeometry? padding}) {
-  return ElevatedButton.styleFrom(
-    backgroundColor: AppColors.accent,
+ButtonStyle _viewerNavigationButtonStyle() {
+  return TextButton.styleFrom(
+    backgroundColor: Colors.black.withValues(alpha: 0.34),
     foregroundColor: Colors.white,
-    disabledBackgroundColor: AppColors.accent.withValues(alpha: 0.34),
-    disabledForegroundColor: Colors.white.withValues(alpha: 0.72),
-    elevation: 0,
-    padding:
-        padding ?? const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-    textStyle: const TextStyle(fontWeight: FontWeight.w800),
+    padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+    minimumSize: const Size(0, 38),
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(999),
+      side: BorderSide(color: Colors.white.withValues(alpha: 0.14)),
+    ),
+    textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
   );
 }
 
@@ -521,7 +590,8 @@ class _ClipVideoSurface extends StatelessWidget {
       return _AssetClipVideoPlayer(
         assetPath: clip.videoAssetPath!,
         isActive: isActive,
-        fallback: _buildFallback('Video demo no disponible'),
+        loading: _buildLoadingSurface(context),
+        fallback: _buildFallback('No pudimos reproducir este video'),
       );
     }
 
@@ -529,7 +599,8 @@ class _ClipVideoSurface extends StatelessWidget {
       return _NetworkClipVideoPlayer(
         videoUrl: clip.videoUrl!,
         isActive: isActive,
-        fallback: _buildFallback('Video remoto no disponible'),
+        loading: _buildLoadingSurface(context),
+        fallback: _buildFallback('No pudimos reproducir este video'),
       );
     }
 
@@ -564,17 +635,76 @@ class _ClipVideoSurface extends StatelessWidget {
       ],
     );
   }
+
+  Widget _buildLoadingSurface(BuildContext context) {
+    final thumbnailPath = thumbnail;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (thumbnailPath != null)
+          Image.asset(thumbnailPath, fit: BoxFit.cover)
+        else
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF132326), Color(0xFF182A30)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.18),
+          ),
+        ),
+        Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.34),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white.withValues(alpha: 0.92),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Cargando video',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _AssetClipVideoPlayer extends StatefulWidget {
   const _AssetClipVideoPlayer({
     required this.assetPath,
     required this.isActive,
+    required this.loading,
     required this.fallback,
   });
 
   final String assetPath;
   final bool isActive;
+  final Widget loading;
   final Widget fallback;
 
   @override
@@ -585,6 +715,7 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
   VideoPlayerController? _controller;
   bool _hasError = false;
   bool _isMuted = true;
+  bool _webVideoReady = false;
 
   @override
   void initState() {
@@ -598,6 +729,7 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
     if (oldWidget.assetPath != widget.assetPath) {
       _disposeController();
       _hasError = false;
+      _webVideoReady = false;
       _initialize();
     } else if (oldWidget.isActive != widget.isActive) {
       _syncPlayback();
@@ -611,6 +743,7 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
   }
 
   Future<void> _initialize() async {
+    if (kIsWeb) return;
     final controller = VideoPlayerController.asset(widget.assetPath);
     _controller = controller;
     controller.addListener(_onControllerChanged);
@@ -663,6 +796,42 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      if (_hasError) {
+        return _VideoPlayerShell(
+          isMuted: _isMuted,
+          onToggleMuted: _toggleMuted,
+          child: widget.fallback,
+        );
+      }
+
+      return _VideoPlayerShell(
+        isMuted: _isMuted,
+        onToggleMuted: _toggleMuted,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            WebAssetClipVideoView(
+              assetPath: widget.assetPath,
+              isActive: widget.isActive,
+              isMuted: _isMuted,
+              onReady: () {
+                if (mounted && !_webVideoReady) {
+                  setState(() => _webVideoReady = true);
+                }
+              },
+              onError: () {
+                if (mounted) {
+                  setState(() => _hasError = true);
+                }
+              },
+            ),
+            if (!_webVideoReady) widget.loading,
+          ],
+        ),
+      );
+    }
+
     final controller = _controller;
     if (_hasError || controller == null) {
       return _VideoPlayerShell(
@@ -675,13 +844,7 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
       return _VideoPlayerShell(
         isMuted: _isMuted,
         onToggleMuted: _toggleMuted,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            widget.fallback,
-            const Center(child: CircularProgressIndicator(color: Colors.white)),
-          ],
-        ),
+        child: widget.loading,
       );
     }
 
@@ -697,11 +860,13 @@ class _NetworkClipVideoPlayer extends StatefulWidget {
   const _NetworkClipVideoPlayer({
     required this.videoUrl,
     required this.isActive,
+    required this.loading,
     required this.fallback,
   });
 
   final String videoUrl;
   final bool isActive;
+  final Widget loading;
   final Widget fallback;
 
   @override
@@ -806,13 +971,7 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
       return _VideoPlayerShell(
         isMuted: _isMuted,
         onToggleMuted: _toggleMuted,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            widget.fallback,
-            const Center(child: CircularProgressIndicator(color: Colors.white)),
-          ],
-        ),
+        child: widget.loading,
       );
     }
 
@@ -843,7 +1002,7 @@ class _VideoPlayerShell extends StatelessWidget {
         child,
         Positioned(
           right: 14,
-          top: 14,
+          top: 58,
           child: Tooltip(
             message: isMuted ? 'Activar sonido' : 'Silenciar',
             child: Semantics(
@@ -949,16 +1108,26 @@ class _ViewerBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
+        color: Colors.white.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: AppColors.textPrimary,
+          color: Colors.white,
           fontWeight: FontWeight.w800,
+          fontSize: 11,
+          height: 1,
         ),
       ),
     );
@@ -998,12 +1167,14 @@ class _ReelActionRail extends StatelessWidget {
             selectedColor: AppColors.primaryDeep,
             onPressed: onToggleLike,
           ),
+          const SizedBox(height: 2),
           _ReelActionButton(
             icon: Icons.mode_comment_outlined,
             label: '${clip.comments} comentarios',
             selected: false,
             onPressed: onComments,
           ),
+          const SizedBox(height: 2),
           _ReelActionButton(
             icon: clip.isSaved
                 ? Icons.bookmark_rounded
@@ -1013,13 +1184,15 @@ class _ReelActionRail extends StatelessWidget {
             selectedColor: AppColors.accentDeep,
             onPressed: onToggleSave,
           ),
+          const SizedBox(height: 2),
           _ReelActionButton(
             icon: Icons.ios_share_rounded,
             label: clip.shares > 0 ? '${clip.shares} compartidos' : 'Compartir',
             selected: false,
             onPressed: onShare,
           ),
-          if (clip.authorId != null && !clip.isDemoContent)
+          if (clip.authorId != null && !clip.isDemoContent) ...[
+            const SizedBox(height: 2),
             _ReelActionButton(
               icon: clip.isFollowingAuthor
                   ? Icons.check_circle_rounded
@@ -1029,6 +1202,7 @@ class _ReelActionRail extends StatelessWidget {
               selectedColor: AppColors.success,
               onPressed: onToggleFollow ?? () {},
             ),
+          ],
         ],
       ),
     );
@@ -1058,9 +1232,9 @@ class _ReelActionButton extends StatelessWidget {
         : Colors.black.withValues(alpha: 0.38);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 9),
       child: SizedBox(
-        width: 72,
+        width: 76,
         child: Tooltip(
           message: label,
           child: InkWell(
@@ -1076,19 +1250,19 @@ class _ReelActionButton extends StatelessWidget {
                     color: backgroundColor,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.44),
+                      color: Colors.white.withValues(alpha: 0.22),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.24),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
+                        color: Colors.black.withValues(alpha: 0.22),
+                        blurRadius: 14,
+                        offset: const Offset(0, 7),
                       ),
                     ],
                   ),
-                  child: Icon(icon, color: iconColor, size: 26),
+                  child: Icon(icon, color: iconColor, size: 25),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 4),
                 Text(
                   label,
                   maxLines: 2,
@@ -1097,6 +1271,7 @@ class _ReelActionButton extends StatelessWidget {
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
+                    fontSize: 10,
                     height: 1.05,
                     shadows: [
                       Shadow(
