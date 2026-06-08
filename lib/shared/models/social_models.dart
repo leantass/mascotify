@@ -8,8 +8,11 @@ class ExploreClip {
     required this.category,
     required this.animalType,
     this.petName,
+    this.videoSourceType = 'placeholder',
     this.videoAssetPath,
+    this.videoUrl,
     this.thumbnailAssetPath,
+    this.durationSeconds,
     this.authorId,
     this.authorDisplayName,
     this.authorUsername,
@@ -23,6 +26,8 @@ class ExploreClip {
     this.tags = const <String>[],
     this.source = 'seeded_demo',
     this.sourceLabel,
+    this.isStarterContent = false,
+    this.availableForAllUsers = false,
     this.isDemoContent = true,
     this.isLiked = false,
     this.isSaved = false,
@@ -35,8 +40,11 @@ class ExploreClip {
   final String category;
   final String animalType;
   final String? petName;
+  final String videoSourceType;
   final String? videoAssetPath;
+  final String? videoUrl;
   final String? thumbnailAssetPath;
+  final int? durationSeconds;
   final String? authorId;
   final String? authorDisplayName;
   final String? authorUsername;
@@ -50,10 +58,20 @@ class ExploreClip {
   final List<String> tags;
   final String source;
   final String? sourceLabel;
+  final bool isStarterContent;
+  final bool availableForAllUsers;
   final bool isDemoContent;
   final bool isLiked;
   final bool isSaved;
   final bool isFollowingAuthor;
+
+  bool get hasPlayableVideo {
+    return switch (videoSourceType) {
+      'asset' => videoAssetPath?.trim().isNotEmpty ?? false,
+      'network' => videoUrl?.trim().isNotEmpty ?? false,
+      _ => false,
+    };
+  }
 
   ExploreClip copyWith({
     String? id,
@@ -62,8 +80,11 @@ class ExploreClip {
     String? category,
     String? animalType,
     String? petName,
+    String? videoSourceType,
     String? videoAssetPath,
+    String? videoUrl,
     String? thumbnailAssetPath,
+    int? durationSeconds,
     String? authorId,
     String? authorDisplayName,
     String? authorUsername,
@@ -77,6 +98,8 @@ class ExploreClip {
     List<String>? tags,
     String? source,
     String? sourceLabel,
+    bool? isStarterContent,
+    bool? availableForAllUsers,
     bool? isDemoContent,
     bool? isLiked,
     bool? isSaved,
@@ -89,8 +112,11 @@ class ExploreClip {
       category: category ?? this.category,
       animalType: animalType ?? this.animalType,
       petName: petName ?? this.petName,
+      videoSourceType: videoSourceType ?? this.videoSourceType,
       videoAssetPath: videoAssetPath ?? this.videoAssetPath,
+      videoUrl: videoUrl ?? this.videoUrl,
       thumbnailAssetPath: thumbnailAssetPath ?? this.thumbnailAssetPath,
+      durationSeconds: durationSeconds ?? this.durationSeconds,
       authorId: authorId ?? this.authorId,
       authorDisplayName: authorDisplayName ?? this.authorDisplayName,
       authorUsername: authorUsername ?? this.authorUsername,
@@ -104,6 +130,8 @@ class ExploreClip {
       tags: tags ?? this.tags,
       source: source ?? this.source,
       sourceLabel: sourceLabel ?? this.sourceLabel,
+      isStarterContent: isStarterContent ?? this.isStarterContent,
+      availableForAllUsers: availableForAllUsers ?? this.availableForAllUsers,
       isDemoContent: isDemoContent ?? this.isDemoContent,
       isLiked: isLiked ?? this.isLiked,
       isSaved: isSaved ?? this.isSaved,
@@ -119,8 +147,11 @@ class ExploreClip {
       'category': category,
       'animalType': animalType,
       'petName': petName,
+      'videoSourceType': videoSourceType,
       'videoAssetPath': videoAssetPath,
+      'videoUrl': videoUrl,
       'thumbnailAssetPath': thumbnailAssetPath,
+      'durationSeconds': durationSeconds,
       'authorId': authorId,
       'authorDisplayName': authorDisplayName,
       'authorUsername': authorUsername,
@@ -134,6 +165,8 @@ class ExploreClip {
       'tags': tags,
       'source': source,
       'sourceLabel': sourceLabel,
+      'isStarterContent': isStarterContent,
+      'availableForAllUsers': availableForAllUsers,
       'isDemoContent': isDemoContent,
       'isLiked': isLiked,
       'isSaved': isSaved,
@@ -149,8 +182,11 @@ class ExploreClip {
       category: json['category'] as String,
       animalType: json['animalType'] as String,
       petName: json['petName'] as String?,
+      videoSourceType: json['videoSourceType'] as String? ?? 'placeholder',
       videoAssetPath: json['videoAssetPath'] as String?,
+      videoUrl: json['videoUrl'] as String?,
       thumbnailAssetPath: json['thumbnailAssetPath'] as String?,
+      durationSeconds: json['durationSeconds'] as int?,
       authorId: json['authorId'] as String?,
       authorDisplayName: json['authorDisplayName'] as String?,
       authorUsername: json['authorUsername'] as String?,
@@ -172,6 +208,8 @@ class ExploreClip {
           const <String>[],
       source: json['source'] as String? ?? 'seeded_demo',
       sourceLabel: json['sourceLabel'] as String?,
+      isStarterContent: json['isStarterContent'] as bool? ?? false,
+      availableForAllUsers: json['availableForAllUsers'] as bool? ?? false,
       isDemoContent: json['isDemoContent'] as bool? ?? true,
       isLiked: json['isLiked'] as bool? ?? false,
       isSaved: json['isSaved'] as bool? ?? false,

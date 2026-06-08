@@ -84,6 +84,8 @@ function Get-MimeType([string] $path) {
     '.jpeg' { 'image/jpeg'; break }
     '.svg' { 'image/svg+xml'; break }
     '.ico' { 'image/x-icon'; break }
+    '.mp4' { 'video/mp4'; break }
+    '.webm' { 'video/webm'; break }
     '.wasm' { 'application/wasm'; break }
     '.map' { 'application/json; charset=utf-8'; break }
     '.ttf' { 'font/ttf'; break }

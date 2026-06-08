@@ -203,7 +203,7 @@ void main() {
     await tester.tap(find.text('Rescate remoto con final feliz'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Visor de clips'), findsOneWidget);
+    expect(find.byType(PageView), findsOneWidget);
     expect(find.text('Rescate remoto con final feliz'), findsOneWidget);
     expect(find.text('Rescates'), findsWidgets);
   });

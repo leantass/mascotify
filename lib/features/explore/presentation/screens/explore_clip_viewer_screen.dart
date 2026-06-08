@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../../../shared/models/social_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
@@ -28,6 +29,7 @@ class ExploreClipViewerScreen extends StatefulWidget {
 class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
   late List<ExploreClip> _clips;
   late int _currentIndex;
+  late PageController _pageController;
 
   @override
   void initState() {
@@ -36,6 +38,15 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
     _currentIndex = _clips.indexWhere(
       (clip) => clip.id == widget.initialClipId,
     );
+    _pageController = PageController(
+      initialPage: _currentIndex < 0 ? 0 : _currentIndex,
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -51,70 +62,92 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
   }
 
   Widget _buildViewer() {
-    final clip = _clips[_currentIndex];
-    final isFirst = _currentIndex == 0;
-    final isLast = _currentIndex == _clips.length - 1;
-
     return ResponsivePageBody(
       maxWidth: 560,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-            child: Row(
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _close,
-                  icon: const Icon(Icons.arrow_back_rounded),
-                  label: const Text('Volver a Clips'),
-                  style: _viewerNavigationButtonStyle(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Visor de clips',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                Text(
-                  '${_currentIndex + 1}/${_clips.length}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.78),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 220),
-              child: _ViewerClipPage(
-                key: ValueKey(clip.id),
-                clip: clip,
-                isFirst: isFirst,
-                isLast: isLast,
-                onPrevious: isFirst ? null : _showPrevious,
-                onNext: isLast ? null : _showNext,
-                onToggleLike: () => _toggleClipLike(clip.id),
-                onShare: () => _shareClip(clip.id),
-                onToggleSave: () => _toggleClipSave(clip.id),
-                onComments: _showCommentsComingSoon,
-                onToggleFollow: clip.authorId == null
-                    ? null
-                    : () => _toggleClipFollow(clip.id),
+      child: SizedBox.expand(
+        child: Stack(
+          children: [
+            Semantics(
+              label: 'Feed vertical de clips',
+              child: PageView.builder(
+                controller: _pageController,
+                scrollDirection: Axis.vertical,
+                itemCount: _clips.length,
+                onPageChanged: (index) => setState(() => _currentIndex = index),
+                itemBuilder: (context, index) {
+                  final clip = _clips[index];
+                  return _ViewerClipPage(
+                    key: ValueKey(clip.id),
+                    clip: clip,
+                    isActive: index == _currentIndex,
+                    onToggleLike: () => _toggleClipLike(clip.id),
+                    onShare: () => _shareClip(clip.id),
+                    onToggleSave: () => _toggleClipSave(clip.id),
+                    onComments: _showCommentsComingSoon,
+                    onToggleFollow: clip.authorId == null
+                        ? null
+                        : () => _toggleClipFollow(clip.id),
+                  );
+                },
               ),
             ),
-          ),
-        ],
+            Positioned(
+              left: 12,
+              right: 12,
+              top: 10,
+              child: Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _close,
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    label: const Text('Volver a Clips'),
+                    style: _viewerNavigationButtonStyle(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.38),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.18),
+                      ),
+                    ),
+                    child: Text(
+                      '${_currentIndex + 1}/${_clips.length}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              right: 20,
+              top: 74,
+              bottom: 22,
+              child: RotatedBox(
+                quarterTurns: 1,
+                child: LinearProgressIndicator(
+                  value: (_currentIndex + 1) / _clips.length,
+                  minHeight: 3,
+                  color: AppColors.accent,
+                  backgroundColor: Colors.white.withValues(alpha: 0.16),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -176,16 +209,6 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
         ),
       ),
     );
-  }
-
-  void _showPrevious() {
-    if (_currentIndex == 0) return;
-    setState(() => _currentIndex--);
-  }
-
-  void _showNext() {
-    if (_currentIndex >= _clips.length - 1) return;
-    setState(() => _currentIndex++);
   }
 
   Future<void> _toggleClipLike(String clipId) async {
@@ -274,10 +297,7 @@ class _ViewerClipPage extends StatelessWidget {
   const _ViewerClipPage({
     super.key,
     required this.clip,
-    required this.isFirst,
-    required this.isLast,
-    required this.onPrevious,
-    required this.onNext,
+    required this.isActive,
     required this.onToggleLike,
     required this.onShare,
     required this.onToggleSave,
@@ -286,10 +306,7 @@ class _ViewerClipPage extends StatelessWidget {
   });
 
   final ExploreClip clip;
-  final bool isFirst;
-  final bool isLast;
-  final VoidCallback? onPrevious;
-  final VoidCallback? onNext;
+  final bool isActive;
   final VoidCallback onToggleLike;
   final VoidCallback onShare;
   final VoidCallback onToggleSave;
@@ -298,12 +315,12 @@ class _ViewerClipPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasVideo = clip.videoAssetPath != null || !clip.isDemoContent;
+    final hasVideo = clip.hasPlayableVideo || !clip.isDemoContent;
     final thumbnail = clip.thumbnailAssetPath;
-    final viewportHeight = MediaQuery.sizeOf(context).height;
-    final reelHeight = (viewportHeight * 0.68).clamp(360.0, 680.0);
-    final topMediaLabel = clip.videoAssetPath != null
+    final topMediaLabel = clip.videoSourceType == 'asset'
         ? 'Video local'
+        : clip.videoSourceType == 'network'
+        ? 'Video remoto'
         : clip.isDemoContent
         ? 'Demo'
         : 'Video remoto';
@@ -311,152 +328,105 @@ class _ViewerClipPage extends StatelessWidget {
         clip.authorDisplayName ??
         (clip.authorId == null ? clip.sourceLabel : 'Creador ${clip.authorId}');
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            height: reelHeight,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(28),
-              child: Stack(
-                fit: StackFit.expand,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _ClipVideoSurface(
+              clip: clip,
+              thumbnail: thumbnail,
+              isActive: isActive,
+            ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withValues(alpha: 0.18),
+                    Colors.black.withValues(alpha: 0.16),
+                    Colors.black.withValues(alpha: 0.82),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+            Positioned(
+              left: 18,
+              right: 96,
+              top: 64,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
-                  if (thumbnail == null)
-                    const _ViewerPlaceholder()
-                  else
-                    Image.asset(thumbnail, fit: BoxFit.cover),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.black.withValues(alpha: 0.05),
-                          Colors.black.withValues(alpha: 0.34),
-                          Colors.black.withValues(alpha: 0.82),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+                  _ViewerBadge(label: topMediaLabel),
+                  if (clip.sourceLabel != null)
+                    _ViewerBadge(label: clip.sourceLabel!),
+                  _ViewerBadge(label: clip.category),
+                  _ViewerBadge(label: clip.animalType),
+                ],
+              ),
+            ),
+            Positioned(
+              right: 12,
+              bottom: 22,
+              child: _ReelActionRail(
+                clip: clip,
+                onToggleLike: onToggleLike,
+                onComments: onComments,
+                onToggleSave: onToggleSave,
+                onShare: onShare,
+                onToggleFollow: onToggleFollow,
+              ),
+            ),
+            Positioned(
+              left: 18,
+              right: 96,
+              bottom: 18,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!hasVideo) const _ViewerBadge(label: 'Clip demo local'),
+                  const SizedBox(height: 12),
+                  if (creatorLabel != null) ...[
+                    Text(
+                      creatorLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.82),
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
-                  ),
-                  Center(
-                    child: Container(
-                      width: 76,
-                      height: 76,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.92),
-                        borderRadius: BorderRadius.circular(38),
-                      ),
-                      child: const Icon(
-                        Icons.play_arrow_rounded,
-                        color: AppColors.primaryDeep,
-                        size: 52,
-                      ),
+                    const SizedBox(height: 6),
+                  ],
+                  Text(
+                    clip.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
-                  Positioned(
-                    left: 18,
-                    right: 96,
-                    top: 18,
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _ViewerBadge(label: topMediaLabel),
-                        if (clip.sourceLabel != null)
-                          _ViewerBadge(label: clip.sourceLabel!),
-                        _ViewerBadge(label: clip.category),
-                        _ViewerBadge(label: clip.animalType),
-                      ],
-                    ),
-                  ),
-                  Positioned(
-                    right: 12,
-                    bottom: 22,
-                    child: _ReelActionRail(
-                      clip: clip,
-                      onToggleLike: onToggleLike,
-                      onComments: onComments,
-                      onToggleSave: onToggleSave,
-                      onShare: onShare,
-                      onToggleFollow: onToggleFollow,
-                    ),
-                  ),
-                  Positioned(
-                    left: 18,
-                    right: 96,
-                    bottom: 18,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (!hasVideo)
-                          const _ViewerBadge(label: 'Clip demo local'),
-                        const SizedBox(height: 12),
-                        if (creatorLabel != null) ...[
-                          Text(
-                            creatorLabel,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.82),
-                                  fontWeight: FontWeight.w800,
-                                ),
-                          ),
-                          const SizedBox(height: 6),
-                        ],
-                        Text(
-                          clip.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                              ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          clip.description,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.88),
-                                height: 1.4,
-                              ),
-                        ),
-                      ],
+                  const SizedBox(height: 8),
+                  Text(
+                    clip.description,
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.88),
+                      height: 1.4,
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: onPrevious,
-                  icon: const Icon(Icons.keyboard_arrow_up_rounded),
-                  label: const Text('Clip anterior'),
-                  style: _viewerNavigationButtonStyle(),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: onNext,
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                  label: const Text('Siguiente clip'),
-                  style: _viewerNavigationButtonStyle(),
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -477,7 +447,9 @@ ButtonStyle _viewerNavigationButtonStyle({EdgeInsetsGeometry? padding}) {
 }
 
 class _ViewerPlaceholder extends StatelessWidget {
-  const _ViewerPlaceholder();
+  const _ViewerPlaceholder({this.message});
+
+  final String? message;
 
   @override
   Widget build(BuildContext context) {
@@ -489,12 +461,390 @@ class _ViewerPlaceholder extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
       ),
-      child: const Align(
-        alignment: Alignment.topRight,
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Icon(Icons.pets_rounded, color: AppColors.dark, size: 52),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween<double>(begin: 0, end: 1),
+        duration: const Duration(milliseconds: 900),
+        builder: (context, value, child) {
+          return Stack(
+            children: [
+              Positioned(
+                right: 24 + (value * 22),
+                top: 24 + (value * 16),
+                child: const Icon(
+                  Icons.pets_rounded,
+                  color: AppColors.dark,
+                  size: 52,
+                ),
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.86),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    message ?? 'Vista demo segura',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ClipVideoSurface extends StatelessWidget {
+  const _ClipVideoSurface({
+    required this.clip,
+    required this.thumbnail,
+    required this.isActive,
+  });
+
+  final ExploreClip clip;
+  final String? thumbnail;
+  final bool isActive;
+
+  @override
+  Widget build(BuildContext context) {
+    if (clip.videoSourceType == 'asset' && clip.videoAssetPath != null) {
+      return _AssetClipVideoPlayer(
+        assetPath: clip.videoAssetPath!,
+        isActive: isActive,
+        fallback: _buildFallback('Video demo no disponible'),
+      );
+    }
+
+    if (clip.videoSourceType == 'network' && clip.videoUrl != null) {
+      return _NetworkClipVideoPlayer(
+        videoUrl: clip.videoUrl!,
+        isActive: isActive,
+        fallback: _buildFallback('Video remoto no disponible'),
+      );
+    }
+
+    return _buildFallback('Fallback demo animado');
+  }
+
+  Widget _buildFallback(String message) {
+    if (thumbnail == null) {
+      return _ViewerPlaceholder(message: message);
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(thumbnail!, fit: BoxFit.cover),
+        Align(
+          alignment: Alignment.center,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.86),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
         ),
+      ],
+    );
+  }
+}
+
+class _AssetClipVideoPlayer extends StatefulWidget {
+  const _AssetClipVideoPlayer({
+    required this.assetPath,
+    required this.isActive,
+    required this.fallback,
+  });
+
+  final String assetPath;
+  final bool isActive;
+  final Widget fallback;
+
+  @override
+  State<_AssetClipVideoPlayer> createState() => _AssetClipVideoPlayerState();
+}
+
+class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
+  VideoPlayerController? _controller;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  @override
+  void didUpdateWidget(covariant _AssetClipVideoPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.assetPath != widget.assetPath) {
+      _disposeController();
+      _hasError = false;
+      _initialize();
+    } else if (oldWidget.isActive != widget.isActive) {
+      _syncPlayback();
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposeController();
+    super.dispose();
+  }
+
+  Future<void> _initialize() async {
+    final controller = VideoPlayerController.asset(widget.assetPath);
+    _controller = controller;
+    controller.addListener(_onControllerChanged);
+    try {
+      await controller.initialize();
+      await controller.setLooping(true);
+      await controller.setVolume(0);
+      await _syncPlayback();
+      if (!mounted) return;
+      setState(() {});
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _hasError = true);
+    }
+  }
+
+  void _disposeController() {
+    final controller = _controller;
+    if (controller == null) return;
+    controller.removeListener(_onControllerChanged);
+    controller.dispose();
+    _controller = null;
+  }
+
+  void _onControllerChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _syncPlayback() async {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+    try {
+      if (widget.isActive) {
+        await controller.play();
+      } else {
+        await controller.pause();
+      }
+    } catch (_) {
+      // Some browsers can still reject autoplay; the tap control remains usable.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = _controller;
+    if (_hasError || controller == null) return widget.fallback;
+    if (!controller.value.isInitialized) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          widget.fallback,
+          const Center(child: CircularProgressIndicator(color: Colors.white)),
+        ],
+      );
+    }
+
+    return _VideoPlayerFrame(controller: controller);
+  }
+}
+
+class _NetworkClipVideoPlayer extends StatefulWidget {
+  const _NetworkClipVideoPlayer({
+    required this.videoUrl,
+    required this.isActive,
+    required this.fallback,
+  });
+
+  final String videoUrl;
+  final bool isActive;
+  final Widget fallback;
+
+  @override
+  State<_NetworkClipVideoPlayer> createState() =>
+      _NetworkClipVideoPlayerState();
+}
+
+class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
+  VideoPlayerController? _controller;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  @override
+  void didUpdateWidget(covariant _NetworkClipVideoPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.videoUrl != widget.videoUrl) {
+      final controller = _controller;
+      if (controller != null) {
+        controller.removeListener(_onControllerChanged);
+        controller.dispose();
+      }
+      _controller = null;
+      _hasError = false;
+      _initialize();
+    } else if (oldWidget.isActive != widget.isActive) {
+      _syncPlayback();
+    }
+  }
+
+  @override
+  void dispose() {
+    final controller = _controller;
+    if (controller != null) {
+      controller.removeListener(_onControllerChanged);
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _initialize() async {
+    final controller = VideoPlayerController.networkUrl(
+      Uri.parse(widget.videoUrl),
+    );
+    _controller = controller;
+    controller.addListener(_onControllerChanged);
+    try {
+      await controller.initialize();
+      await controller.setLooping(true);
+      await controller.setVolume(0);
+      await _syncPlayback();
+      if (!mounted) return;
+      setState(() {});
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _hasError = true);
+    }
+  }
+
+  void _onControllerChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _syncPlayback() async {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+    try {
+      if (widget.isActive) {
+        await controller.play();
+      } else {
+        await controller.pause();
+      }
+    } catch (_) {
+      // Some browsers can still reject autoplay; the tap control remains usable.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = _controller;
+    if (_hasError || controller == null) return widget.fallback;
+    if (!controller.value.isInitialized) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          widget.fallback,
+          const Center(child: CircularProgressIndicator(color: Colors.white)),
+        ],
+      );
+    }
+
+    return _VideoPlayerFrame(controller: controller);
+  }
+}
+
+class _VideoPlayerFrame extends StatelessWidget {
+  const _VideoPlayerFrame({required this.controller});
+
+  final VideoPlayerController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final duration = controller.value.duration;
+    final position = controller.value.position;
+    final progress = duration.inMilliseconds <= 0
+        ? 0.0
+        : (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        if (controller.value.isPlaying) {
+          controller.pause();
+        } else {
+          controller.play();
+        }
+      },
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          FittedBox(
+            fit: BoxFit.cover,
+            child: SizedBox(
+              width: controller.value.size.width,
+              height: controller.value.size.height,
+              child: VideoPlayer(controller),
+            ),
+          ),
+          Center(
+            child: AnimatedOpacity(
+              opacity: controller.value.isPlaying ? 0 : 1,
+              duration: const Duration(milliseconds: 180),
+              child: Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.play_arrow_rounded,
+                  color: AppColors.primaryDeep,
+                  size: 38,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 18,
+            right: 18,
+            bottom: 10,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 5,
+                color: AppColors.accent,
+                backgroundColor: Colors.white.withValues(alpha: 0.34),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

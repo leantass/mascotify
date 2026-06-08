@@ -1053,7 +1053,7 @@ class _ExploreClipCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasVideo = clip.videoAssetPath != null;
+    final hasVideo = clip.hasPlayableVideo;
     final thumbnail = clip.thumbnailAssetPath;
     final authorLabel = clip.authorDisplayName ?? clip.sourceLabel;
 
