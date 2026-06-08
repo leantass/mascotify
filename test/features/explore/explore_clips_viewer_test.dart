@@ -171,6 +171,7 @@ void main() {
 
     expect(find.text('Video local'), findsOneWidget);
     expect(find.text('Clip demo local'), findsNothing);
+    expect(find.byIcon(Icons.volume_off_rounded), findsOneWidget);
   });
 
   testWidgets('clip sin videoAssetPath muestra fallback seguro', (

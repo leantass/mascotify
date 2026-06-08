@@ -584,6 +584,7 @@ class _AssetClipVideoPlayer extends StatefulWidget {
 class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
   VideoPlayerController? _controller;
   bool _hasError = false;
+  bool _isMuted = true;
 
   @override
   void initState() {
@@ -616,7 +617,7 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
     try {
       await controller.initialize();
       await controller.setLooping(true);
-      await controller.setVolume(0);
+      await controller.setVolume(_isMuted ? 0 : 1);
       await _syncPlayback();
       if (!mounted) return;
       setState(() {});
@@ -652,21 +653,43 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
     }
   }
 
+  void _toggleMuted() {
+    setState(() => _isMuted = !_isMuted);
+    final controller = _controller;
+    if (controller != null && controller.value.isInitialized) {
+      controller.setVolume(_isMuted ? 0 : 1);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
-    if (_hasError || controller == null) return widget.fallback;
+    if (_hasError || controller == null) {
+      return _VideoPlayerShell(
+        isMuted: _isMuted,
+        onToggleMuted: _toggleMuted,
+        child: widget.fallback,
+      );
+    }
     if (!controller.value.isInitialized) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          widget.fallback,
-          const Center(child: CircularProgressIndicator(color: Colors.white)),
-        ],
+      return _VideoPlayerShell(
+        isMuted: _isMuted,
+        onToggleMuted: _toggleMuted,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            widget.fallback,
+            const Center(child: CircularProgressIndicator(color: Colors.white)),
+          ],
+        ),
       );
     }
 
-    return _VideoPlayerFrame(controller: controller);
+    return _VideoPlayerShell(
+      isMuted: _isMuted,
+      onToggleMuted: _toggleMuted,
+      child: _VideoPlayerFrame(controller: controller),
+    );
   }
 }
 
@@ -689,6 +712,7 @@ class _NetworkClipVideoPlayer extends StatefulWidget {
 class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
   VideoPlayerController? _controller;
   bool _hasError = false;
+  bool _isMuted = true;
 
   @override
   void initState() {
@@ -732,7 +756,7 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
     try {
       await controller.initialize();
       await controller.setLooping(true);
-      await controller.setVolume(0);
+      await controller.setVolume(_isMuted ? 0 : 1);
       await _syncPlayback();
       if (!mounted) return;
       setState(() {});
@@ -760,21 +784,88 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
     }
   }
 
+  void _toggleMuted() {
+    setState(() => _isMuted = !_isMuted);
+    final controller = _controller;
+    if (controller != null && controller.value.isInitialized) {
+      controller.setVolume(_isMuted ? 0 : 1);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
-    if (_hasError || controller == null) return widget.fallback;
+    if (_hasError || controller == null) {
+      return _VideoPlayerShell(
+        isMuted: _isMuted,
+        onToggleMuted: _toggleMuted,
+        child: widget.fallback,
+      );
+    }
     if (!controller.value.isInitialized) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          widget.fallback,
-          const Center(child: CircularProgressIndicator(color: Colors.white)),
-        ],
+      return _VideoPlayerShell(
+        isMuted: _isMuted,
+        onToggleMuted: _toggleMuted,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            widget.fallback,
+            const Center(child: CircularProgressIndicator(color: Colors.white)),
+          ],
+        ),
       );
     }
 
-    return _VideoPlayerFrame(controller: controller);
+    return _VideoPlayerShell(
+      isMuted: _isMuted,
+      onToggleMuted: _toggleMuted,
+      child: _VideoPlayerFrame(controller: controller),
+    );
+  }
+}
+
+class _VideoPlayerShell extends StatelessWidget {
+  const _VideoPlayerShell({
+    required this.child,
+    required this.isMuted,
+    required this.onToggleMuted,
+  });
+
+  final Widget child;
+  final bool isMuted;
+  final VoidCallback onToggleMuted;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        child,
+        Positioned(
+          right: 14,
+          top: 14,
+          child: Tooltip(
+            message: isMuted ? 'Activar sonido' : 'Silenciar',
+            child: Semantics(
+              button: true,
+              label: isMuted ? 'Activar sonido' : 'Silenciar video',
+              child: IconButton.filled(
+                onPressed: onToggleMuted,
+                icon: Icon(
+                  isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                ),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.black.withValues(alpha: 0.42),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(42, 42),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 

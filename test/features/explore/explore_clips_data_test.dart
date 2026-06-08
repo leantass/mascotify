@@ -179,6 +179,8 @@ void main() {
     for (final videoPath in videoPaths) {
       final file = File(videoPath);
       expect(file.existsSync(), isTrue, reason: videoPath);
+      expect(file.path, endsWith('.mp4'), reason: videoPath);
+      expect(file.lengthSync(), greaterThan(0), reason: videoPath);
       expect(file.lengthSync(), lessThan(1024 * 1024), reason: videoPath);
     }
   });
