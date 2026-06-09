@@ -84,6 +84,8 @@ function Get-MimeType([string] $path) {
     '.jpeg' { 'image/jpeg'; break }
     '.svg' { 'image/svg+xml'; break }
     '.ico' { 'image/x-icon'; break }
+    '.mp4' { 'video/mp4'; break }
+    '.webm' { 'video/webm'; break }
     '.wasm' { 'application/wasm'; break }
     '.map' { 'application/json; charset=utf-8'; break }
     '.ttf' { 'font/ttf'; break }
@@ -94,13 +96,85 @@ function Get-MimeType([string] $path) {
   }
 }
 
-function Send-Response($stream, [int] $status, [string] $statusText, [string] $contentType, [byte[]] $body) {
-  $header = "HTTP/1.1 $status $statusText`r`nContent-Type: $contentType`r`nContent-Length: $($body.Length)`r`nCache-Control: no-cache`r`nConnection: close`r`n`r`n"
+function Get-HeaderValue([string] $request, [string] $name) {
+  foreach ($line in ($request -split "`r?`n")) {
+    $separator = $line.IndexOf(':')
+    if ($separator -le 0) {
+      continue
+    }
+
+    $headerName = $line.Substring(0, $separator).Trim()
+    if ($headerName.Equals($name, [System.StringComparison]::OrdinalIgnoreCase)) {
+      return $line.Substring($separator + 1).Trim()
+    }
+  }
+
+  return $null
+}
+
+function Send-Response($stream, [int] $status, [string] $statusText, [string] $contentType, [byte[]] $body, [string] $extraHeaders = '') {
+  $header = "HTTP/1.1 $status $statusText`r`nContent-Type: $contentType`r`nContent-Length: $($body.Length)`r`nCache-Control: no-cache`r`n$extraHeaders" +
+    "Connection: close`r`n`r`n"
   $headerBytes = [System.Text.Encoding]::ASCII.GetBytes($header)
   $stream.Write($headerBytes, 0, $headerBytes.Length)
   if ($body.Length -gt 0) {
     $stream.Write($body, 0, $body.Length)
   }
+}
+
+function Send-FileResponse($stream, [string] $filePath, [string] $request) {
+  $contentType = Get-MimeType $filePath
+  $fileInfo = [System.IO.FileInfo]::new($filePath)
+  $fileLength = [int64] $fileInfo.Length
+  $rangeHeader = Get-HeaderValue $request 'Range'
+  $acceptRanges = "Accept-Ranges: bytes`r`n"
+
+  if (-not [string]::IsNullOrWhiteSpace($rangeHeader) -and $rangeHeader.StartsWith('bytes=')) {
+    $range = $rangeHeader.Substring(6)
+    $rangeParts = $range -split '-', 2
+    $start = [int64]0
+    $end = $fileLength - 1
+
+    if (-not [string]::IsNullOrWhiteSpace($rangeParts[0])) {
+      $start = [int64]::Parse($rangeParts[0])
+    }
+    if ($rangeParts.Length -gt 1 -and -not [string]::IsNullOrWhiteSpace($rangeParts[1])) {
+      $end = [int64]::Parse($rangeParts[1])
+    }
+
+    if ($start -lt 0 -or $start -ge $fileLength -or $end -lt $start) {
+      $body = [System.Text.Encoding]::UTF8.GetBytes('Rango no disponible.')
+      Send-Response $stream 416 'Range Not Satisfiable' 'text/plain; charset=utf-8' $body "Content-Range: bytes */$fileLength`r`n$acceptRanges"
+      return
+    }
+
+    if ($end -ge $fileLength) {
+      $end = $fileLength - 1
+    }
+
+    $count = [int]($end - $start + 1)
+    $bodyBytes = New-Object byte[] $count
+    $fileStream = [System.IO.File]::OpenRead($filePath)
+    try {
+      $fileStream.Seek($start, [System.IO.SeekOrigin]::Begin) | Out-Null
+      $offset = 0
+      while ($offset -lt $count) {
+        $read = $fileStream.Read($bodyBytes, $offset, $count - $offset)
+        if ($read -le 0) {
+          break
+        }
+        $offset += $read
+      }
+    } finally {
+      $fileStream.Dispose()
+    }
+
+    Send-Response $stream 206 'Partial Content' $contentType $bodyBytes "Content-Range: bytes $start-$end/$fileLength`r`n$acceptRanges"
+    return
+  }
+
+  $bodyBytes = [System.IO.File]::ReadAllBytes($filePath)
+  Send-Response $stream 200 'OK' $contentType $bodyBytes $acceptRanges
 }
 
 function Resolve-RequestPath([string] $target) {
@@ -170,8 +244,7 @@ try {
         continue
       }
 
-      $bodyBytes = [System.IO.File]::ReadAllBytes($filePath)
-      Send-Response $stream 200 'OK' (Get-MimeType $filePath) $bodyBytes
+      Send-FileResponse $stream $filePath $request
     } catch {
       try {
         $body = [System.Text.Encoding]::UTF8.GetBytes('Mascotify demo: error interno del servidor local.')

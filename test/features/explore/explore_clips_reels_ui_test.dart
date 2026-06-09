@@ -156,8 +156,8 @@ void main() {
 
     await _pumpViewer(tester, ClipsMockData.clips.first);
 
-    expect(find.text('Clip demo local'), findsOneWidget);
-    expect(find.byIcon(Icons.pets_rounded), findsOneWidget);
+    expect(find.text('Video local'), findsOneWidget);
+    expect(find.text('Clip demo local'), findsNothing);
     expect(find.text('128 likes'), findsOneWidget);
     expect(find.text('Guardar'), findsOneWidget);
   });

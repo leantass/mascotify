@@ -83,15 +83,32 @@ La idea es construir un ecosistema real, claro, premium y util.
 - Cuentas demo realistas.
 - Mascotas demo con datos coherentes.
 - Clips demo para poblar feed.
+- ✅ Starter clips globales.
+- Clips demo reproducibles.
 - Clips iniciales utiles.
+- ✅ Clips demo reproducibles.
+- ✅ Videos demo locales/fallback animado.
+- ✅ Visor vertical estilo TikTok/Reels.
+- ✅ Autoplay del clip visible.
+- ✅ Scroll vertical sin flechas.
+- ✅ Fallback seguro si falla video.
+- Viewer preparado para videos asset.
 - Contenido educativo general.
 - Variedad de especies y categorias.
 - Metricas realistas.
 - Contenido inicial para evitar app vacia.
 - Contenido marcado internamente como demo/seeded.
 - Contenido real/curado pendiente para produccion.
+- ⏳ Videos reales/licenciados pendientes.
+- ⏳ Upload real con backend publico pendiente.
+- ⏳ Mezcla inteligente real/demo pendiente.
 - Moderacion de contenido real pendiente.
 - Seed backend real pendiente si se productiviza.
+
+### Hito 2026-06-08: Clips demo reproducibles con visor vertical
+Estado: ✅ Hecho.
+
+Observaciones: Se corrigio la experiencia inicial de Clips para que cualquier usuario vea videos starter reproducibles sin depender de uploads reales. El visor reproduce muted el clip visible, cambia con scroll vertical y muestra fallback visual seguro si falla un video.
 
 ### 5. Bandeja social y conversaciones
 - Bandeja social mock
@@ -236,6 +253,7 @@ Volver mas potente la comunidad experta:
 
 | Fecha | Hito | Commit/PR | Estado | Observaciones |
 | --- | --- | --- | --- | --- |
+| 2026-05-26 | Clips demo reproducibles | fix/demo-clips-playable-videos | Hecho | Se agregaron fuentes reproducibles para clips demo para mejorar experiencia inicial. |
 | 2026-05-26 | Comunidad demo realista y clips utiles | feature/realistic-demo-community-content | Hecho | Se agregaron perfiles ficticios realistas con mascotas, clips utiles y datos demo marcados internamente para mejorar la experiencia inicial. |
 | 2026-05-26 | Cuentas demo y clips iniciales | feature/demo-creator-accounts-clips | Hecho | Se agregaron cuentas y clips demo para mejorar experiencia inicial sin depender de usuarios reales. |
 | 2026-05-20 | Motor de calendario sanitario y recordatorios de vacunas | feature/pet-health-reminders-knowledge-base | ✅ Hecho | Se agregó guía local/demo por especie, edad e historial, con recordatorios internos y arquitectura futura de actualización validada. |

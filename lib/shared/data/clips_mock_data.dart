@@ -1237,6 +1237,9 @@ ExploreClip _clip({
     category: category,
     animalType: animalType,
     petName: petName,
+    videoSourceType: 'asset',
+    videoAssetPath: _videoAssetFor(category: category, animalType: animalType),
+    durationSeconds: 6,
     authorId: authorId,
     authorDisplayName: creator?.displayName,
     authorUsername: creator?.username,
@@ -1254,6 +1257,56 @@ ExploreClip _clip({
     tags: tags,
     source: 'seeded_demo',
     sourceLabel: 'Comunidad inicial',
+    isStarterContent: true,
+    availableForAllUsers: true,
     isDemoContent: true,
   );
+}
+
+String _videoAssetFor({required String category, required String animalType}) {
+  final normalizedCategory = category.toLowerCase();
+  final normalizedAnimal = animalType.toLowerCase();
+
+  if (normalizedCategory == 'qr' || normalizedCategory == 'prevencion') {
+    return 'assets/videos/clips/demo_qr_collar.mp4';
+  }
+  if (normalizedCategory == 'adopcion' || normalizedCategory == 'rescates') {
+    return 'assets/videos/clips/demo_adoption_care.mp4';
+  }
+  if (normalizedCategory == 'entrenamiento') {
+    return 'assets/videos/clips/demo_training_basic.mp4';
+  }
+  if (normalizedCategory == 'paseo') {
+    return 'assets/videos/clips/demo_dog_walk.mp4';
+  }
+  if (normalizedCategory == 'acuario' || normalizedAnimal.contains('pez')) {
+    return 'assets/videos/clips/demo_aquarium_care.mp4';
+  }
+  if (normalizedCategory == 'aves' || normalizedAnimal.contains('ave')) {
+    return 'assets/videos/clips/demo_bird_home.mp4';
+  }
+  if (normalizedCategory == 'reptiles' ||
+      normalizedAnimal.contains('tortuga') ||
+      normalizedAnimal.contains('reptil')) {
+    return 'assets/videos/clips/demo_turtle_habitat.mp4';
+  }
+  if (normalizedAnimal.contains('conejo')) {
+    return 'assets/videos/clips/demo_rabbit_home.mp4';
+  }
+  if (normalizedAnimal.contains('hamster') ||
+      normalizedAnimal.contains('cobayo') ||
+      normalizedAnimal.contains('pequenos')) {
+    return 'assets/videos/clips/demo_small_pet_care.mp4';
+  }
+  if (normalizedAnimal.contains('gato')) {
+    if (normalizedCategory == 'descanso' || normalizedCategory == 'tiernos') {
+      return 'assets/videos/clips/demo_cat_rest.mp4';
+    }
+    return 'assets/videos/clips/demo_cat_play.mp4';
+  }
+  if (normalizedCategory == 'higiene' || normalizedCategory == 'cuidado') {
+    return 'assets/videos/clips/demo_small_pet_care.mp4';
+  }
+
+  return 'assets/videos/clips/demo_dog_play.mp4';
 }

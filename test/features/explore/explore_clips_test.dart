@@ -42,7 +42,7 @@ void main() {
     expect(find.text('Clips demo locales'), findsOneWidget);
     expect(find.text('El gato que se adueno del sillon'), findsOneWidget);
     expect(find.text('Perro aprende a usar su QR'), findsOneWidget);
-    expect(find.text('Clip demo local'), findsWidgets);
+    expect(find.text('Video local'), findsWidgets);
   });
 
   testWidgets('filtro Bloopers muestra clips de esa categoria', (tester) async {

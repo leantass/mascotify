@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mascotify/features/explore/presentation/screens/explore_screen.dart';
@@ -85,6 +87,8 @@ void main() {
       expect(clip.sourceLabel, 'Comunidad inicial', reason: clip.id);
       expect(clip.source, 'seeded_demo', reason: clip.id);
       expect(clip.seededAt, ClipsMockData.seededAt, reason: clip.id);
+      expect(clip.isStarterContent, isTrue, reason: clip.id);
+      expect(clip.availableForAllUsers, isTrue, reason: clip.id);
     }
   });
 
@@ -155,9 +159,37 @@ void main() {
     }
   });
 
+  test('todos los clips demo tienen video asset reproducible declarado', () {
+    for (final clip in ClipsMockData.clips) {
+      expect(clip.hasPlayableVideo, isTrue, reason: clip.id);
+      expect(clip.videoSourceType, 'asset', reason: clip.id);
+      expect(clip.videoAssetPath, isNotNull, reason: clip.id);
+      expect(clip.durationSeconds, inInclusiveRange(4, 8), reason: clip.id);
+    }
+  });
+
+  test('todos los videoAssetPath demo existen y son livianos', () {
+    final videoPaths = ClipsMockData.clips
+        .map((clip) => clip.videoAssetPath)
+        .whereType<String>()
+        .toSet();
+
+    expect(videoPaths.length, inInclusiveRange(8, 12));
+
+    for (final videoPath in videoPaths) {
+      final file = File(videoPath);
+      expect(file.existsSync(), isTrue, reason: videoPath);
+      expect(file.path, endsWith('.mp4'), reason: videoPath);
+      expect(file.lengthSync(), greaterThan(0), reason: videoPath);
+      expect(file.lengthSync(), lessThan(1024 * 1024), reason: videoPath);
+    }
+  });
+
   test('todos los clips demo declaran contenido demo local', () {
     for (final clip in ClipsMockData.clips) {
       expect(clip.isDemoContent, isTrue, reason: clip.id);
+      expect(clip.isStarterContent, isTrue, reason: clip.id);
+      expect(clip.availableForAllUsers, isTrue, reason: clip.id);
     }
   });
 
