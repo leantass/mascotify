@@ -36,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: SafeArea(
         child: ResponsivePageBody(
           child: ListView(
+            // ignore: deprecated_member_use
             cacheExtent: 5000,
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [

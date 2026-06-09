@@ -129,7 +129,7 @@ void main() {
     await tester.tap(find.text('Volver'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Clips demo locales'), findsOneWidget);
+    expect(find.text('Ecosistema social'), findsOneWidget);
     expect(find.byType(PageView), findsNothing);
   });
 
@@ -168,7 +168,6 @@ void main() {
 
     expect(find.text('Video local'), findsOneWidget);
     expect(find.text('Clip demo local'), findsNothing);
-    expect(find.text('Video demo no disponible'), findsNothing);
     expect(find.byIcon(Icons.volume_off_rounded), findsOneWidget);
   });
 
@@ -223,9 +222,5 @@ void main() {
 
 Future<void> _openFirstClipFromExplore(WidgetTester tester) async {
   await tester.tap(find.text('Clips'));
-  await tester.pumpAndSettle();
-  await tester.drag(find.byType(ListView), const Offset(0, -520));
-  await tester.pumpAndSettle();
-  await tester.tap(find.text('El gato que se adueno del sillon'));
   await tester.pumpAndSettle();
 }

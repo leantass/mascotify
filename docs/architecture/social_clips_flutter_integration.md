@@ -67,12 +67,12 @@ La UI puede distinguir:
 Cuando se usa fallback, Explorar muestra un aviso no invasivo:
 
 ```text
-Mostrando clips demo locales
+Clips locales listos
 ```
 
 ## UI
 
-`ExploreScreen` mantiene la seccion Clips existente, filtros y visor inmersivo. La pantalla arranca con clips locales seguros y luego reemplaza por feed remoto si esta disponible.
+`ExploreScreen` abre Clips directamente en el visor inmersivo vertical. La pantalla arranca con clips locales reproducibles y luego reemplaza por feed remoto si esta disponible.
 
 Acciones conectadas cuando el clip viene del backend:
 

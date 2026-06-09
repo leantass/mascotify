@@ -28,6 +28,7 @@ class WebAssetClipVideoView extends StatefulWidget {
 
 class _WebAssetClipVideoViewState extends State<WebAssetClipVideoView> {
   late final String _viewType;
+  late html.DivElement _hostElement;
   late html.VideoElement _videoElement;
   StreamSubscription<html.Event>? _readySubscription;
   StreamSubscription<html.Event>? _errorSubscription;
@@ -65,6 +66,12 @@ class _WebAssetClipVideoViewState extends State<WebAssetClipVideoView> {
 
   void _createVideoElement() {
     final source = Uri.base.resolve('assets/${widget.assetPath}').toString();
+    _hostElement = html.DivElement()
+      ..style.width = '100%'
+      ..style.height = '100%'
+      ..style.overflow = 'hidden'
+      ..style.backgroundColor = 'transparent'
+      ..style.pointerEvents = 'none';
     _videoElement = html.VideoElement()
       ..src = source
       ..autoplay = true
@@ -75,9 +82,11 @@ class _WebAssetClipVideoViewState extends State<WebAssetClipVideoView> {
       ..style.height = '100%'
       ..style.objectFit = 'cover'
       ..style.border = '0'
-      ..style.backgroundColor = 'transparent';
+      ..style.backgroundColor = 'transparent'
+      ..style.pointerEvents = 'none';
     _videoElement.setAttribute('playsinline', 'true');
     _videoElement.setAttribute('webkit-playsinline', 'true');
+    _hostElement.append(_videoElement);
 
     _readySubscription = _videoElement.onCanPlay.listen((_) {
       widget.onReady();
@@ -89,7 +98,7 @@ class _WebAssetClipVideoViewState extends State<WebAssetClipVideoView> {
 
     ui_web.platformViewRegistry.registerViewFactory(
       _viewType,
-      (_) => _videoElement,
+      (_) => _hostElement,
     );
     _videoElement.load();
     _syncPlayback();
@@ -103,6 +112,7 @@ class _WebAssetClipVideoViewState extends State<WebAssetClipVideoView> {
     _videoElement.pause();
     _videoElement.removeAttribute('src');
     _videoElement.load();
+    _videoElement.remove();
   }
 
   void _syncPlayback() {

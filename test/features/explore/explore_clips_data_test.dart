@@ -294,7 +294,7 @@ void main() {
     expect(find.text('Comunidad inicial'), findsWidgets);
   });
 
-  testWidgets('los filtros siguen funcionando con los datos separados', (
+  testWidgets('el visor permite avanzar por clips demo separados', (
     tester,
   ) async {
     setDesktopViewport(tester);
@@ -302,10 +302,10 @@ void main() {
     await tester.pumpWidget(buildTestApp(const ExploreScreen()));
     await tester.tap(find.text('Clips'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Profesionales'));
+    await tester.drag(find.byType(PageView), const Offset(0, -700));
     await tester.pumpAndSettle();
 
-    expect(find.text('Tips Mascotify: senales para consultar'), findsOneWidget);
-    expect(find.text('Bloopers de cachorros'), findsNothing);
+    expect(find.text(ClipsMockData.clips[1].title), findsOneWidget);
+    expect(find.text(ClipsMockData.clips.first.title), findsNothing);
   });
 }

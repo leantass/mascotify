@@ -1,4 +1,4 @@
-# Clips demo locales
+# Clips con video local
 
 Los clips demo de Explorar viven en:
 
@@ -19,7 +19,7 @@ Agregar un nuevo `ExploreClip` en `ClipsMockData.clips` con:
 - `likes` y `comments`: contadores demo no negativos.
 - `sourceLabel`: opcional, por ejemplo `Mascotify demo`.
 - `thumbnailAssetPath`: opcional, solo si existe un asset propio.
-- `videoAssetPath`: opcional, solo si existe un video propio.
+- `videoAssetPath`: requerido para que el clip inicial sea reproducible.
 - `isDemoContent`: dejar `true` para contenido demo/local.
 
 ## Assets propios
@@ -36,7 +36,7 @@ thumbnailAssetPath: 'assets/images/clips/milo-qr.png',
 videoAssetPath: 'assets/videos/clips/milo-qr.mp4',
 ```
 
-Si no hay `videoAssetPath`, la UI muestra un placeholder seguro con indicador de play y el texto `Clip demo local`.
+La experiencia principal debe usar MP4 locales desde `assets/videos/clips/`. El fallback visual queda reservado para errores reales o clips incompletos durante desarrollo.
 
 ## Categorias
 

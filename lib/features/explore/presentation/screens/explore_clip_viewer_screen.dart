@@ -16,6 +16,7 @@ class ExploreClipViewerScreen extends StatefulWidget {
     this.onToggleLike,
     this.onShare,
     this.onToggleFollow,
+    this.onCloseInline,
   });
 
   final List<ExploreClip> clips;
@@ -23,6 +24,7 @@ class ExploreClipViewerScreen extends StatefulWidget {
   final Future<ExploreClip> Function(ExploreClip clip)? onToggleLike;
   final Future<ExploreClip> Function(ExploreClip clip)? onShare;
   final Future<ExploreClip> Function(ExploreClip clip)? onToggleFollow;
+  final ValueChanged<List<ExploreClip>>? onCloseInline;
 
   @override
   State<ExploreClipViewerScreen> createState() =>
@@ -33,6 +35,7 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
   late List<ExploreClip> _clips;
   late int _currentIndex;
   late PageController _pageController;
+  bool _isMuted = true;
 
   @override
   void initState() {
@@ -50,6 +53,22 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant ExploreClipViewerScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.clips == widget.clips) return;
+
+    final currentClipId = _currentIndex >= 0 && _currentIndex < _clips.length
+        ? _clips[_currentIndex].id
+        : widget.initialClipId;
+    _clips = widget.clips;
+    final nextIndex = _clips.indexWhere((clip) => clip.id == currentClipId);
+    _currentIndex = nextIndex < 0 ? 0 : nextIndex;
+    if (_pageController.hasClients && _clips.isNotEmpty) {
+      _pageController.jumpToPage(_currentIndex);
+    }
   }
 
   @override
@@ -83,6 +102,9 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
                     key: ValueKey(clip.id),
                     clip: clip,
                     isActive: index == _currentIndex,
+                    isMuted: _isMuted,
+                    onSwipeNext: () => _goToClip(index + 1),
+                    onSwipePrevious: () => _goToClip(index - 1),
                     onToggleLike: () => _toggleClipLike(clip.id),
                     onShare: () => _shareClip(clip.id),
                     onToggleSave: () => _toggleClipSave(clip.id),
@@ -148,6 +170,31 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
                   minHeight: 3,
                   color: AppColors.accent,
                   backgroundColor: Colors.white.withValues(alpha: 0.16),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 14,
+              top: 58,
+              child: Tooltip(
+                message: _isMuted ? 'Activar sonido' : 'Silenciar',
+                child: Semantics(
+                  button: true,
+                  label: _isMuted ? 'Activar sonido' : 'Silenciar video',
+                  child: IconButton.filled(
+                    onPressed: () => setState(() => _isMuted = !_isMuted),
+                    icon: Icon(
+                      _isMuted
+                          ? Icons.volume_off_rounded
+                          : Icons.volume_up_rounded,
+                    ),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.black.withValues(alpha: 0.42),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(42, 42),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -293,7 +340,21 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
     );
   }
 
+  void _goToClip(int index) {
+    if (index < 0 || index >= _clips.length) return;
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
   void _close() {
+    final onCloseInline = widget.onCloseInline;
+    if (onCloseInline != null) {
+      onCloseInline(_clips);
+      return;
+    }
     Navigator.of(context).pop<List<ExploreClip>>(_clips);
   }
 }
@@ -303,6 +364,9 @@ class _ViewerClipPage extends StatelessWidget {
     super.key,
     required this.clip,
     required this.isActive,
+    required this.isMuted,
+    required this.onSwipeNext,
+    required this.onSwipePrevious,
     required this.onToggleLike,
     required this.onShare,
     required this.onToggleSave,
@@ -312,6 +376,9 @@ class _ViewerClipPage extends StatelessWidget {
 
   final ExploreClip clip;
   final bool isActive;
+  final bool isMuted;
+  final VoidCallback onSwipeNext;
+  final VoidCallback onSwipePrevious;
   final VoidCallback onToggleLike;
   final VoidCallback onShare;
   final VoidCallback onToggleSave;
@@ -344,6 +411,7 @@ class _ViewerClipPage extends StatelessWidget {
               clip: clip,
               thumbnail: thumbnail,
               isActive: isActive,
+              isMuted: isMuted,
             ),
             Container(
               decoration: BoxDecoration(
@@ -358,6 +426,12 @@ class _ViewerClipPage extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
+              ),
+            ),
+            Positioned.fill(
+              child: _VerticalSwipeLayer(
+                onNext: onSwipeNext,
+                onPrevious: onSwipePrevious,
               ),
             ),
             Positioned(
@@ -573,16 +647,52 @@ class _ViewerPlaceholder extends StatelessWidget {
   }
 }
 
+class _VerticalSwipeLayer extends StatefulWidget {
+  const _VerticalSwipeLayer({required this.onNext, required this.onPrevious});
+
+  final VoidCallback onNext;
+  final VoidCallback onPrevious;
+
+  @override
+  State<_VerticalSwipeLayer> createState() => _VerticalSwipeLayerState();
+}
+
+class _VerticalSwipeLayerState extends State<_VerticalSwipeLayer> {
+  double _dragDelta = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onVerticalDragStart: (_) => _dragDelta = 0,
+      onVerticalDragUpdate: (details) {
+        _dragDelta += details.primaryDelta ?? 0;
+      },
+      onVerticalDragEnd: (_) {
+        final delta = _dragDelta;
+        _dragDelta = 0;
+        if (delta <= -80) {
+          widget.onNext();
+        } else if (delta >= 80) {
+          widget.onPrevious();
+        }
+      },
+    );
+  }
+}
+
 class _ClipVideoSurface extends StatelessWidget {
   const _ClipVideoSurface({
     required this.clip,
     required this.thumbnail,
     required this.isActive,
+    required this.isMuted,
   });
 
   final ExploreClip clip;
   final String? thumbnail;
   final bool isActive;
+  final bool isMuted;
 
   @override
   Widget build(BuildContext context) {
@@ -590,6 +700,7 @@ class _ClipVideoSurface extends StatelessWidget {
       return _AssetClipVideoPlayer(
         assetPath: clip.videoAssetPath!,
         isActive: isActive,
+        isMuted: isMuted,
         loading: _buildLoadingSurface(context),
         fallback: _buildFallback('No pudimos reproducir este video'),
       );
@@ -599,6 +710,7 @@ class _ClipVideoSurface extends StatelessWidget {
       return _NetworkClipVideoPlayer(
         videoUrl: clip.videoUrl!,
         isActive: isActive,
+        isMuted: isMuted,
         loading: _buildLoadingSurface(context),
         fallback: _buildFallback('No pudimos reproducir este video'),
       );
@@ -698,12 +810,14 @@ class _AssetClipVideoPlayer extends StatefulWidget {
   const _AssetClipVideoPlayer({
     required this.assetPath,
     required this.isActive,
+    required this.isMuted,
     required this.loading,
     required this.fallback,
   });
 
   final String assetPath;
   final bool isActive;
+  final bool isMuted;
   final Widget loading;
   final Widget fallback;
 
@@ -714,7 +828,6 @@ class _AssetClipVideoPlayer extends StatefulWidget {
 class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
   VideoPlayerController? _controller;
   bool _hasError = false;
-  bool _isMuted = true;
   bool _webVideoReady = false;
 
   @override
@@ -734,6 +847,9 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
     } else if (oldWidget.isActive != widget.isActive) {
       _syncPlayback();
     }
+    if (oldWidget.isMuted != widget.isMuted) {
+      _syncMuted();
+    }
   }
 
   @override
@@ -750,7 +866,7 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
     try {
       await controller.initialize();
       await controller.setLooping(true);
-      await controller.setVolume(_isMuted ? 0 : 1);
+      await controller.setVolume(widget.isMuted ? 0 : 1);
       await _syncPlayback();
       if (!mounted) return;
       setState(() {});
@@ -786,11 +902,10 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
     }
   }
 
-  void _toggleMuted() {
-    setState(() => _isMuted = !_isMuted);
+  Future<void> _syncMuted() async {
     final controller = _controller;
     if (controller != null && controller.value.isInitialized) {
-      controller.setVolume(_isMuted ? 0 : 1);
+      await controller.setVolume(widget.isMuted ? 0 : 1);
     }
   }
 
@@ -798,61 +913,41 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
   Widget build(BuildContext context) {
     if (kIsWeb) {
       if (_hasError) {
-        return _VideoPlayerShell(
-          isMuted: _isMuted,
-          onToggleMuted: _toggleMuted,
-          child: widget.fallback,
-        );
+        return widget.fallback;
       }
 
-      return _VideoPlayerShell(
-        isMuted: _isMuted,
-        onToggleMuted: _toggleMuted,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            WebAssetClipVideoView(
-              assetPath: widget.assetPath,
-              isActive: widget.isActive,
-              isMuted: _isMuted,
-              onReady: () {
-                if (mounted && !_webVideoReady) {
-                  setState(() => _webVideoReady = true);
-                }
-              },
-              onError: () {
-                if (mounted) {
-                  setState(() => _hasError = true);
-                }
-              },
-            ),
-            if (!_webVideoReady) widget.loading,
-          ],
-        ),
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          WebAssetClipVideoView(
+            assetPath: widget.assetPath,
+            isActive: widget.isActive,
+            isMuted: widget.isMuted,
+            onReady: () {
+              if (mounted && !_webVideoReady) {
+                setState(() => _webVideoReady = true);
+              }
+            },
+            onError: () {
+              if (mounted) {
+                setState(() => _hasError = true);
+              }
+            },
+          ),
+          if (!_webVideoReady) widget.loading,
+        ],
       );
     }
 
     final controller = _controller;
     if (_hasError || controller == null) {
-      return _VideoPlayerShell(
-        isMuted: _isMuted,
-        onToggleMuted: _toggleMuted,
-        child: widget.fallback,
-      );
+      return widget.fallback;
     }
     if (!controller.value.isInitialized) {
-      return _VideoPlayerShell(
-        isMuted: _isMuted,
-        onToggleMuted: _toggleMuted,
-        child: widget.loading,
-      );
+      return widget.loading;
     }
 
-    return _VideoPlayerShell(
-      isMuted: _isMuted,
-      onToggleMuted: _toggleMuted,
-      child: _VideoPlayerFrame(controller: controller),
-    );
+    return _VideoPlayerFrame(controller: controller);
   }
 }
 
@@ -860,12 +955,14 @@ class _NetworkClipVideoPlayer extends StatefulWidget {
   const _NetworkClipVideoPlayer({
     required this.videoUrl,
     required this.isActive,
+    required this.isMuted,
     required this.loading,
     required this.fallback,
   });
 
   final String videoUrl;
   final bool isActive;
+  final bool isMuted;
   final Widget loading;
   final Widget fallback;
 
@@ -877,7 +974,6 @@ class _NetworkClipVideoPlayer extends StatefulWidget {
 class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
   VideoPlayerController? _controller;
   bool _hasError = false;
-  bool _isMuted = true;
 
   @override
   void initState() {
@@ -900,6 +996,9 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
     } else if (oldWidget.isActive != widget.isActive) {
       _syncPlayback();
     }
+    if (oldWidget.isMuted != widget.isMuted) {
+      _syncMuted();
+    }
   }
 
   @override
@@ -921,7 +1020,7 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
     try {
       await controller.initialize();
       await controller.setLooping(true);
-      await controller.setVolume(_isMuted ? 0 : 1);
+      await controller.setVolume(widget.isMuted ? 0 : 1);
       await _syncPlayback();
       if (!mounted) return;
       setState(() {});
@@ -949,11 +1048,10 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
     }
   }
 
-  void _toggleMuted() {
-    setState(() => _isMuted = !_isMuted);
+  Future<void> _syncMuted() async {
     final controller = _controller;
     if (controller != null && controller.value.isInitialized) {
-      controller.setVolume(_isMuted ? 0 : 1);
+      await controller.setVolume(widget.isMuted ? 0 : 1);
     }
   }
 
@@ -961,70 +1059,13 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
   Widget build(BuildContext context) {
     final controller = _controller;
     if (_hasError || controller == null) {
-      return _VideoPlayerShell(
-        isMuted: _isMuted,
-        onToggleMuted: _toggleMuted,
-        child: widget.fallback,
-      );
+      return widget.fallback;
     }
     if (!controller.value.isInitialized) {
-      return _VideoPlayerShell(
-        isMuted: _isMuted,
-        onToggleMuted: _toggleMuted,
-        child: widget.loading,
-      );
+      return widget.loading;
     }
 
-    return _VideoPlayerShell(
-      isMuted: _isMuted,
-      onToggleMuted: _toggleMuted,
-      child: _VideoPlayerFrame(controller: controller),
-    );
-  }
-}
-
-class _VideoPlayerShell extends StatelessWidget {
-  const _VideoPlayerShell({
-    required this.child,
-    required this.isMuted,
-    required this.onToggleMuted,
-  });
-
-  final Widget child;
-  final bool isMuted;
-  final VoidCallback onToggleMuted;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        child,
-        Positioned(
-          right: 14,
-          top: 58,
-          child: Tooltip(
-            message: isMuted ? 'Activar sonido' : 'Silenciar',
-            child: Semantics(
-              button: true,
-              label: isMuted ? 'Activar sonido' : 'Silenciar video',
-              child: IconButton.filled(
-                onPressed: onToggleMuted,
-                icon: Icon(
-                  isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                ),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black.withValues(alpha: 0.42),
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(42, 42),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
+    return _VideoPlayerFrame(controller: controller);
   }
 }
 
