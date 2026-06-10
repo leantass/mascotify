@@ -92,6 +92,15 @@ La idea es construir un ecosistema real, claro, premium y util.
 - ✅ Autoplay del clip visible.
 - ✅ Scroll vertical sin flechas.
 - ✅ Fallback seguro si falla video.
+- ✅ Loader de huella giratoria.
+- ✅ Estados loading/offline/fallback claros.
+- ✅ Arquitectura para feed online curado.
+- ✅ Contrato de backend para clips online.
+- ⏳ Daily refresh backend pendiente.
+- ⏳ Integracion con Pexels/Pixabay u otra fuente autorizada pendiente.
+- ⏳ Moderacion/curaduria pendiente.
+- ⏳ Videos reales de usuarios pendiente.
+- ⏳ Reglas de atribucion/licencia pendientes para produccion.
 - Viewer preparado para videos asset.
 - Contenido educativo general.
 - Variedad de especies y categorias.

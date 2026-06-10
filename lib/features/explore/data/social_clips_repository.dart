@@ -3,20 +3,27 @@ import '../../../shared/data/app_data_source.dart';
 import '../../../shared/models/social_models.dart';
 import 'social_clips_api_client.dart';
 
-enum SocialClipsDataSource { remote, localFallback }
+enum SocialClipsDataSource { remote, onlineCurated, localFallback }
+
+enum SocialClipsFallbackReason { onlineDisabled, emptyFeed, offlineOrError }
 
 class SocialClipsLoadResult {
   const SocialClipsLoadResult({
     required this.clips,
     required this.source,
     this.message,
+    this.fallbackReason,
   });
 
   final List<ExploreClip> clips;
   final SocialClipsDataSource source;
   final String? message;
+  final SocialClipsFallbackReason? fallbackReason;
 
-  bool get isRemote => source == SocialClipsDataSource.remote;
+  bool get isRemote =>
+      source == SocialClipsDataSource.remote ||
+      source == SocialClipsDataSource.onlineCurated;
+  bool get isFallback => source == SocialClipsDataSource.localFallback;
 }
 
 abstract interface class SocialClipsRepositoryPort {
@@ -37,37 +44,58 @@ class SocialClipsRepository implements SocialClipsRepositoryPort {
   SocialClipsRepository({
     SocialClipsApiClientPort? apiClient,
     List<ExploreClip> Function()? fallbackClipsProvider,
+    bool? onlineClipsEnabled,
+    bool? onlineClipsUseBackend,
+    bool? fallbackLocalClipsEnabled,
   }) : _apiClient =
            apiClient ??
            SocialClipsApiClient(baseUrl: AppEnvironment.socialClipsApiBaseUrl),
        _fallbackClipsProvider =
-           fallbackClipsProvider ?? (() => AppData.exploreClips);
+           fallbackClipsProvider ?? (() => AppData.exploreClips),
+       _onlineClipsEnabled =
+           onlineClipsEnabled ?? AppEnvironment.onlineClipsEnabled,
+       _onlineClipsUseBackend =
+           onlineClipsUseBackend ?? AppEnvironment.onlineClipsUseBackend,
+       _fallbackLocalClipsEnabled =
+           fallbackLocalClipsEnabled ??
+           AppEnvironment.fallbackLocalClipsEnabled;
 
   final SocialClipsApiClientPort _apiClient;
   final List<ExploreClip> Function() _fallbackClipsProvider;
+  final bool _onlineClipsEnabled;
+  final bool _onlineClipsUseBackend;
+  final bool _fallbackLocalClipsEnabled;
 
   @override
   Future<SocialClipsLoadResult> fetchFeed({required String userId}) async {
+    if (!_onlineClipsEnabled || !_onlineClipsUseBackend) {
+      return _fallbackResult(
+        message: 'Clips guardados listos',
+        reason: SocialClipsFallbackReason.onlineDisabled,
+      );
+    }
+
     try {
       final remoteClips = await _apiClient.fetchFeed(userId: userId);
 
       if (remoteClips.isEmpty) {
-        return SocialClipsLoadResult(
-          clips: _fallbackClipsProvider(),
-          source: SocialClipsDataSource.localFallback,
-          message: 'Clips locales listos',
+        return _fallbackResult(
+          message: 'No pudimos actualizar clips ahora.',
+          reason: SocialClipsFallbackReason.emptyFeed,
         );
       }
 
       return SocialClipsLoadResult(
         clips: remoteClips,
-        source: SocialClipsDataSource.remote,
+        source: remoteClips.any((clip) => clip.isCurated)
+            ? SocialClipsDataSource.onlineCurated
+            : SocialClipsDataSource.remote,
+        message: 'Clips actualizados',
       );
     } catch (_) {
-      return SocialClipsLoadResult(
-        clips: _fallbackClipsProvider(),
-        source: SocialClipsDataSource.localFallback,
-        message: 'Clips locales listos',
+      return _fallbackResult(
+        message: 'Sin conexion. Te mostramos clips guardados.',
+        reason: SocialClipsFallbackReason.offlineOrError,
       );
     }
   }
@@ -131,6 +159,21 @@ class SocialClipsRepository implements SocialClipsRepositoryPort {
       userId: userId,
       draft: draft,
       uploadResult: uploadResult,
+    );
+  }
+
+  SocialClipsLoadResult _fallbackResult({
+    required String message,
+    required SocialClipsFallbackReason reason,
+  }) {
+    final fallbackClips = _fallbackLocalClipsEnabled
+        ? _fallbackClipsProvider()
+        : const <ExploreClip>[];
+    return SocialClipsLoadResult(
+      clips: fallbackClips,
+      source: SocialClipsDataSource.localFallback,
+      message: message,
+      fallbackReason: reason,
     );
   }
 }

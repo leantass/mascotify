@@ -12,6 +12,7 @@ class ExploreClip {
     this.videoAssetPath,
     this.videoUrl,
     this.thumbnailAssetPath,
+    this.thumbnailUrl,
     this.durationSeconds,
     this.authorId,
     this.authorDisplayName,
@@ -26,6 +27,20 @@ class ExploreClip {
     this.tags = const <String>[],
     this.source = 'seeded_demo',
     this.sourceLabel,
+    this.sourceType = 'seededDemo',
+    this.sourceProvider = 'Demo',
+    this.sourceUrl,
+    this.licenseLabel = 'Mascotify demo/local',
+    this.attributionText,
+    this.attributionUrl,
+    this.providerClipId,
+    this.fetchedAt,
+    this.publishedAt,
+    this.expiresAt,
+    this.isExternalContent = false,
+    this.isCurated = false,
+    this.moderationStatus = 'approved',
+    this.contentOriginLabel = 'Clip guardado',
     this.isStarterContent = false,
     this.availableForAllUsers = false,
     this.isDemoContent = true,
@@ -44,6 +59,7 @@ class ExploreClip {
   final String? videoAssetPath;
   final String? videoUrl;
   final String? thumbnailAssetPath;
+  final String? thumbnailUrl;
   final int? durationSeconds;
   final String? authorId;
   final String? authorDisplayName;
@@ -58,6 +74,20 @@ class ExploreClip {
   final List<String> tags;
   final String source;
   final String? sourceLabel;
+  final String sourceType;
+  final String sourceProvider;
+  final String? sourceUrl;
+  final String? licenseLabel;
+  final String? attributionText;
+  final String? attributionUrl;
+  final String? providerClipId;
+  final DateTime? fetchedAt;
+  final DateTime? publishedAt;
+  final DateTime? expiresAt;
+  final bool isExternalContent;
+  final bool isCurated;
+  final String moderationStatus;
+  final String contentOriginLabel;
   final bool isStarterContent;
   final bool availableForAllUsers;
   final bool isDemoContent;
@@ -84,6 +114,7 @@ class ExploreClip {
     String? videoAssetPath,
     String? videoUrl,
     String? thumbnailAssetPath,
+    String? thumbnailUrl,
     int? durationSeconds,
     String? authorId,
     String? authorDisplayName,
@@ -98,6 +129,20 @@ class ExploreClip {
     List<String>? tags,
     String? source,
     String? sourceLabel,
+    String? sourceType,
+    String? sourceProvider,
+    String? sourceUrl,
+    String? licenseLabel,
+    String? attributionText,
+    String? attributionUrl,
+    String? providerClipId,
+    DateTime? fetchedAt,
+    DateTime? publishedAt,
+    DateTime? expiresAt,
+    bool? isExternalContent,
+    bool? isCurated,
+    String? moderationStatus,
+    String? contentOriginLabel,
     bool? isStarterContent,
     bool? availableForAllUsers,
     bool? isDemoContent,
@@ -116,6 +161,7 @@ class ExploreClip {
       videoAssetPath: videoAssetPath ?? this.videoAssetPath,
       videoUrl: videoUrl ?? this.videoUrl,
       thumbnailAssetPath: thumbnailAssetPath ?? this.thumbnailAssetPath,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       durationSeconds: durationSeconds ?? this.durationSeconds,
       authorId: authorId ?? this.authorId,
       authorDisplayName: authorDisplayName ?? this.authorDisplayName,
@@ -130,6 +176,20 @@ class ExploreClip {
       tags: tags ?? this.tags,
       source: source ?? this.source,
       sourceLabel: sourceLabel ?? this.sourceLabel,
+      sourceType: sourceType ?? this.sourceType,
+      sourceProvider: sourceProvider ?? this.sourceProvider,
+      sourceUrl: sourceUrl ?? this.sourceUrl,
+      licenseLabel: licenseLabel ?? this.licenseLabel,
+      attributionText: attributionText ?? this.attributionText,
+      attributionUrl: attributionUrl ?? this.attributionUrl,
+      providerClipId: providerClipId ?? this.providerClipId,
+      fetchedAt: fetchedAt ?? this.fetchedAt,
+      publishedAt: publishedAt ?? this.publishedAt,
+      expiresAt: expiresAt ?? this.expiresAt,
+      isExternalContent: isExternalContent ?? this.isExternalContent,
+      isCurated: isCurated ?? this.isCurated,
+      moderationStatus: moderationStatus ?? this.moderationStatus,
+      contentOriginLabel: contentOriginLabel ?? this.contentOriginLabel,
       isStarterContent: isStarterContent ?? this.isStarterContent,
       availableForAllUsers: availableForAllUsers ?? this.availableForAllUsers,
       isDemoContent: isDemoContent ?? this.isDemoContent,
@@ -151,6 +211,7 @@ class ExploreClip {
       'videoAssetPath': videoAssetPath,
       'videoUrl': videoUrl,
       'thumbnailAssetPath': thumbnailAssetPath,
+      'thumbnailUrl': thumbnailUrl,
       'durationSeconds': durationSeconds,
       'authorId': authorId,
       'authorDisplayName': authorDisplayName,
@@ -165,6 +226,20 @@ class ExploreClip {
       'tags': tags,
       'source': source,
       'sourceLabel': sourceLabel,
+      'sourceType': sourceType,
+      'sourceProvider': sourceProvider,
+      'sourceUrl': sourceUrl,
+      'licenseLabel': licenseLabel,
+      'attributionText': attributionText,
+      'attributionUrl': attributionUrl,
+      'providerClipId': providerClipId,
+      'fetchedAt': fetchedAt?.toIso8601String(),
+      'publishedAt': publishedAt?.toIso8601String(),
+      'expiresAt': expiresAt?.toIso8601String(),
+      'isExternalContent': isExternalContent,
+      'isCurated': isCurated,
+      'moderationStatus': moderationStatus,
+      'contentOriginLabel': contentOriginLabel,
       'isStarterContent': isStarterContent,
       'availableForAllUsers': availableForAllUsers,
       'isDemoContent': isDemoContent,
@@ -186,6 +261,7 @@ class ExploreClip {
       videoAssetPath: json['videoAssetPath'] as String?,
       videoUrl: json['videoUrl'] as String?,
       thumbnailAssetPath: json['thumbnailAssetPath'] as String?,
+      thumbnailUrl: json['thumbnailUrl'] as String?,
       durationSeconds: json['durationSeconds'] as int?,
       authorId: json['authorId'] as String?,
       authorDisplayName: json['authorDisplayName'] as String?,
@@ -208,6 +284,27 @@ class ExploreClip {
           const <String>[],
       source: json['source'] as String? ?? 'seeded_demo',
       sourceLabel: json['sourceLabel'] as String?,
+      sourceType: json['sourceType'] as String? ?? 'seededDemo',
+      sourceProvider: json['sourceProvider'] as String? ?? 'Demo',
+      sourceUrl: json['sourceUrl'] as String?,
+      licenseLabel: json['licenseLabel'] as String? ?? 'Mascotify demo/local',
+      attributionText: json['attributionText'] as String?,
+      attributionUrl: json['attributionUrl'] as String?,
+      providerClipId: json['providerClipId'] as String?,
+      fetchedAt: json['fetchedAt'] == null
+          ? null
+          : DateTime.parse(json['fetchedAt'] as String),
+      publishedAt: json['publishedAt'] == null
+          ? null
+          : DateTime.parse(json['publishedAt'] as String),
+      expiresAt: json['expiresAt'] == null
+          ? null
+          : DateTime.parse(json['expiresAt'] as String),
+      isExternalContent: json['isExternalContent'] as bool? ?? false,
+      isCurated: json['isCurated'] as bool? ?? false,
+      moderationStatus: json['moderationStatus'] as String? ?? 'approved',
+      contentOriginLabel:
+          json['contentOriginLabel'] as String? ?? 'Clip guardado',
       isStarterContent: json['isStarterContent'] as bool? ?? false,
       availableForAllUsers: json['availableForAllUsers'] as bool? ?? false,
       isDemoContent: json['isDemoContent'] as bool? ?? true,

@@ -156,7 +156,7 @@ void main() {
 
     await _pumpViewer(tester, ClipsMockData.clips.first);
 
-    expect(find.text('Video local'), findsOneWidget);
+    expect(find.text('Clip guardado'), findsOneWidget);
     expect(find.text('Clip demo local'), findsNothing);
     expect(find.text('128 likes'), findsOneWidget);
     expect(find.text('Guardar'), findsOneWidget);
@@ -170,7 +170,7 @@ void main() {
 
     await _pumpViewer(tester, remoteClip);
 
-    expect(find.text('Video remoto'), findsOneWidget);
+    expect(find.text('Mascotify'), findsOneWidget);
     expect(find.text('Clip demo local'), findsNothing);
     expect(find.text('Backend social'), findsWidgets);
     expect(find.text('44 likes'), findsOneWidget);
@@ -202,6 +202,10 @@ ExploreClip _remoteClip() {
     comments: 8,
     shares: 2,
     sourceLabel: 'Backend social',
+    sourceType: 'userUpload',
+    sourceProvider: 'Mascotify',
+    licenseLabel: 'Mascotify user upload',
+    contentOriginLabel: 'Backend social',
     isDemoContent: false,
   );
 }

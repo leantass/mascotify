@@ -58,10 +58,10 @@ class SocialClipsApiClient implements SocialClipsApiClientPort {
       'GET',
       '/clips/feed',
       userId: userId,
-      queryParameters: const <String, String>{'limit': '30'},
+      queryParameters: const <String, String>{'limit': '30', 'source': 'all'},
     );
     final body = _decodeObject(response);
-    final items = body['items'];
+    final items = body['clips'] ?? body['items'];
 
     if (items is! List) {
       throw const FormatException('Invalid clips feed response.');
@@ -261,21 +261,66 @@ class SocialClipsApiException implements Exception {
 ExploreClip _clipFromBackend(Map<String, dynamic> json) {
   final thumbnailUrl = json['thumbnailUrl'] as String?;
   final videoUrl = json['videoUrl'] as String?;
+  final videoAssetPath = _assetPathOrNull(videoUrl, 'assets/videos/clips/');
+  final thumbnailAssetPath = _assetPathOrNull(
+    thumbnailUrl,
+    'assets/images/clips/',
+  );
+  final sourceType = json['sourceType'] as String? ?? 'userUpload';
+  final sourceProvider = json['sourceProvider'] as String? ?? 'Mascotify';
 
   return ExploreClip(
     id: json['id'] as String,
     title: json['title'] as String,
-    description: json['description'] as String,
+    description:
+        json['description'] as String? ??
+        json['caption'] as String? ??
+        'Clip de Mascotify.',
     category: json['category'] as String,
-    animalType: json['animalType'] as String,
+    animalType:
+        json['animalType'] as String? ??
+        json['species'] as String? ??
+        'Mascota',
     authorId: json['authorId'] as String?,
     cloudinaryPublicId: json['cloudinaryPublicId'] as String?,
-    thumbnailAssetPath: _assetPathOrNull(thumbnailUrl, 'assets/images/clips/'),
-    videoAssetPath: _assetPathOrNull(videoUrl, 'assets/videos/clips/'),
+    thumbnailAssetPath: thumbnailAssetPath,
+    thumbnailUrl: thumbnailAssetPath == null ? thumbnailUrl : null,
+    videoSourceType: videoAssetPath != null
+        ? 'asset'
+        : videoUrl == null
+        ? 'placeholder'
+        : 'network',
+    videoAssetPath: videoAssetPath,
+    videoUrl: videoAssetPath == null ? videoUrl : null,
+    durationSeconds: _intFromJson(json['durationSeconds']),
     likes: json['likesCount'] as int? ?? 0,
     comments: json['commentsCount'] as int? ?? 0,
     shares: json['sharesCount'] as int? ?? 0,
-    sourceLabel: 'Backend social',
+    createdAt: _dateFromJson(json['createdAt']),
+    fetchedAt: _dateFromJson(json['fetchedAt']),
+    publishedAt: _dateFromJson(json['publishedAt']),
+    expiresAt: _dateFromJson(json['expiresAt']),
+    tags:
+        (json['tags'] as List<dynamic>?)?.whereType<String>().toList() ??
+        const <String>[],
+    source: json['source'] as String? ?? 'backend_feed',
+    sourceLabel: json['sourceLabel'] as String?,
+    sourceType: sourceType,
+    sourceProvider: sourceProvider,
+    sourceUrl: json['sourceUrl'] as String?,
+    licenseLabel: json['licenseLabel'] as String?,
+    attributionText: json['attributionText'] as String?,
+    attributionUrl: json['attributionUrl'] as String?,
+    providerClipId: json['providerClipId'] as String?,
+    isExternalContent:
+        json['isExternalContent'] as bool? ?? sourceProvider != 'Mascotify',
+    isCurated: json['isCurated'] as bool? ?? sourceType != 'userUpload',
+    moderationStatus: json['moderationStatus'] as String? ?? 'published',
+    contentOriginLabel:
+        json['contentOriginLabel'] as String? ??
+        (sourceProvider == 'Mascotify'
+            ? 'Mascotify recomendado'
+            : 'Fuente: $sourceProvider'),
     isDemoContent: false,
     isLiked: json['isLiked'] as bool? ?? false,
     isFollowingAuthor: json['isFollowingAuthor'] as bool? ?? false,
@@ -362,6 +407,18 @@ int? _durationFromJson(Object? value) {
   if (value is int) return value;
   if (value is double) return value.round();
   return null;
+}
+
+int? _intFromJson(Object? value) {
+  if (value is int) return value;
+  if (value is double) return value.round();
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
+DateTime? _dateFromJson(Object? value) {
+  if (value is! String || value.trim().isEmpty) return null;
+  return DateTime.tryParse(value);
 }
 
 String? _assetPathOrNull(String? value, String prefix) {

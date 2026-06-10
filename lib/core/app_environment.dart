@@ -8,6 +8,22 @@ class AppEnvironment {
     'MASCOTIFY_CLIPS_API_BASE_URL',
     defaultValue: 'http://localhost:4000/api/v1',
   );
+  static const bool onlineClipsEnabled = bool.fromEnvironment(
+    'MASCOTIFY_ONLINE_CLIPS_ENABLED',
+    defaultValue: false,
+  );
+  static const bool onlineClipsUseBackend = bool.fromEnvironment(
+    'MASCOTIFY_ONLINE_CLIPS_USE_BACKEND',
+    defaultValue: false,
+  );
+  static const bool onlineClipsDailyRefreshEnabled = bool.fromEnvironment(
+    'MASCOTIFY_ONLINE_CLIPS_DAILY_REFRESH_ENABLED',
+    defaultValue: false,
+  );
+  static const bool fallbackLocalClipsEnabled = bool.fromEnvironment(
+    'MASCOTIFY_FALLBACK_LOCAL_CLIPS_ENABLED',
+    defaultValue: true,
+  );
   static const String qrApiBaseUrl = String.fromEnvironment(
     'MASCOTIFY_QR_API_BASE_URL',
     defaultValue: 'http://localhost:4000/api/v1',

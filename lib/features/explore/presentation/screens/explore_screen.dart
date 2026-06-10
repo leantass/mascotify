@@ -9,6 +9,7 @@ import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/data/clips_mock_data.dart';
 import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/social_models.dart';
+import '../../../../shared/widgets/paw_loading_indicator.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import 'connections_inbox_screen.dart';
@@ -39,6 +40,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
   String _selectedBreeding = _anyBreeding;
   late List<ExploreClip> _clips;
   late final SocialClipsRepositoryPort _socialClipsRepository;
+  bool _isLoadingClips = true;
+  SocialClipsDataSource _clipsSource = SocialClipsDataSource.localFallback;
+  String? _clipsStatusMessage;
 
   @override
   void initState() {
@@ -64,6 +68,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
         .length;
 
     if (_selectedSection == _ExploreSection.clips) {
+      if (_isLoadingClips) {
+        return _ExploreClipsLoadingScreen(
+          message: _clipsStatusMessage ?? 'Cargando clips...',
+          onBack: () =>
+              setState(() => _selectedSection = _ExploreSection.ecosystem),
+        );
+      }
+
       final clips = _clips.isEmpty ? AppData.exploreClips : _clips;
       if (clips.isEmpty) {
         return _ExploreEmptyClipsScreen(
@@ -75,6 +87,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
       return ExploreClipViewerScreen(
         clips: clips,
         initialClipId: clips.first.id,
+        statusMessage: _clipsStatusMessage,
+        dataSource: _clipsSource,
         onCloseInline: (updatedClips) {
           if (!mounted) return;
           setState(() {
@@ -311,11 +325,20 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 
   Future<void> _loadClipsFeed() async {
+    setState(() {
+      _isLoadingClips = true;
+      _clipsStatusMessage = 'Cargando clips...';
+    });
     final result = await _socialClipsRepository.fetchFeed(
       userId: _currentClipsUserId,
     );
     if (!mounted) return;
-    setState(() => _clips = result.clips);
+    setState(() {
+      _clips = result.clips;
+      _clipsSource = result.source;
+      _clipsStatusMessage = result.message;
+      _isLoadingClips = false;
+    });
   }
 
   Future<ExploreClip> _toggleClipLikeRemoteAware(ExploreClip clip) async {
@@ -617,9 +640,11 @@ class _ClipsHero extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              source == SocialClipsDataSource.remote
+              source == SocialClipsDataSource.onlineCurated
+                  ? 'Clips curados'
+                  : source == SocialClipsDataSource.remote
                   ? 'Clips sociales'
-                  : 'Clips con video',
+                  : 'Clips guardados',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
@@ -644,7 +669,9 @@ class _ClipsHero extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Los clips iniciales usan MP4 locales incluidos en la app y se reproducen sin depender de internet.',
+            source == SocialClipsDataSource.localFallback
+                ? 'Sin conexion o sin backend configurado: mostramos clips guardados de forma transparente.'
+                : 'Contenido online autorizado, curado y con fuente visible cuando corresponde.',
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
@@ -683,11 +710,7 @@ class _ClipsStatusPill extends StatelessWidget {
       child: Row(
         children: [
           if (isLoading) ...[
-            const SizedBox(
-              width: 14,
-              height: 14,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
+            const PawLoadingIndicator(message: null, compact: true),
             const SizedBox(width: 8),
           ],
           Expanded(
@@ -960,6 +983,15 @@ class _ExploreClipCard extends StatelessWidget {
     final hasVideo = clip.hasPlayableVideo;
     final thumbnail = clip.thumbnailAssetPath;
     final authorLabel = clip.authorDisplayName ?? clip.sourceLabel;
+    final mediaLabel = clip.isCurated
+        ? 'Contenido curado'
+        : clip.sourceType == 'userUpload'
+        ? 'Mascotify'
+        : clip.sourceType == 'licensedStock'
+        ? 'Video licenciado'
+        : clip.isDemoContent
+        ? 'Clip guardado'
+        : 'Mascotify recomendado';
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -973,10 +1005,12 @@ class _ExploreClipCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  if (thumbnail == null)
+                  if (thumbnail == null && clip.thumbnailUrl == null)
                     const _ClipPlaceholder()
+                  else if (thumbnail != null)
+                    Image.asset(thumbnail, fit: BoxFit.cover)
                   else
-                    Image.asset(thumbnail, fit: BoxFit.cover),
+                    Image.network(clip.thumbnailUrl!, fit: BoxFit.cover),
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -1007,9 +1041,7 @@ class _ExploreClipCard extends StatelessWidget {
                   Positioned(
                     left: 14,
                     top: 14,
-                    child: _VideoBadge(
-                      label: hasVideo ? 'Video local' : 'Demo',
-                    ),
+                    child: _VideoBadge(label: hasVideo ? mediaLabel : 'Demo'),
                   ),
                   Positioned(
                     left: 14,
@@ -2109,6 +2141,44 @@ class _ExploreEmptyClipsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 18),
                   ElevatedButton.icon(
+                    onPressed: onBack,
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    label: const Text('Volver'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExploreClipsLoadingScreen extends StatelessWidget {
+  const _ExploreClipsLoadingScreen({
+    required this.message,
+    required this.onBack,
+  });
+
+  final String message;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: ResponsivePageBody(
+          maxWidth: 520,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PawLoadingIndicator(message: message),
+                  const SizedBox(height: 24),
+                  TextButton.icon(
                     onPressed: onBack,
                     icon: const Icon(Icons.arrow_back_rounded),
                     label: const Text('Volver'),

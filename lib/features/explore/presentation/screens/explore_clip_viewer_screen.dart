@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../../features/explore/data/social_clips_repository.dart';
 import '../../../../shared/models/social_models.dart';
+import '../../../../shared/widgets/paw_loading_indicator.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import 'clip_web_asset_video_view.dart'
@@ -17,6 +19,8 @@ class ExploreClipViewerScreen extends StatefulWidget {
     this.onShare,
     this.onToggleFollow,
     this.onCloseInline,
+    this.statusMessage,
+    this.dataSource = SocialClipsDataSource.localFallback,
   });
 
   final List<ExploreClip> clips;
@@ -25,6 +29,8 @@ class ExploreClipViewerScreen extends StatefulWidget {
   final Future<ExploreClip> Function(ExploreClip clip)? onShare;
   final Future<ExploreClip> Function(ExploreClip clip)? onToggleFollow;
   final ValueChanged<List<ExploreClip>>? onCloseInline;
+  final String? statusMessage;
+  final SocialClipsDataSource dataSource;
 
   @override
   State<ExploreClipViewerScreen> createState() =>
@@ -103,6 +109,8 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
                     clip: clip,
                     isActive: index == _currentIndex,
                     isMuted: _isMuted,
+                    statusMessage: widget.statusMessage,
+                    dataSource: widget.dataSource,
                     onSwipeNext: () => _goToClip(index + 1),
                     onSwipePrevious: () => _goToClip(index - 1),
                     onToggleLike: () => _toggleClipLike(clip.id),
@@ -365,6 +373,8 @@ class _ViewerClipPage extends StatelessWidget {
     required this.clip,
     required this.isActive,
     required this.isMuted,
+    required this.statusMessage,
+    required this.dataSource,
     required this.onSwipeNext,
     required this.onSwipePrevious,
     required this.onToggleLike,
@@ -377,6 +387,8 @@ class _ViewerClipPage extends StatelessWidget {
   final ExploreClip clip;
   final bool isActive;
   final bool isMuted;
+  final String? statusMessage;
+  final SocialClipsDataSource dataSource;
   final VoidCallback onSwipeNext;
   final VoidCallback onSwipePrevious;
   final VoidCallback onToggleLike;
@@ -389,16 +401,15 @@ class _ViewerClipPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasVideo = clip.hasPlayableVideo || !clip.isDemoContent;
     final thumbnail = clip.thumbnailAssetPath;
-    final topMediaLabel = clip.videoSourceType == 'asset'
-        ? 'Video local'
-        : clip.videoSourceType == 'network'
-        ? 'Video remoto'
-        : clip.isDemoContent
-        ? 'Demo'
-        : 'Video remoto';
+    final topMediaLabel = _mediaLabelFor(clip, dataSource);
+    final originLabel = _originLabelFor(clip);
+    final licenseLabel = _licenseLabelFor(clip);
     final creatorLabel =
         clip.authorDisplayName ??
-        (clip.authorId == null ? clip.sourceLabel : 'Creador ${clip.authorId}');
+        (clip.authorId == null ? originLabel : 'Creador ${clip.authorId}');
+    final fallbackNotice = dataSource == SocialClipsDataSource.localFallback
+        ? statusMessage
+        : null;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
@@ -443,13 +454,20 @@ class _ViewerClipPage extends StatelessWidget {
                 runSpacing: 7,
                 children: [
                   _ViewerBadge(label: topMediaLabel),
-                  if (clip.sourceLabel != null)
-                    _ViewerBadge(label: clip.sourceLabel!),
+                  if (originLabel != null) _ViewerBadge(label: originLabel),
+                  if (licenseLabel != null) _ViewerBadge(label: licenseLabel),
                   _ViewerBadge(label: clip.category),
                   _ViewerBadge(label: clip.animalType),
                 ],
               ),
             ),
+            if (fallbackNotice != null && fallbackNotice.trim().isNotEmpty)
+              Positioned(
+                left: 18,
+                right: 86,
+                top: 146,
+                child: _ViewerNotice(label: fallbackNotice),
+              ),
             Positioned(
               right: 10,
               bottom: 24,
@@ -574,6 +592,40 @@ class _ViewerClipPage extends StatelessWidget {
   }
 }
 
+String _mediaLabelFor(ExploreClip clip, SocialClipsDataSource dataSource) {
+  if (dataSource == SocialClipsDataSource.onlineCurated || clip.isCurated) {
+    return 'Contenido curado';
+  }
+  if (clip.sourceType == 'userUpload') return 'Mascotify';
+  if (clip.sourceType == 'licensedStock') return 'Video licenciado';
+  if (clip.sourceType == 'sponsor') return 'Sponsor';
+  if (clip.isDemoContent || clip.sourceType == 'seededDemo') {
+    return dataSource == SocialClipsDataSource.localFallback
+        ? 'Clip guardado'
+        : 'Mascotify recomendado';
+  }
+  return 'Mascotify recomendado';
+}
+
+String? _originLabelFor(ExploreClip clip) {
+  final contentOrigin = clip.contentOriginLabel.trim();
+  if (contentOrigin.isNotEmpty && contentOrigin != 'Clip guardado') {
+    return contentOrigin;
+  }
+
+  final provider = clip.sourceProvider.trim();
+  if (provider.isNotEmpty && provider != 'Demo') return 'Fuente: $provider';
+
+  return clip.sourceLabel;
+}
+
+String? _licenseLabelFor(ExploreClip clip) {
+  final license = clip.licenseLabel?.trim();
+  if (license == null || license.isEmpty) return null;
+  if (license == 'Mascotify demo/local') return null;
+  return license;
+}
+
 ButtonStyle _viewerNavigationButtonStyle() {
   return TextButton.styleFrom(
     backgroundColor: Colors.black.withValues(alpha: 0.34),
@@ -642,6 +694,33 @@ class _ViewerPlaceholder extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _ViewerNotice extends StatelessWidget {
+  const _ViewerNotice({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.42),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+      ),
+      child: Text(
+        label,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }
@@ -720,13 +799,13 @@ class _ClipVideoSurface extends StatelessWidget {
   }
 
   Widget _buildFallback(String message) {
-    if (thumbnail == null) {
+    if (thumbnail == null && clip.thumbnailUrl == null) {
       return _ViewerPlaceholder(message: message);
     }
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(thumbnail!, fit: BoxFit.cover),
+        _ClipThumbnailImage(clip: clip, thumbnailAssetPath: thumbnail),
         Align(
           alignment: Alignment.center,
           child: Container(
@@ -750,11 +829,12 @@ class _ClipVideoSurface extends StatelessWidget {
 
   Widget _buildLoadingSurface(BuildContext context) {
     final thumbnailPath = thumbnail;
+    final thumbnailUrl = clip.thumbnailUrl;
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (thumbnailPath != null)
-          Image.asset(thumbnailPath, fit: BoxFit.cover)
+        if (thumbnailPath != null || thumbnailUrl != null)
+          _ClipThumbnailImage(clip: clip, thumbnailAssetPath: thumbnailPath)
         else
           const DecoratedBox(
             decoration: BoxDecoration(
@@ -775,34 +855,44 @@ class _ClipVideoSurface extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.34),
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white.withValues(alpha: 0.92),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Cargando video',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
+            child: PawLoadingIndicator(
+              message: 'Cargando video...',
+              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primaryDeep.withValues(alpha: 0.82),
+              compact: true,
             ),
           ),
         ),
       ],
     );
+  }
+}
+
+class _ClipThumbnailImage extends StatelessWidget {
+  const _ClipThumbnailImage({
+    required this.clip,
+    required this.thumbnailAssetPath,
+  });
+
+  final ExploreClip clip;
+  final String? thumbnailAssetPath;
+
+  @override
+  Widget build(BuildContext context) {
+    final assetPath = thumbnailAssetPath;
+    if (assetPath != null) {
+      return Image.asset(assetPath, fit: BoxFit.cover);
+    }
+
+    final url = clip.thumbnailUrl;
+    if (url != null && url.trim().isNotEmpty) {
+      return Image.network(url, fit: BoxFit.cover);
+    }
+
+    return const SizedBox.shrink();
   }
 }
 

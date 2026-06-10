@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mascotify/features/explore/data/social_clips_api_client.dart';
@@ -6,22 +8,31 @@ import 'package:mascotify/features/explore/presentation/screens/explore_screen.d
 import 'package:mascotify/shared/data/app_data_source.dart';
 import 'package:mascotify/shared/data/clips_mock_data.dart';
 import 'package:mascotify/shared/models/social_models.dart';
+import 'package:mascotify/shared/widgets/paw_loading_indicator.dart';
 
 import '../../test_helpers.dart';
 
 class _FakeSocialClipsRepository implements SocialClipsRepositoryPort {
   _FakeSocialClipsRepository.remote(this.remoteClips)
     : shouldFailFetch = false,
-      source = SocialClipsDataSource.remote;
+      source = SocialClipsDataSource.remote,
+      completer = null;
 
   _FakeSocialClipsRepository.failing()
     : remoteClips = const <ExploreClip>[],
       shouldFailFetch = true,
-      source = SocialClipsDataSource.localFallback;
+      source = SocialClipsDataSource.localFallback,
+      completer = null;
+
+  _FakeSocialClipsRepository.delayed(this.completer)
+    : remoteClips = const <ExploreClip>[],
+      shouldFailFetch = false,
+      source = SocialClipsDataSource.remote;
 
   final List<ExploreClip> remoteClips;
   final bool shouldFailFetch;
   final SocialClipsDataSource source;
+  final Completer<SocialClipsLoadResult>? completer;
   int likeCalls = 0;
   int unlikeCalls = 0;
   int shareCalls = 0;
@@ -35,9 +46,12 @@ class _FakeSocialClipsRepository implements SocialClipsRepositoryPort {
       return SocialClipsLoadResult(
         clips: ClipsMockData.clips,
         source: SocialClipsDataSource.localFallback,
-        message: 'Clips locales listos',
+        message: 'Sin conexion. Te mostramos clips guardados.',
+        fallbackReason: SocialClipsFallbackReason.offlineOrError,
       );
     }
+    final delayedResult = completer;
+    if (delayedResult != null) return delayedResult.future;
 
     return SocialClipsLoadResult(clips: remoteClips, source: source);
   }
@@ -108,6 +122,9 @@ void main() {
 
     expect(find.byType(PageView), findsOneWidget);
     expect(find.text('Rescate remoto con final feliz'), findsOneWidget);
+    expect(find.text('Fuente: Pexels'), findsOneWidget);
+    expect(find.text('Pexels License'), findsOneWidget);
+    expect(find.text('Comunidad inicial'), findsNothing);
     expect(find.text('El gato que se adueno del sillon'), findsNothing);
   });
 
@@ -120,6 +137,37 @@ void main() {
 
     expect(find.byType(PageView), findsOneWidget);
     expect(find.text('El gato que se adueno del sillon'), findsOneWidget);
+    expect(
+      find.text('Sin conexion. Te mostramos clips guardados.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Clips muestra PawLoadingIndicator durante carga inicial', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    final completer = Completer<SocialClipsLoadResult>();
+    final repository = _FakeSocialClipsRepository.delayed(completer);
+
+    await tester.pumpWidget(
+      buildTestApp(ExploreScreen(socialClipsRepository: repository)),
+    );
+    await tester.pump();
+    await tester.tap(find.text('Clips'));
+    await tester.pump();
+
+    expect(find.byType(PawLoadingIndicator), findsOneWidget);
+    expect(find.text('Cargando clips...'), findsOneWidget);
+
+    completer.complete(
+      SocialClipsLoadResult(
+        clips: _remoteClips,
+        source: SocialClipsDataSource.remote,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(PageView), findsOneWidget);
   });
 
   testWidgets('like usa endpoint remoto cuando hay backend', (tester) async {
@@ -206,6 +254,12 @@ final _remoteClips = <ExploreClip>[
     likes: 10,
     comments: 2,
     sourceLabel: 'Backend social',
+    sourceType: 'licensedStock',
+    sourceProvider: 'Pexels',
+    licenseLabel: 'Pexels License',
+    isExternalContent: true,
+    isCurated: true,
+    contentOriginLabel: 'Fuente: Pexels',
     isDemoContent: false,
   ),
   const ExploreClip(
@@ -218,6 +272,12 @@ final _remoteClips = <ExploreClip>[
     likes: 3,
     comments: 1,
     sourceLabel: 'Backend social',
+    sourceType: 'licensedStock',
+    sourceProvider: 'Pixabay',
+    licenseLabel: 'Pixabay Content License',
+    isExternalContent: true,
+    isCurated: true,
+    contentOriginLabel: 'Fuente: Pixabay',
     isDemoContent: false,
   ),
 ];

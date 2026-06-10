@@ -30,7 +30,7 @@ void main() {
 
     expect(find.byType(PageView), findsOneWidget);
     expect(find.text('El gato que se adueno del sillon'), findsOneWidget);
-    expect(find.text('Video local'), findsOneWidget);
+    expect(find.text('Clip guardado'), findsOneWidget);
   });
 
   testWidgets('scroll vertical cambia al siguiente clip', (tester) async {

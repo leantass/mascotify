@@ -56,6 +56,10 @@ Para produccion, estos assets deben reemplazarse por videos reales con permiso e
 
 El contenido demo entra por `ClipsMockData.clips`, `AppData.exploreClips` y el fallback de `SocialClipsRepository`.
 
+Desde la arquitectura de Clips online, estos clips demo/locales quedan como fallback offline o modo local. La experiencia principal futura debe venir del backend de Mascotify con contenido autorizado, fuente visible, licencia/atribucion cuando aplique y sin scraping de TikTok, Instagram, YouTube u otras redes.
+
+Referencia: `docs/product/online_clips_feed_strategy.md`.
+
 Para desactivarlo:
 
 1. Cambiar el proveedor de fallback de `SocialClipsRepository`.

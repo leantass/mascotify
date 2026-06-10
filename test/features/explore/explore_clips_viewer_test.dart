@@ -147,11 +147,11 @@ void main() {
     expect(find.byType(PageView), findsOneWidget);
     expect(find.text('Clip anterior'), findsNothing);
     expect(find.text('Siguiente clip'), findsNothing);
-    expect(find.text('Video local'), findsOneWidget);
+    expect(find.text('Clip guardado'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('clip demo con asset muestra estado de video local', (
+  testWidgets('clip demo con asset muestra estado de clip guardado', (
     tester,
   ) async {
     setDesktopViewport(tester);
@@ -166,7 +166,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Video local'), findsOneWidget);
+    expect(find.text('Clip guardado'), findsOneWidget);
     expect(find.text('Clip demo local'), findsNothing);
     expect(find.byIcon(Icons.volume_off_rounded), findsOneWidget);
   });
@@ -197,7 +197,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Demo'), findsOneWidget);
+    expect(find.text('Clip guardado'), findsOneWidget);
     expect(find.text('Clip demo local'), findsOneWidget);
     expect(find.text('Fallback demo animado'), findsOneWidget);
   });
