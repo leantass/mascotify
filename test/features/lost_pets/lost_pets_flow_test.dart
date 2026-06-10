@@ -4,7 +4,6 @@ import 'package:mascotify/features/explore/presentation/screens/explore_screen.d
 import 'package:mascotify/features/pets/presentation/screens/pets_screen.dart';
 import 'package:mascotify/shared/data/app_data_source.dart';
 import 'package:mascotify/shared/models/account_identity_models.dart';
-import 'package:mascotify/theme/app_colors.dart';
 
 import '../../test_helpers.dart';
 
@@ -306,7 +305,9 @@ void main() {
     _expectNoLayoutException(tester);
   });
 
-  testWidgets('Clips muestra Videos cortos con color oscuro', (tester) async {
+  testWidgets('Clips abre visor vertical sin pantalla intermedia', (
+    tester,
+  ) async {
     _setMobileViewport(tester, const Size(390, 844));
     await buildPersistentTestAppSession();
 
@@ -314,12 +315,8 @@ void main() {
     await tester.pumpAndSettle();
     await _tapText(tester, 'Clips');
 
-    final textWidget = tester.widget<Text>(
-      find.text(
-        'Videos cortos de animales para descubrir, aprender y sonreir.',
-      ),
-    );
-    expect(textWidget.style?.color, AppColors.textPrimary);
+    expect(find.byType(PageView), findsOneWidget);
+    expect(find.text('El gato que se adueno del sillon'), findsOneWidget);
     _expectNoLayoutException(tester);
   });
 }

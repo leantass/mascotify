@@ -31,19 +31,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
   static const _anySex = 'Cualquiera';
   static const _allLocations = 'Todas';
   static const _anyBreeding = 'Indistinto';
-  static const _allClipCategories = 'Todos';
 
   _ExploreSection _selectedSection = _ExploreSection.ecosystem;
   String _selectedSpecies = _allSpecies;
   String _selectedSex = _anySex;
   String _selectedLocation = _allLocations;
   String _selectedBreeding = _anyBreeding;
-  String _selectedClipCategory = _allClipCategories;
   late List<ExploreClip> _clips;
   late final SocialClipsRepositoryPort _socialClipsRepository;
-  SocialClipsDataSource _clipsSource = SocialClipsDataSource.localFallback;
-  bool _isLoadingClips = false;
-  String? _clipsStatusMessage = 'Mostrando clips demo locales';
 
   @override
   void initState() {
@@ -69,41 +64,33 @@ class _ExploreScreenState extends State<ExploreScreen> {
         .length;
 
     if (_selectedSection == _ExploreSection.clips) {
-      return Scaffold(
-        body: SafeArea(
-          child: ResponsivePageBody(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-              children: [
-                _ExploreSectionSelector(
-                  selectedSection: _selectedSection,
-                  onChanged: (section) =>
-                      setState(() => _selectedSection = section),
-                ),
-                const SizedBox(height: 16),
-                _ExploreClipsFeed(
-                  clips: _filteredClips(),
-                  categories: _clipCategoriesFor(_clips),
-                  selectedCategory: _selectedClipCategory,
-                  source: _clipsSource,
-                  isLoading: _isLoadingClips,
-                  statusMessage: _clipsStatusMessage,
-                  onCategoryChanged: (category) =>
-                      setState(() => _selectedClipCategory = category),
-                  onShowAll: () => setState(
-                    () => _selectedClipCategory = _allClipCategories,
-                  ),
-                  onToggleLike: _toggleClipLike,
-                  onToggleSave: _toggleClipSave,
-                  onShare: _shareClip,
-                  onToggleFollow: _toggleClipFollow,
-                  onUploadClip: _openUploadClipDialog,
-                  onOpenClip: _openClipViewer,
-                ),
-              ],
-            ),
-          ),
-        ),
+      final clips = _clips.isEmpty ? AppData.exploreClips : _clips;
+      if (clips.isEmpty) {
+        return _ExploreEmptyClipsScreen(
+          onBack: () =>
+              setState(() => _selectedSection = _ExploreSection.ecosystem),
+        );
+      }
+
+      return ExploreClipViewerScreen(
+        clips: clips,
+        initialClipId: clips.first.id,
+        onCloseInline: (updatedClips) {
+          if (!mounted) return;
+          setState(() {
+            _clips = updatedClips;
+            _selectedSection = _ExploreSection.ecosystem;
+          });
+        },
+        onToggleLike: _toggleClipLikeRemoteAware,
+        onShare: (clip) async {
+          await _shareClip(clip.id);
+          return _clipById(clip.id) ?? clip.copyWith(shares: clip.shares + 1);
+        },
+        onToggleFollow: (clip) async {
+          await _toggleClipFollow(clip.id);
+          return _clipById(clip.id) ?? clip;
+        },
       );
     }
 
@@ -323,48 +310,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
         .replaceAll('ú', 'u');
   }
 
-  List<ExploreClip> _filteredClips() {
-    if (_selectedClipCategory == _allClipCategories) return _clips;
-
-    return _clips
-        .where((clip) => clip.category == _selectedClipCategory)
-        .toList();
-  }
-
-  List<String> _clipCategoriesFor(List<ExploreClip> clips) {
-    final categories = <String>{
-      ...ClipsMockData.categories.where(
-        (category) => category != _allClipCategories,
-      ),
-      ...clips.map((clip) => clip.category),
-    }.toList();
-    return <String>[_allClipCategories, ...categories];
-  }
-
   Future<void> _loadClipsFeed() async {
-    setState(() => _isLoadingClips = true);
     final result = await _socialClipsRepository.fetchFeed(
       userId: _currentClipsUserId,
     );
     if (!mounted) return;
-    setState(() {
-      _clips = result.clips;
-      _clipsSource = result.source;
-      _clipsStatusMessage = result.message;
-      _isLoadingClips = false;
-      if (_selectedClipCategory != _allClipCategories &&
-          !_clips.any((clip) => clip.category == _selectedClipCategory)) {
-        _selectedClipCategory = _allClipCategories;
-      }
-    });
-  }
-
-  Future<void> _toggleClipLike(String clipId) async {
-    final clip = _clipById(clipId);
-    if (clip == null) return;
-    final updatedClip = await _toggleClipLikeRemoteAware(clip);
-    if (!mounted) return;
-    setState(() => _replaceClip(updatedClip));
+    setState(() => _clips = result.clips);
   }
 
   Future<ExploreClip> _toggleClipLikeRemoteAware(ExploreClip clip) async {
@@ -391,15 +342,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
       isLiked: nextLiked,
       likes: nextLiked ? clip.likes + 1 : clip.likes - 1,
     );
-  }
-
-  void _toggleClipSave(String clipId) {
-    setState(() {
-      _clips = _clips.map((clip) {
-        if (clip.id != clipId) return clip;
-        return clip.copyWith(isSaved: !clip.isSaved);
-      }).toList();
-    });
   }
 
   Future<void> _shareClip(String clipId) async {
@@ -437,47 +379,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
         );
       }
     } catch (_) {}
-  }
-
-  Future<void> _openClipViewer(ExploreClip clip) async {
-    final updatedClips = await Navigator.of(context).push<List<ExploreClip>>(
-      MaterialPageRoute(
-        builder: (_) => ExploreClipViewerScreen(
-          clips: _clips,
-          initialClipId: clip.id,
-          onToggleLike: _toggleClipLikeRemoteAware,
-          onShare: (clip) async {
-            await _shareClip(clip.id);
-            return _clipById(clip.id) ?? clip.copyWith(shares: clip.shares + 1);
-          },
-          onToggleFollow: (clip) async {
-            await _toggleClipFollow(clip.id);
-            return _clipById(clip.id) ?? clip;
-          },
-        ),
-      ),
-    );
-
-    if (!mounted || updatedClips == null) return;
-    setState(() => _clips = updatedClips);
-  }
-
-  Future<void> _openUploadClipDialog() async {
-    final uploadedClip = await showDialog<ExploreClip>(
-      context: context,
-      builder: (_) => _UploadClipDialog(
-        userId: _currentClipsUserId,
-        repository: _socialClipsRepository,
-      ),
-    );
-
-    if (!mounted || uploadedClip == null) return;
-    setState(() {
-      _clips = [uploadedClip, ..._clips];
-      _clipsSource = SocialClipsDataSource.remote;
-      _clipsStatusMessage = null;
-      _selectedClipCategory = _allClipCategories;
-    });
   }
 
   String get _currentClipsUserId {
@@ -594,6 +495,9 @@ class _SectionButton extends StatelessWidget {
   }
 }
 
+// Secondary list kept for the future upload/management flow; Clips entry opens
+// the vertical viewer directly.
+// ignore: unused_element
 class _ExploreClipsFeed extends StatelessWidget {
   const _ExploreClipsFeed({
     required this.clips,
@@ -715,7 +619,7 @@ class _ClipsHero extends StatelessWidget {
             child: Text(
               source == SocialClipsDataSource.remote
                   ? 'Clips sociales'
-                  : 'Clips demo locales',
+                  : 'Clips con video',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
@@ -733,14 +637,14 @@ class _ClipsHero extends StatelessWidget {
           ],
           const SizedBox(height: 14),
           Text(
-            'Videos cortos de animales para descubrir, aprender y sonreir.',
+            'Feed vertical de videos reales para descubrir mascotas, cuidados y comunidad.',
             style: Theme.of(
               context,
             ).textTheme.headlineSmall?.copyWith(color: AppColors.textPrimary),
           ),
           const SizedBox(height: 8),
           Text(
-            'Feed preparado para videos propios: si todavia no hay asset de video, Mascotify muestra un placeholder seguro sin depender de internet.',
+            'Los clips iniciales usan MP4 locales incluidos en la app y se reproducen sin depender de internet.',
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
@@ -1053,7 +957,7 @@ class _ExploreClipCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasVideo = clip.videoAssetPath != null;
+    final hasVideo = clip.hasPlayableVideo;
     final thumbnail = clip.thumbnailAssetPath;
     final authorLabel = clip.authorDisplayName ?? clip.sourceLabel;
 
@@ -2154,6 +2058,65 @@ class _SavedTag extends StatelessWidget {
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           color: AppColors.textPrimary,
           fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _ExploreEmptyClipsScreen extends StatelessWidget {
+  const _ExploreEmptyClipsScreen({required this.onBack});
+
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: ResponsivePageBody(
+          maxWidth: 520,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.accentSoft,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: const Icon(
+                      Icons.play_disabled_rounded,
+                      color: AppColors.accentDeep,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No hay clips para reproducir',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Volver a Explorar permite seguir usando la app mientras se carga el feed.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  ElevatedButton.icon(
+                    onPressed: onBack,
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    label: const Text('Volver'),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

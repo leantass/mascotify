@@ -55,7 +55,7 @@ class SocialClipsRepository implements SocialClipsRepositoryPort {
         return SocialClipsLoadResult(
           clips: _fallbackClipsProvider(),
           source: SocialClipsDataSource.localFallback,
-          message: 'Mostrando clips demo locales',
+          message: 'Clips locales listos',
         );
       }
 
@@ -67,7 +67,7 @@ class SocialClipsRepository implements SocialClipsRepositoryPort {
       return SocialClipsLoadResult(
         clips: _fallbackClipsProvider(),
         source: SocialClipsDataSource.localFallback,
-        message: 'Mostrando clips demo locales',
+        message: 'Clips locales listos',
       );
     }
   }

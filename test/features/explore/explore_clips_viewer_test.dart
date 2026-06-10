@@ -4,7 +4,7 @@ import 'package:mascotify/features/explore/presentation/screens/explore_clip_vie
 import 'package:mascotify/features/explore/presentation/screens/explore_screen.dart';
 import 'package:mascotify/shared/data/app_data_source.dart';
 import 'package:mascotify/shared/data/clips_mock_data.dart';
-import 'package:mascotify/theme/app_colors.dart';
+import 'package:mascotify/shared/models/social_models.dart';
 
 import '../../test_helpers.dart';
 
@@ -19,8 +19,8 @@ void main() {
     await tester.pumpWidget(buildTestApp(const ExploreScreen()));
     await _openFirstClipFromExplore(tester);
 
-    expect(find.text('Visor de clips'), findsOneWidget);
-    expect(find.text('Volver a Clips'), findsOneWidget);
+    expect(find.byType(PageView), findsOneWidget);
+    expect(find.text('Volver'), findsOneWidget);
   });
 
   testWidgets('el visor muestra datos del clip seleccionado', (tester) async {
@@ -72,7 +72,9 @@ void main() {
     expect(find.text('128 likes'), findsOneWidget);
   });
 
-  testWidgets('navegar al siguiente clip muestra otro clip', (tester) async {
+  testWidgets('scroll vertical al siguiente clip muestra otro clip', (
+    tester,
+  ) async {
     setDesktopViewport(tester);
 
     await tester.pumpWidget(
@@ -84,7 +86,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Siguiente clip'));
+    await tester.drag(find.byType(PageView), const Offset(0, -700));
     await tester.pumpAndSettle();
 
     expect(find.text('Perro aprende a usar su QR'), findsOneWidget);
@@ -92,7 +94,7 @@ void main() {
     expect(find.text('2/${ClipsMockData.clips.length}'), findsOneWidget);
   });
 
-  testWidgets('botones de navegacion del visor usan estilo principal', (
+  testWidgets('el visor usa PageView vertical y no muestra flechas', (
     tester,
   ) async {
     setDesktopViewport(tester);
@@ -107,36 +109,16 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.widgetWithText(ElevatedButton, 'Volver a Clips'),
-      findsOneWidget,
-    );
-    expect(
-      find.widgetWithText(ElevatedButton, 'Clip anterior'),
-      findsOneWidget,
-    );
-    expect(
-      find.widgetWithText(ElevatedButton, 'Siguiente clip'),
-      findsOneWidget,
-    );
+    expect(find.widgetWithText(TextButton, 'Volver'), findsOneWidget);
+    final pageView = tester.widget<PageView>(find.byType(PageView));
+    expect(pageView.scrollDirection, Axis.vertical);
+    expect(find.text('Clip anterior'), findsNothing);
+    expect(find.text('Siguiente clip'), findsNothing);
     expect(find.widgetWithText(OutlinedButton, 'Volver a Clips'), findsNothing);
     expect(find.widgetWithText(OutlinedButton, 'Clip anterior'), findsNothing);
     expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.keyboard_arrow_up_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsOneWidget);
-
-    final previousButton = tester.widget<ElevatedButton>(
-      find.widgetWithText(ElevatedButton, 'Clip anterior'),
-    );
-    final previousBackground = previousButton.style?.backgroundColor?.resolve(
-      <WidgetState>{},
-    );
-    final previousForeground = previousButton.style?.foregroundColor?.resolve(
-      <WidgetState>{},
-    );
-
-    expect(previousBackground, AppColors.accent);
-    expect(previousForeground, Colors.white);
+    expect(find.byIcon(Icons.keyboard_arrow_up_rounded), findsNothing);
+    expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsNothing);
   });
 
   testWidgets('volver desde el visor retorna a Explorar Clips', (tester) async {
@@ -144,11 +126,11 @@ void main() {
 
     await tester.pumpWidget(buildTestApp(const ExploreScreen()));
     await _openFirstClipFromExplore(tester);
-    await tester.tap(find.text('Volver a Clips'));
+    await tester.tap(find.text('Volver'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Clips demo locales'), findsOneWidget);
-    expect(find.text('Visor de clips'), findsNothing);
+    expect(find.text('Ecosistema social'), findsOneWidget);
+    expect(find.byType(PageView), findsNothing);
   });
 
   testWidgets('viewport mobile no crashea y muestra controles principales', (
@@ -162,14 +144,14 @@ void main() {
     await tester.pumpWidget(buildTestApp(const ExploreScreen()));
     await _openFirstClipFromExplore(tester);
 
-    expect(find.text('Visor de clips'), findsOneWidget);
-    expect(find.text('Clip anterior'), findsOneWidget);
-    expect(find.text('Siguiente clip'), findsOneWidget);
-    expect(find.text('Clip demo local'), findsOneWidget);
+    expect(find.byType(PageView), findsOneWidget);
+    expect(find.text('Clip anterior'), findsNothing);
+    expect(find.text('Siguiente clip'), findsNothing);
+    expect(find.text('Video local'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('clip sin videoAssetPath muestra placeholder seguro', (
+  testWidgets('clip demo con asset muestra estado de video local', (
     tester,
   ) async {
     setDesktopViewport(tester);
@@ -184,9 +166,40 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(find.text('Video local'), findsOneWidget);
+    expect(find.text('Clip demo local'), findsNothing);
+    expect(find.byIcon(Icons.volume_off_rounded), findsOneWidget);
+  });
+
+  testWidgets('clip sin videoAssetPath muestra fallback seguro', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+
+    const fallbackClip = ExploreClip(
+      id: 'fallback-clip',
+      title: 'Clip demo sin archivo',
+      description: 'Fallback visual seguro para un clip demo local.',
+      category: 'Consejos',
+      animalType: 'Perro',
+      likes: 4,
+      comments: 0,
+      videoSourceType: 'placeholder',
+    );
+
+    await tester.pumpWidget(
+      buildTestApp(
+        const ExploreClipViewerScreen(
+          clips: <ExploreClip>[fallbackClip],
+          initialClipId: 'fallback-clip',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
     expect(find.text('Demo'), findsOneWidget);
     expect(find.text('Clip demo local'), findsOneWidget);
-    expect(find.byIcon(Icons.pets_rounded), findsOneWidget);
+    expect(find.text('Fallback demo animado'), findsOneWidget);
   });
 
   testWidgets('clip inexistente muestra estado seguro', (tester) async {
@@ -209,9 +222,5 @@ void main() {
 
 Future<void> _openFirstClipFromExplore(WidgetTester tester) async {
   await tester.tap(find.text('Clips'));
-  await tester.pumpAndSettle();
-  await tester.drag(find.byType(ListView), const Offset(0, -520));
-  await tester.pumpAndSettle();
-  await tester.tap(find.text('El gato que se adueno del sillon'));
   await tester.pumpAndSettle();
 }

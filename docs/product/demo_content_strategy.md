@@ -9,7 +9,7 @@ La estrategia no busca fingir usuarios reales. Busca mostrar contenido inicial c
 ## Marcado interno
 
 - Cuentas: `isDemoAccount: true`, `source: seeded_demo`, `seededAt`.
-- Clips: `isDemoContent: true`, `source: seeded_demo`, `sourceLabel: Comunidad inicial`.
+- Clips: `isDemoContent: true`, `isStarterContent: true`, `availableForAllUsers: true`, `source: seeded_demo`, `sourceLabel: Comunidad inicial`.
 - Mascotas demo: `source: seeded_demo` y asociacion por `ownerDemoAccountId`.
 
 En UI pueden presentarse como comunidad inicial, contenido destacado, creadores recomendados, historias Mascotify o perfiles de ejemplo en modo demo.
@@ -35,7 +35,22 @@ No se usan identidades reales, fotos de terceros, ubicaciones exactas, telefonos
 
 ## Assets y licencias
 
-No se descargan videos de internet. No se commitean videos pesados. Los clips usan placeholders seguros y `demoVideoKey` para reemplazo futuro por assets propios o licenciados.
+No se descargan videos de internet. No se commitean videos pesados. Los clips demo usan videos locales generados para Mascotify dentro de `assets/videos/clips/`, marcados como contenido demo/seeded y sin personas, identidades reales ni material de terceros.
+
+Los videos actuales son assets MP4 livianos reutilizados por especie o categoria. Cada clip declara `videoSourceType: asset`, `videoAssetPath`, `durationSeconds` y mantiene `demoVideoKey` para reemplazo futuro por assets propios o licenciados. Los clips starter son globales para cualquier usuario logueado y no dependen de una cuenta real, upload real ni backend productivo.
+
+Si un asset no carga, el viewer muestra un fallback visual seguro y no deja una pantalla negra. El visor principal usa scroll vertical estilo TikTok/Reels, reproduce muted el clip visible de forma automatica y pausa clips fuera de pantalla.
+
+Para agregar nuevos videos demo:
+
+1. Crear o incorporar solo material propio/licenciado.
+2. Mantener cada archivo preferentemente por debajo de 1 MB.
+3. Guardarlo en `assets/videos/clips/`.
+4. Declararlo mediante `videoAssetPath` o la regla de asignacion en `ClipsMockData`.
+5. Mantener `isDemoContent: true` y `source: seeded_demo` mientras no sea contenido real de usuarios.
+6. Mantener `isStarterContent: true` y `availableForAllUsers: true` si el clip forma parte del feed inicial global.
+
+Para produccion, estos assets deben reemplazarse por videos reales con permiso explicito, contenido oficial curado o uploads reales con backend y moderacion.
 
 ## Como desactivar contenido demo
 
@@ -76,7 +91,7 @@ Hay 15 cuentas ficticias:
 
 ## Clips y categorias
 
-Hay 45 clips demo utiles, con 2 a 4 clips por cuenta. Cubren perros, gatos, conejo, ave, pez, cobayo, hamster, tortuga/reptil y refugio multi-especie.
+Hay 45 clips demo utiles, con 2 a 4 clips por cuenta. Cubren perros, gatos, conejo, ave, pez, cobayo, hamster, tortuga/reptil y refugio multi-especie. Todos tienen una fuente reproducible local o fallback visual seguro.
 
 Categorias cubiertas: juego, paseo, salud general, vacunas, QR, adopcion, higiene, entrenamiento, enriquecimiento, convivencia, alimentacion, descanso, pequenos animales, acuario, aves, reptiles, prevencion, rescates, profesionales, bloopers y social.
 
