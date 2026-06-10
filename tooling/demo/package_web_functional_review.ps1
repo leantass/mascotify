@@ -2,7 +2,6 @@ $ErrorActionPreference = 'Stop'
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Resolve-Path (Join-Path $scriptDir '..\..')
-$flutter = 'C:\src\flutter\bin\flutter.bat'
 $packageName = 'mascotify-functional-review-web'
 $artifactRoot = [System.IO.Path]::GetFullPath((Join-Path $repoRoot '..\mascotify_functional_builds'))
 $packageDir = Join-Path $artifactRoot $packageName
@@ -17,13 +16,25 @@ function Write-TextFile($path, $content) {
   [System.IO.File]::WriteAllText($path, $content, $utf8NoBom)
 }
 
-if (-not (Test-Path $flutter)) {
-  throw "No existe Flutter en $flutter"
+function Resolve-FlutterCommand {
+  $fromPath = Get-Command flutter -ErrorAction SilentlyContinue
+  if ($fromPath) {
+    return $fromPath.Source
+  }
+
+  $defaultFlutter = 'C:\src\flutter\bin\flutter.bat'
+  if (Test-Path $defaultFlutter) {
+    return $defaultFlutter
+  }
+
+  throw 'No se encontro Flutter en PATH ni en C:\src\flutter\bin\flutter.bat'
 }
+
+$flutter = Resolve-FlutterCommand
 
 Push-Location $repoRoot
 try {
-  Write-Step 'Generando build web release de Mascotify...'
+  Write-Step "Generando build web release de Mascotify con $flutter..."
   & $flutter build web --release
   if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
@@ -67,8 +78,12 @@ pause >nul
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$port = 53177
-$url = "http://127.0.0.1:$port/"
+$preferredPort = 53177
+$lastPort = 53187
+$port = $null
+$url = $null
+$listener = $null
+$urlFile = Join-Path $root '.mascotify-demo-url.txt'
 
 Add-Type -AssemblyName System.Web
 
@@ -199,14 +214,26 @@ function Resolve-RequestPath([string] $target) {
   return Join-Path $root 'index.html'
 }
 
-$listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Parse('127.0.0.1'), $port)
+foreach ($candidatePort in $preferredPort..$lastPort) {
+  try {
+    $candidateListener = [System.Net.Sockets.TcpListener]::new(
+      [System.Net.IPAddress]::Parse('127.0.0.1'),
+      $candidatePort
+    )
+    $candidateListener.Start()
+    $listener = $candidateListener
+    $port = $candidatePort
+    $url = "http://127.0.0.1:$port/"
+    break
+  } catch {
+    if ($candidatePort -eq $preferredPort) {
+      Write-Host "Puerto $preferredPort ocupado. Probando otro puerto..."
+    }
+  }
+}
 
-try {
-  $listener.Start()
-} catch {
-  Write-Host "No se pudo iniciar Mascotify en $url"
-  Write-Host "Es posible que el puerto $port ya este en uso. Cerrar otras demos abiertas e intentar de nuevo."
-  throw
+if ($null -eq $listener) {
+  throw "No se pudo iniciar Mascotify. No hay puertos libres entre $preferredPort y $lastPort."
 }
 
 Write-Host ''
@@ -214,6 +241,8 @@ Write-Host "Mascotify esta corriendo en $url"
 Write-Host 'No cierres esta ventana mientras uses la demo.'
 Write-Host 'Para cerrar la demo, cerra esta ventana.'
 Write-Host ''
+
+[System.IO.File]::WriteAllText($urlFile, $url, [System.Text.UTF8Encoding]::new($false))
 
 if ($env:MASCOTIFY_DEMO_NO_BROWSER -ne '1') {
   Start-Process $url

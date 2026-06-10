@@ -48,6 +48,7 @@ Comandos principales desde la raiz del proyecto:
 ```bat
 C:\src\flutter\bin\flutter.bat run -d chrome
 tooling\git_flow\check_local.bat
+tooling\demo\open_app_after_task.bat
 tooling\demo\build_web_demo.bat
 tooling\demo\serve_web_demo.bat
 tooling\demo\package_web_demo.bat
