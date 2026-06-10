@@ -61,6 +61,9 @@ Future<TestAppSession> buildPersistentTestAppSession({
   }
 
   final preferences = await SharedPreferences.getInstance();
+  if (resetPreferences) {
+    await preferences.clear();
+  }
   final repository = LocalAuthRepository(preferences);
   final controller = AuthSessionController(
     repository: repository,

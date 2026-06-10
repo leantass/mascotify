@@ -89,9 +89,14 @@ void main() {
     await tester.drag(find.byType(PageView), const Offset(0, -700));
     await tester.pumpAndSettle();
 
+    final nextClipPosition =
+        ClipsMockData.clips.indexWhere((clip) => clip.id == 'clip-02') + 1;
     expect(find.text('Perro aprende a usar su QR'), findsOneWidget);
     expect(find.text('1/${ClipsMockData.clips.length}'), findsNothing);
-    expect(find.text('2/${ClipsMockData.clips.length}'), findsOneWidget);
+    expect(
+      find.text('$nextClipPosition/${ClipsMockData.clips.length}'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('el visor usa PageView vertical y no muestra flechas', (
@@ -147,11 +152,13 @@ void main() {
     expect(find.byType(PageView), findsOneWidget);
     expect(find.text('Clip anterior'), findsNothing);
     expect(find.text('Siguiente clip'), findsNothing);
-    expect(find.text('Video local'), findsOneWidget);
+    expect(find.text('Mascotify'), findsWidgets);
+    expect(find.text('Contenido oficial'), findsWidgets);
+    expect(find.text('Video local'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('clip demo con asset muestra estado de video local', (
+  testWidgets('clip oficial con asset muestra Mascotify oficial', (
     tester,
   ) async {
     setDesktopViewport(tester);
@@ -166,7 +173,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Video local'), findsOneWidget);
+    expect(find.text('Mascotify'), findsWidgets);
+    expect(find.text('Contenido oficial'), findsWidgets);
+    expect(find.text('Mascotify oficial'), findsWidgets);
+    expect(find.text('Video local'), findsNothing);
     expect(find.text('Clip demo local'), findsNothing);
     expect(find.byIcon(Icons.volume_off_rounded), findsOneWidget);
   });

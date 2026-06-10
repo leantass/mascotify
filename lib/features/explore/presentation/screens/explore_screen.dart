@@ -960,6 +960,11 @@ class _ExploreClipCard extends StatelessWidget {
     final hasVideo = clip.hasPlayableVideo;
     final thumbnail = clip.thumbnailAssetPath;
     final authorLabel = clip.authorDisplayName ?? clip.sourceLabel;
+    final mediaLabel = clip.sourceType == 'officialMascotify'
+        ? 'Mascotify'
+        : hasVideo
+        ? 'Video local'
+        : 'Demo';
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -1007,9 +1012,7 @@ class _ExploreClipCard extends StatelessWidget {
                   Positioned(
                     left: 14,
                     top: 14,
-                    child: _VideoBadge(
-                      label: hasVideo ? 'Video local' : 'Demo',
-                    ),
+                    child: _VideoBadge(label: mediaLabel),
                   ),
                   Positioned(
                     left: 14,
@@ -1021,6 +1024,8 @@ class _ExploreClipCard extends StatelessWidget {
                       children: [
                         _VideoBadge(label: clip.category),
                         _VideoBadge(label: clip.animalType),
+                        if (clip.contentOriginLabel != null)
+                          _VideoBadge(label: clip.contentOriginLabel!),
                         if (clip.sourceLabel != null)
                           _VideoBadge(label: clip.sourceLabel!),
                         if (!hasVideo)

@@ -13,9 +13,9 @@ void main() {
     await _pumpViewer(tester, ClipsMockData.clips.first);
 
     expect(find.byIcon(Icons.favorite_border_rounded), findsOneWidget);
-    expect(find.text('128 likes'), findsOneWidget);
+    expect(find.text('186 likes'), findsOneWidget);
     expect(find.byIcon(Icons.mode_comment_outlined), findsOneWidget);
-    expect(find.text('18 comentarios'), findsOneWidget);
+    expect(find.text('12 comentarios'), findsOneWidget);
     expect(find.byIcon(Icons.bookmark_border_rounded), findsOneWidget);
     expect(find.text('Guardar'), findsOneWidget);
     expect(find.byIcon(Icons.ios_share_rounded), findsOneWidget);
@@ -37,8 +37,8 @@ void main() {
     expect(
       tooltipMessages,
       containsAll(<String>[
-        '128 likes',
-        '18 comentarios',
+        '186 likes',
+        '12 comentarios',
         'Guardar',
         'Compartir',
       ]),
@@ -52,15 +52,15 @@ void main() {
 
     await _pumpViewer(tester, ClipsMockData.clips.first);
 
-    await tester.tap(find.text('128 likes'));
+    await tester.tap(find.text('186 likes'));
     await tester.pumpAndSettle();
     expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
-    expect(find.text('129 likes'), findsOneWidget);
+    expect(find.text('187 likes'), findsOneWidget);
 
-    await tester.tap(find.text('129 likes'));
+    await tester.tap(find.text('187 likes'));
     await tester.pumpAndSettle();
     expect(find.byIcon(Icons.favorite_border_rounded), findsOneWidget);
-    expect(find.text('128 likes'), findsOneWidget);
+    expect(find.text('186 likes'), findsOneWidget);
   });
 
   testWidgets('guardar y desguardar cambia estado visual', (tester) async {
@@ -98,7 +98,7 @@ void main() {
 
     await _pumpViewer(tester, ClipsMockData.clips.first);
 
-    await tester.tap(find.text('18 comentarios'));
+    await tester.tap(find.text('12 comentarios'));
     await tester.pumpAndSettle();
 
     expect(
@@ -142,23 +142,25 @@ void main() {
 
     await _pumpViewer(tester, ClipsMockData.clips.first);
 
-    expect(find.text('128 likes'), findsOneWidget);
-    expect(find.text('18 comentarios'), findsOneWidget);
+    expect(find.text('186 likes'), findsOneWidget);
+    expect(find.text('12 comentarios'), findsOneWidget);
     expect(find.text('Guardar'), findsOneWidget);
     expect(find.text('Compartir'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('clip demo local muestra placeholder y acciones visibles', (
+  testWidgets('clip oficial muestra badges y acciones visibles', (
     tester,
   ) async {
     setDesktopViewport(tester);
 
     await _pumpViewer(tester, ClipsMockData.clips.first);
 
-    expect(find.text('Video local'), findsOneWidget);
+    expect(find.text('Mascotify'), findsWidgets);
+    expect(find.text('Contenido oficial'), findsWidgets);
+    expect(find.text('Video local'), findsNothing);
     expect(find.text('Clip demo local'), findsNothing);
-    expect(find.text('128 likes'), findsOneWidget);
+    expect(find.text('186 likes'), findsOneWidget);
     expect(find.text('Guardar'), findsOneWidget);
   });
 

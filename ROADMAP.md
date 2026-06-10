@@ -92,6 +92,13 @@ La idea es construir un ecosistema real, claro, premium y util.
 - ✅ Autoplay del clip visible.
 - ✅ Scroll vertical sin flechas.
 - ✅ Fallback seguro si falla video.
+- ✅ Videos oficiales propios de Mascotify para Clips iniciales.
+- ✅ Clips starter sin copyright externo.
+- ✅ Bloopers reales delegados a uploads de usuarios.
+- ✅ Loader de huella para carga.
+- ⏳ Upload real de usuarios pendiente.
+- ⏳ Moderacion de clips reales pendiente.
+- ⏳ Feed online curado pendiente si se decide usar fuentes licenciadas.
 - Viewer preparado para videos asset.
 - Contenido educativo general.
 - Variedad de especies y categorias.

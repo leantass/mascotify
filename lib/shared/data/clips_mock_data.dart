@@ -490,6 +490,7 @@ class ClipsMockData {
   ];
 
   static final List<ExploreClip> clips = [
+    ..._officialStarterClips(),
     _clip(
       id: 'clip-01',
       authorId: 'demo-creator-nico-lola',
@@ -1186,6 +1187,171 @@ class ClipsMockData {
   const ClipsMockData._();
 }
 
+List<ExploreClip> _officialStarterClips() {
+  return <ExploreClip>[
+    _officialClip(
+      id: 'official-qr-seguro',
+      title: 'QR seguro para tu mascota',
+      description:
+          'Un clip oficial de Mascotify sobre avisos seguros sin exponer tus datos privados.',
+      category: 'QR',
+      tags: ['mascotify', 'qr', 'seguridad'],
+      videoAssetPath: 'assets/videos/clips/mascotify_qr_seguro.mp4',
+      likes: 186,
+      comments: 12,
+      shares: 0,
+    ),
+    _officialClip(
+      id: 'official-clips-usuarios',
+      title: 'Clips de mascotas',
+      description:
+          'Mascotify prepara Clips para que tutores compartan bloopers, juegos, paseos y momentos reales.',
+      category: 'Social',
+      tags: ['mascotify', 'clips', 'comunidad'],
+      videoAssetPath: 'assets/videos/clips/mascotify_clips_usuarios.mp4',
+      likes: 204,
+      comments: 18,
+      shares: 11,
+    ),
+    _officialClip(
+      id: 'official-salud-vacunas',
+      title: 'Salud y vacunas',
+      description:
+          'Libreta sanitaria, controles y recordatorios para ordenar el cuidado junto al veterinario.',
+      category: 'Vacunas',
+      tags: ['mascotify', 'salud', 'vacunas'],
+      videoAssetPath: 'assets/videos/clips/mascotify_salud_vacunas.mp4',
+      likes: 172,
+      comments: 13,
+      shares: 8,
+    ),
+    _officialClip(
+      id: 'official-mascotas-perdidas',
+      title: 'Mascotas perdidas',
+      description:
+          'Avisos solidarios para ayudar a volver a casa, sin cobros ni rescates como condicion.',
+      category: 'Rescates',
+      tags: ['mascotify', 'solidario', 'perdidas'],
+      videoAssetPath: 'assets/videos/clips/mascotify_mascotas_perdidas.mp4',
+      likes: 221,
+      comments: 19,
+      shares: 14,
+    ),
+    _officialClip(
+      id: 'official-comunidad-pet',
+      title: 'Comunidad pet',
+      description:
+          'Un espacio para compartir momentos, conocer otras mascotas y construir comunidad responsable.',
+      category: 'Social',
+      tags: ['mascotify', 'comunidad', 'tutores'],
+      videoAssetPath: 'assets/videos/clips/mascotify_comunidad_pet.mp4',
+      likes: 167,
+      comments: 10,
+      shares: 5,
+    ),
+    _officialClip(
+      id: 'official-perfil-mascota',
+      title: 'Perfil de mascota',
+      description:
+          'Nombre, edad, datos importantes y rutina en un solo lugar para cuidar con mas orden.',
+      category: 'Consejos',
+      tags: ['mascotify', 'perfil', 'organizacion'],
+      videoAssetPath: 'assets/videos/clips/mascotify_perfil_mascota.mp4',
+      likes: 146,
+      comments: 8,
+      shares: 4,
+    ),
+    _officialClip(
+      id: 'official-recordatorios',
+      title: 'Recordatorios',
+      description:
+          'Mascotify ayuda a organizar controles importantes, salud, vacunas y seguimiento veterinario.',
+      category: 'Salud general',
+      tags: ['mascotify', 'recordatorios', 'salud'],
+      videoAssetPath: 'assets/videos/clips/mascotify_recordatorios.mp4',
+      likes: 158,
+      comments: 9,
+      shares: 6,
+    ),
+    _officialClip(
+      id: 'official-adopcion-responsable',
+      title: 'Adopcion responsable',
+      description:
+          'Adoptar es compromiso: preparar el hogar, dar tiempo y cuidar con responsabilidad.',
+      category: 'Adopcion',
+      tags: ['mascotify', 'adopcion', 'responsabilidad'],
+      videoAssetPath: 'assets/videos/clips/mascotify_adopcion_responsable.mp4',
+      likes: 193,
+      comments: 15,
+      shares: 10,
+    ),
+    _officialClip(
+      id: 'official-profesionales',
+      title: 'Profesionales pet',
+      description:
+          'Un ecosistema para conectar con veterinarias, paseadores y servicios que cuidan.',
+      category: 'Profesionales',
+      tags: ['mascotify', 'profesionales', 'servicios'],
+      videoAssetPath: 'assets/videos/clips/mascotify_profesionales.mp4',
+      likes: 132,
+      comments: 6,
+      shares: 3,
+    ),
+    _officialClip(
+      id: 'official-privacidad-seguridad',
+      title: 'Privacidad y seguridad',
+      description:
+          'QR y flujos de contacto pensados para proteger telefono, direccion y datos privados.',
+      category: 'Prevencion',
+      tags: ['mascotify', 'privacidad', 'seguridad'],
+      videoAssetPath: 'assets/videos/clips/mascotify_privacidad_seguridad.mp4',
+      likes: 174,
+      comments: 11,
+      shares: 7,
+    ),
+  ];
+}
+
+ExploreClip _officialClip({
+  required String id,
+  required String title,
+  required String description,
+  required String category,
+  required List<String> tags,
+  required String videoAssetPath,
+  required int likes,
+  required int comments,
+  required int shares,
+}) {
+  return ExploreClip(
+    id: id,
+    title: title,
+    description: description,
+    category: category,
+    animalType: 'General',
+    petName: 'Mascotify',
+    videoSourceType: 'asset',
+    videoAssetPath: videoAssetPath,
+    durationSeconds: 7,
+    authorDisplayName: 'Mascotify',
+    authorUsername: 'mascotify_oficial',
+    demoVideoKey: id,
+    likes: likes,
+    comments: comments,
+    shares: shares,
+    createdAt: DateTime.utc(2026, 6, 10, 9),
+    seededAt: ClipsMockData.seededAt,
+    tags: tags,
+    source: 'seeded_demo',
+    sourceLabel: 'Mascotify oficial',
+    sourceType: 'officialMascotify',
+    contentOriginLabel: 'Contenido oficial',
+    isStarterContent: true,
+    availableForAllUsers: true,
+    isDemoContent: true,
+  );
+}
+
 DemoCreatorAccount _creator({
   required String id,
   required String displayName,
@@ -1257,6 +1423,8 @@ ExploreClip _clip({
     tags: tags,
     source: 'seeded_demo',
     sourceLabel: 'Comunidad inicial',
+    sourceType: 'seededDemo',
+    contentOriginLabel: 'Comunidad inicial',
     isStarterContent: true,
     availableForAllUsers: true,
     isDemoContent: true,

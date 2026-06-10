@@ -33,6 +33,16 @@ Los clips tienen captions escritos como personas, con longitudes variadas y util
 
 No se usan identidades reales, fotos de terceros, ubicaciones exactas, telefonos, mails ni matriculas. No se inventan profesionales reales ni verificaciones reales. Tips Mascotify se presenta como contenido educativo general, no como veterinario real.
 
+## Videos oficiales Mascotify
+
+Clips arranca con videos oficiales propios de Mascotify como starter content. Son MP4 verticales generados localmente para el producto, sin videos de internet, sin personas reales, sin logos de terceros y sin contenido con copyright externo.
+
+Estos videos explican funciones reales: QR seguro, salud y vacunas, mascotas perdidas, comunidad pet, clips de usuarios, perfil de mascota, recordatorios, profesionales, adopcion responsable y privacidad. Se muestran como `Mascotify oficial` / `Contenido oficial`, no como uploads de usuarios reales.
+
+Los bloopers reales y clips reales de mascotas quedan para uploads futuros de usuarios, con backend, Cloudinary o proveedor equivalente, permisos, moderacion y trazabilidad. No se importan desde internet sin permiso.
+
+Los clips de comunidad demo siguen existiendo como contenido secundario para variedad local y pruebas. Los videos oficiales pueden reemplazarse por campanas reales futuras, siempre con material propio o autorizado.
+
 ## Assets y licencias
 
 No se descargan videos de internet. No se commitean videos pesados. Los clips demo usan videos locales generados para Mascotify dentro de `assets/videos/clips/`, marcados como contenido demo/seeded y sin personas, identidades reales ni material de terceros.

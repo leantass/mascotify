@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../shared/models/social_models.dart';
+import '../../../../shared/widgets/paw_loading_indicator.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import 'clip_web_asset_video_view.dart'
@@ -389,13 +390,7 @@ class _ViewerClipPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasVideo = clip.hasPlayableVideo || !clip.isDemoContent;
     final thumbnail = clip.thumbnailAssetPath;
-    final topMediaLabel = clip.videoSourceType == 'asset'
-        ? 'Video local'
-        : clip.videoSourceType == 'network'
-        ? 'Video remoto'
-        : clip.isDemoContent
-        ? 'Demo'
-        : 'Video remoto';
+    final topMediaLabel = _mediaLabelFor(clip);
     final creatorLabel =
         clip.authorDisplayName ??
         (clip.authorId == null ? clip.sourceLabel : 'Creador ${clip.authorId}');
@@ -443,6 +438,8 @@ class _ViewerClipPage extends StatelessWidget {
                 runSpacing: 7,
                 children: [
                   _ViewerBadge(label: topMediaLabel),
+                  if (clip.contentOriginLabel != null)
+                    _ViewerBadge(label: clip.contentOriginLabel!),
                   if (clip.sourceLabel != null)
                     _ViewerBadge(label: clip.sourceLabel!),
                   _ViewerBadge(label: clip.category),
@@ -702,7 +699,7 @@ class _ClipVideoSurface extends StatelessWidget {
         isActive: isActive,
         isMuted: isMuted,
         loading: _buildLoadingSurface(context),
-        fallback: _buildFallback('No pudimos reproducir este video'),
+        fallback: _buildFallback('No pudimos cargar este clip'),
       );
     }
 
@@ -712,7 +709,7 @@ class _ClipVideoSurface extends StatelessWidget {
         isActive: isActive,
         isMuted: isMuted,
         loading: _buildLoadingSurface(context),
-        fallback: _buildFallback('No pudimos reproducir este video'),
+        fallback: _buildFallback('No pudimos cargar este clip'),
       );
     }
 
@@ -775,35 +772,28 @@ class _ClipVideoSurface extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.34),
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white.withValues(alpha: 0.92),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Cargando video',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
+            child: PawLoadingIndicator(
+              message: 'Cargando video...',
+              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primaryDeep.withValues(alpha: 0.82),
+              compact: true,
             ),
           ),
         ),
       ],
     );
   }
+}
+
+String _mediaLabelFor(ExploreClip clip) {
+  if (clip.sourceType == 'officialMascotify') return 'Mascotify';
+  if (clip.videoSourceType == 'asset') return 'Video local';
+  if (clip.videoSourceType == 'network') return 'Video remoto';
+  if (clip.isDemoContent) return 'Demo';
+  return 'Video remoto';
 }
 
 class _AssetClipVideoPlayer extends StatefulWidget {

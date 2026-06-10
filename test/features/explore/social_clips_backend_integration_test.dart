@@ -108,7 +108,7 @@ void main() {
 
     expect(find.byType(PageView), findsOneWidget);
     expect(find.text('Rescate remoto con final feliz'), findsOneWidget);
-    expect(find.text('El gato que se adueno del sillon'), findsNothing);
+    expect(find.text('QR seguro para tu mascota'), findsNothing);
   });
 
   testWidgets('si backend falla, Clips abre fallback local reproducible', (
@@ -119,7 +119,8 @@ void main() {
     await _openClips(tester, _FakeSocialClipsRepository.failing());
 
     expect(find.byType(PageView), findsOneWidget);
-    expect(find.text('El gato que se adueno del sillon'), findsOneWidget);
+    expect(find.text('QR seguro para tu mascota'), findsOneWidget);
+    expect(find.text('Mascotify oficial'), findsWidgets);
   });
 
   testWidgets('like usa endpoint remoto cuando hay backend', (tester) async {
