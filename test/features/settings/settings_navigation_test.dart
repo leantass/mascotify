@@ -52,7 +52,11 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('settings-help-action')));
       await tester.pumpAndSettle();
       expect(find.text('Centro de ayuda'), findsOneWidget);
-      expect(find.text('Matching'), findsOneWidget);
+      expect(
+        find.text('Tema abierto: Perfil y configuracion.'),
+        findsOneWidget,
+      );
+      expect(find.text('Matching'), findsWidgets);
       expect(find.text('Privacidad y seguridad'), findsOneWidget);
     },
   );

@@ -7,6 +7,8 @@ import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/ecosystem_activity_feed_item.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 
 class ActivityFeedScreen extends StatefulWidget {
   const ActivityFeedScreen({super.key});
@@ -67,7 +69,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Eventos locales de mascotas, mensajes, social, QR y notificaciones reunidos para esta cuenta.',
+                        'Eventos de la cuenta en un solo lugar.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 18),
@@ -100,6 +102,12 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                             ),
                           ),
                         ),
+                      const SizedBox(height: 6),
+                      const ContextualHelpLink(
+                        topic: HelpTopic.activity,
+                        label: 'Ver ayuda sobre Actividad',
+                        compact: true,
+                      ),
                     ],
                   ),
                 ),

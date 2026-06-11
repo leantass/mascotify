@@ -13,6 +13,8 @@ import '../../../../shared/services/pet_health_reminder_engine.dart';
 import '../../../../shared/services/pet_vaccine_guidance_engine.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 
 class PetHealthScreen extends StatefulWidget {
   const PetHealthScreen({super.key, required this.pet});
@@ -117,6 +119,11 @@ class _PetHealthScreenState extends State<PetHealthScreen> {
               ],
               const SizedBox(height: 16),
               _HealthHistoryCard(pet: pet),
+              const SizedBox(height: 16),
+              const ContextualHelpLink(
+                topic: HelpTopic.health,
+                label: 'Ver ayuda sobre Salud y vacunas',
+              ),
             ],
           ),
         ),

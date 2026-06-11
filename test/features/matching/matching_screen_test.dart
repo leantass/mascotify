@@ -107,4 +107,24 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('matching-swipe-deck')), findsOneWidget);
   });
+
+  testWidgets('ayuda contextual de Matching abre el tema correcto', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+
+    await tester.pumpWidget(buildTestApp(const MatchingScreen()));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('contextual-help-matching')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('contextual-help-matching')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tema abierto: Matching.'), findsOneWidget);
+    expect(find.textContaining('Elige tu mascota y objetivo'), findsOneWidget);
+    expect(find.textContaining('contacto real sera mediado'), findsOneWidget);
+  });
 }

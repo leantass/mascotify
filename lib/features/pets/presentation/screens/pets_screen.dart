@@ -11,6 +11,8 @@ import '../../../../shared/widgets/pet_card.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../lost_pets/presentation/screens/lost_pets_screen.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 import 'pet_detail_screen.dart';
 
 enum _PetsSection { myPets, lostPets }
@@ -49,8 +51,7 @@ class _PetsScreenState extends State<PetsScreen> {
                     SectionHeader(
                       eyebrow: 'Centro de mascotas',
                       title: 'Mascotas',
-                      subtitle:
-                          'Gestiona perfiles persistidos localmente y reportes comunitarios de mascotas perdidas.',
+                      subtitle: 'Perfiles y reportes de tu cuenta.',
                       trailing: showingMyPets
                           ? ElevatedButton.icon(
                               onPressed: _handleAddPet,
@@ -91,7 +92,7 @@ class _PetsScreenState extends State<PetsScreen> {
                           Text(
                             showingMyPets
                                 ? '${entitlement.planName}: ${entitlement.petLimitDisplayLabel}.'
-                                : 'La ubicación se guarda con país, región, ciudad y zona aproximada de pérdida.',
+                                : 'Solo se muestra zona general.',
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
                                   color: AppColors.textSecondary,
@@ -113,6 +114,13 @@ class _PetsScreenState extends State<PetsScreen> {
                 )
               else
                 const LostPetsSection(showHero: false),
+              const SizedBox(height: 16),
+              ContextualHelpLink(
+                topic: showingMyPets ? HelpTopic.pets : HelpTopic.lostPets,
+                label: showingMyPets
+                    ? 'Ver ayuda sobre Mascotas'
+                    : 'Ver ayuda sobre Mascotas perdidas',
+              ),
             ],
           ),
         ),

@@ -9,6 +9,8 @@ import '../../../../shared/models/pet_vaccine.dart';
 import '../../../../shared/models/report_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 import 'pet_health_screen.dart';
 import 'qr_scan_preview_screen.dart';
 import 'qr_traceability_screen.dart';
@@ -43,8 +45,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
               const SizedBox(height: 16),
               _SectionCard(
                 title: 'Identidad',
-                subtitle:
-                    'Base del perfil digital y estado general del registro.',
+                subtitle: 'Datos principales del perfil.',
                 icon: Icons.badge_outlined,
                 accentColor: AppColors.primarySoft,
                 children: [
@@ -58,8 +59,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
               const SizedBox(height: 16),
               _SectionCard(
                 title: 'Documentación',
-                subtitle:
-                    'Preparada para vacunas, certificados e historial base.',
+                subtitle: 'Estado de registros cargados.',
                 icon: Icons.description_outlined,
                 accentColor: AppColors.supportSoft,
                 children: [
@@ -85,8 +85,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
               const SizedBox(height: 16),
               _SectionCard(
                 title: 'Acciones rápidas',
-                subtitle:
-                    'Atajos listos para futuras operaciones del producto.',
+                subtitle: 'Atajos del perfil.',
                 icon: Icons.flash_on_outlined,
                 accentColor: AppColors.primarySoft,
                 children: [
@@ -98,6 +97,11 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
                         .toList(),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              const ContextualHelpLink(
+                topic: HelpTopic.petProfile,
+                label: 'Ver ayuda sobre Perfil de mascota',
               ),
             ],
           ),

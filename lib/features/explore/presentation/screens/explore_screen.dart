@@ -11,6 +11,8 @@ import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/social_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 import 'connections_inbox_screen.dart';
 import 'explore_clip_viewer_screen.dart';
 import 'professionals_screen.dart';
@@ -151,15 +153,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Perfiles con potencial de conexión, afinidad social y futuras oportunidades de matching.',
+                'Perfiles para descubrir y guardar.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 16),
               if (pets.isEmpty)
                 const _ExploreEmptyState(
                   title: 'Todavía no hay perfiles para explorar',
-                  description:
-                      'Cuando la cuenta tenga mascotas persistidas, esta vista podrá mostrar afinidades, guardados e intereses con más contexto.',
+                  description: 'Agrega mascotas para ver perfiles aca.',
                 )
               else if (filteredPets.isEmpty)
                 const _ExploreEmptyState(
@@ -203,12 +204,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Discovery progresivo',
+                      'Guardados',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Mascotify también puede acompañar un descubrimiento más pausado: guardar, revisar después y retomar conexiones cuando el momento sea el indicado.',
+                      'Vuelve a perfiles que te interesaron sin perderlos.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textPrimary,
                         height: 1.5,
@@ -221,8 +222,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               if (savedProfiles.isEmpty)
                 const _ExploreEmptyState(
                   title: 'Todavía no guardaste perfiles',
-                  description:
-                      'Cuando marques una mascota para revisar después, va a quedar persistida acá dentro de tu cuenta.',
+                  description: 'Los perfiles guardados apareceran aca.',
                 )
               else
                 ResponsiveWrapGrid(
@@ -231,6 +231,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       .map((entry) => _SavedProfileCard(entry: entry))
                       .toList(),
                 ),
+              const SizedBox(height: 16),
+              const ContextualHelpLink(
+                topic: HelpTopic.explore,
+                label: 'Ver ayuda sobre Explorar',
+              ),
             ],
           ),
         ),

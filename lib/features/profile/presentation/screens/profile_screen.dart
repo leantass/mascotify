@@ -13,6 +13,7 @@ import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
 import 'help_screen.dart';
 import 'support_contacts_screen.dart';
+import '../widgets/contextual_help_link.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key, this.experience = AccountExperience.family});
@@ -377,7 +378,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Tu autenticación actual se persiste localmente. Logout limpia la sesión activa pero mantiene las cuentas registradas en este dispositivo.',
+                        'La sesion activa se mantiene en este dispositivo.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 16),
@@ -396,6 +397,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                 ),
+              ),
+              const SizedBox(height: 16),
+              const ContextualHelpLink(
+                topic: HelpTopic.profileSettings,
+                label: 'Ver ayuda sobre Perfil y configuracion',
               ),
             ],
           ),
@@ -979,7 +985,11 @@ class _ConfigurationTab extends StatelessWidget {
           onPressed: isBusy
               ? null
               : () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const HelpScreen()),
+                  MaterialPageRoute<void>(
+                    builder: (_) => const HelpScreen(
+                      initialTopic: HelpTopic.profileSettings,
+                    ),
+                  ),
                 ),
         ),
         const SizedBox(height: 14),

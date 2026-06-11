@@ -51,6 +51,32 @@ void main() {
     );
   });
 
+  testWidgets('ayuda contextual de Clips abre el tema correcto', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        ExploreClipViewerScreen(
+          clips: ClipsMockData.clips,
+          initialClipId: 'clip-01',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('clips-contextual-help')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tema abierto: Clips.'), findsOneWidget);
+    expect(find.textContaining('Feed de videos cortos'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('clip-video-seekbar-overlay')),
+      findsNothing,
+    );
+  });
+
   testWidgets('like y unlike cambia el estado visual en el visor', (
     tester,
   ) async {

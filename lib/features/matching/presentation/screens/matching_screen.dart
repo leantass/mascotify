@@ -7,6 +7,8 @@ import '../../../../shared/models/pet.dart';
 import '../../../../shared/widgets/paw_loading_indicator.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 import '../../data/pet_matching_models.dart';
 
 class MatchingScreen extends StatefulWidget {
@@ -78,6 +80,11 @@ class _MatchingScreenState extends State<MatchingScreen> {
                     onLike: _likeMatch,
                     onReset: _resetDeck,
                   ),
+                const SizedBox(height: 16),
+                const ContextualHelpLink(
+                  topic: HelpTopic.matching,
+                  label: 'Ver ayuda sobre Matching',
+                ),
               ],
             ],
           ),

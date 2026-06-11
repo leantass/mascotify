@@ -15,6 +15,8 @@ import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/pet_card.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 import 'notifications_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -136,14 +138,13 @@ class HomeScreen extends StatelessWidget {
                 const _HomeEmptyStateCard(
                   title: 'Tu cuenta está lista para empezar',
                   description:
-                      'Todavía no hay actividad real en esta cuenta. Cuando sumes una mascota y empieces a usar el ecosistema, acá vas a ver prioridades, QR, mensajes y señales sociales.',
+                      'Cuando sumes una mascota, aca vas a ver prioridades y actividad.',
                 ),
               const SizedBox(height: 20),
               const SectionHeader(
                 eyebrow: 'Pulso Mascotify',
                 title: 'Qué está activo hoy',
-                subtitle:
-                    'Una lectura corta para entender seguridad, social, mensajería y comunidad experta.',
+                subtitle: 'Resumen operativo de tu cuenta.',
               ),
               const SizedBox(height: 16),
               _EcosystemOverview(
@@ -158,8 +159,7 @@ class HomeScreen extends StatelessWidget {
               const SectionHeader(
                 eyebrow: 'Centro operativo',
                 title: 'Accesos rápidos',
-                subtitle:
-                    'Entradas más útiles para actuar desde la home sin perder contexto.',
+                subtitle: 'Atajos para actuar rapido.',
               ),
               const SizedBox(height: 16),
               _PrimaryAccessGrid(
@@ -186,8 +186,7 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _SectionCard(
                 title: 'Lo más vivo del ecosistema',
-                subtitle:
-                    'Señales concretas para que la home resuma valor real y no solo atajos.',
+                subtitle: 'Ultimas senales relevantes.',
                 child: Column(
                   children: [
                     if (latestNotification != null) ...[
@@ -216,8 +215,7 @@ class HomeScreen extends StatelessWidget {
                       title: featuredContent.title,
                       subtitle:
                           '${featuredContent.professional} • ${featuredContent.category}',
-                      description:
-                          '${featuredContent.summary} La vertical profesional ya puede sentirse como comunidad con posibles servicios.',
+                      description: featuredContent.summary,
                       tone: Color(featuredContent.accentColorHex),
                       icon: Icons.workspace_premium_outlined,
                     ),
@@ -228,8 +226,7 @@ class HomeScreen extends StatelessWidget {
               SectionHeader(
                 eyebrow: 'Base Mascotify',
                 title: 'Mis mascotas',
-                subtitle:
-                    'Perfiles que ya conectan identidad, matching, trazabilidad QR y seguridad.',
+                subtitle: 'Perfiles activos de la cuenta.',
                 trailing: primaryPet == null
                     ? null
                     : TextButton(
@@ -246,7 +243,7 @@ class HomeScreen extends StatelessWidget {
                 const _HomeEmptyStateCard(
                   title: 'Todavía no hay mascotas cargadas',
                   description:
-                      'La cuenta quedó válida y limpia. Cuando agregues la primera mascota desde la sección Mascotas, esta área empezará a poblarse con identidad, QR y seguimiento.',
+                      'Agrega una mascota para activar ficha, QR y seguimiento.',
                 )
               else
                 ...pets
@@ -269,6 +266,11 @@ class HomeScreen extends StatelessWidget {
               _AccountStatusCard(
                 account: account,
                 familyProfile: familyProfile,
+              ),
+              const SizedBox(height: 16),
+              const ContextualHelpLink(
+                topic: HelpTopic.home,
+                label: 'Ver ayuda sobre Inicio',
               ),
             ],
           ),

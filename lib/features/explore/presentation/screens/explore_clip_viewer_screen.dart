@@ -6,6 +6,7 @@ import '../../../../shared/models/social_models.dart';
 import '../../../../shared/widgets/paw_loading_indicator.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
 
 const double _clipViewerAspectRatio = 480 / 854;
 const double _clipViewerDesktopBreakpoint = 700;
@@ -163,6 +164,18 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
                         style: _viewerNavigationButtonStyle(),
                       ),
                       const Spacer(),
+                      IconButton.filledTonal(
+                        key: const ValueKey('clips-contextual-help'),
+                        tooltip: 'Ayuda sobre Clips',
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                const HelpScreen(initialTopic: HelpTopic.clips),
+                          ),
+                        ),
+                        icon: const Icon(Icons.help_outline_rounded),
+                      ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 11,

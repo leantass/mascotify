@@ -5,6 +5,8 @@ import '../../../../shared/models/account_identity_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../explore/presentation/screens/professional_public_profile_screen.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 
 class ProfessionalDashboardScreen extends StatefulWidget {
   const ProfessionalDashboardScreen({super.key});
@@ -91,7 +93,7 @@ class _ProfessionalDashboardScreenState
                     Text(
                       hasPublicPresence
                           ? publicPresence.helpSummary
-                          : 'Tu cuenta profesional ya tiene base local y servicios asociados, pero todavía no expone una presencia pública coherente dentro de Mascotify.',
+                          : 'Activa la presencia para mostrar tu ficha profesional.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -161,7 +163,7 @@ class _ProfessionalDashboardScreenState
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        account.baseSummary,
+                        'Datos operativos de la cuenta profesional.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 16),
@@ -175,7 +177,7 @@ class _ProfessionalDashboardScreenState
                         label: 'Próximo paso',
                         value: hasPublicPresence
                             ? profile.nextSetupStep
-                            : 'Activar la presencia profesional para volver visible tu propuesta, tus servicios y una proyección pública coherente con la cuenta.',
+                            : 'Activar presencia profesional.',
                       ),
                     ],
                   ),
@@ -195,7 +197,7 @@ class _ProfessionalDashboardScreenState
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'La activación usa la base ya persistida en la cuenta profesional. No crea otra arquitectura: solo vuelve visible tu ficha operativa dentro de la vertical profesional.',
+                          'Publica tu ficha operativa en la demo.',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         const SizedBox(height: 16),
@@ -245,6 +247,11 @@ class _ProfessionalDashboardScreenState
                     ),
                   ),
                 ),
+              const SizedBox(height: 16),
+              const ContextualHelpLink(
+                topic: HelpTopic.professionals,
+                label: 'Ver ayuda sobre Profesionales y servicios',
+              ),
             ],
           ),
         ),

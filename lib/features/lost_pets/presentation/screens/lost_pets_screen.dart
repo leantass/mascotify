@@ -8,6 +8,8 @@ import '../../../../shared/models/lost_pet.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 
 const _safetyError =
     'Mascotify no permite pedir dinero por una mascota perdida. Modificá el texto para continuar.';
@@ -190,6 +192,13 @@ class _LostPetsSectionState extends State<LostPetsSection> {
                 )
                 .toList(),
           ),
+        if (widget.showHero) ...[
+          const SizedBox(height: 16),
+          const ContextualHelpLink(
+            topic: HelpTopic.lostPets,
+            label: 'Ver ayuda sobre Mascotas perdidas',
+          ),
+        ],
       ],
     );
   }

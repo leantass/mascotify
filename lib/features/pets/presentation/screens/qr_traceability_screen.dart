@@ -5,6 +5,8 @@ import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/report_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 import 'qr_scan_event_detail_screen.dart';
 
 class QrTraceabilityScreen extends StatefulWidget {
@@ -78,12 +80,12 @@ class _QrTraceabilityScreenState extends State<QrTraceabilityScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'El codigo de ${currentPet.name} ya puede leerse como una capa de seguimiento.',
+                      'QR de ${currentPet.name}',
                       style: textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Este historial reune escaneos, senales publicas, estado del contacto protegido y eventos recientes persistidos para comunicar valor real del QR.',
+                      'Escaneos, contacto protegido y eventos recientes.',
                       style: textTheme.bodyLarge?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -118,7 +120,7 @@ class _QrTraceabilityScreenState extends State<QrTraceabilityScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Lectura rapida del valor operativo del QR dentro de Mascotify.',
+                        'Estado operativo del QR.',
                         style: textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 16),
@@ -169,7 +171,7 @@ class _QrTraceabilityScreenState extends State<QrTraceabilityScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Eventos persistidos que ayudan a leer que paso con el QR y en que momento.',
+                        'Eventos ordenados por fecha.',
                         style: textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 16),
@@ -196,7 +198,7 @@ class _QrTraceabilityScreenState extends State<QrTraceabilityScreen> {
                       Text('Eventos de escaneo', style: textTheme.titleLarge),
                       const SizedBox(height: 8),
                       Text(
-                        'Avisos recibidos desde el QR físico con ubicación compartida o carga manual.',
+                        'Avisos recibidos desde el QR.',
                         style: textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 16),
@@ -215,6 +217,11 @@ class _QrTraceabilityScreenState extends State<QrTraceabilityScreen> {
                     ],
                   ),
                 ),
+              ),
+              const SizedBox(height: 16),
+              const ContextualHelpLink(
+                topic: HelpTopic.secureQr,
+                label: 'Ver ayuda sobre QR seguro',
               ),
             ],
           ),
@@ -243,7 +250,7 @@ class _EmptyTimelineState extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
       ),
       child: Text(
-        'Todavía no hay escaneos ni reportes reales para este QR. Cuando llegue el primer evento útil, este historial va a mostrar el orden y el contexto de cada señal.',
+        'Todavia no hay escaneos ni reportes para este QR.',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           color: AppColors.textPrimary,
           height: 1.45,
