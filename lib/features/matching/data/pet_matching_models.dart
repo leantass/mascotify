@@ -39,6 +39,7 @@ class PetMatchCandidate {
     required this.distanceLabel,
     required this.colorHex,
     required this.summary,
+    required this.isMutualMatchDemo,
   });
 
   final String id;
@@ -54,6 +55,7 @@ class PetMatchCandidate {
   final String distanceLabel;
   final int colorHex;
   final String summary;
+  final bool isMutualMatchDemo;
 }
 
 class PetMatchScore {
@@ -196,6 +198,7 @@ const List<PetMatchCandidate> _demoCandidates = [
     distanceLabel: '1.4 km aprox.',
     colorHex: 0xFFDDF6F6,
     summary: 'Le gustan los juegos de olfato y encuentros breves en plaza.',
+    isMutualMatchDemo: true,
   ),
   PetMatchCandidate(
     id: 'match-simon',
@@ -211,6 +214,7 @@ const List<PetMatchCandidate> _demoCandidates = [
     distanceLabel: '3.2 km aprox.',
     colorHex: 0xFFFFF2C6,
     summary: 'Paseos tranquilos, buena lectura social y familia cuidadosa.',
+    isMutualMatchDemo: false,
   ),
   PetMatchCandidate(
     id: 'match-mora',
@@ -226,6 +230,7 @@ const List<PetMatchCandidate> _demoCandidates = [
     distanceLabel: '900 m aprox.',
     colorHex: 0xFFFFE1EA,
     summary: 'Perfil calmo para presentaciones digitales y tiempos suaves.',
+    isMutualMatchDemo: true,
   ),
   PetMatchCandidate(
     id: 'match-toto',
@@ -241,6 +246,7 @@ const List<PetMatchCandidate> _demoCandidates = [
     distanceLabel: '2.1 km aprox.',
     colorHex: 0xFFE4F5F5,
     summary: 'Sale a caminar por la tarde y prefiere encuentros supervisados.',
+    isMutualMatchDemo: false,
   ),
   PetMatchCandidate(
     id: 'match-olivia',
@@ -256,5 +262,6 @@ const List<PetMatchCandidate> _demoCandidates = [
     distanceLabel: '2.8 km aprox.',
     colorHex: 0xFFFFE1EA,
     summary: 'Rutina indoor, curiosa y compatible con vinculos sin apuro.',
+    isMutualMatchDemo: false,
   ),
 ];

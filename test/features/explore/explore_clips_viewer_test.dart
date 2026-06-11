@@ -45,7 +45,10 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('QR'), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('clip-video-seekbar-overlay')),
+      findsWidgets,
+    );
   });
 
   testWidgets('like y unlike cambia el estado visual en el visor', (
@@ -270,7 +273,10 @@ void main() {
 
     expect(find.text('Mascotify'), findsWidgets);
     expect(find.text('Contenido oficial'), findsWidgets);
-    expect(find.text('QR'), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('clip-video-seekbar-overlay')),
+      findsWidgets,
+    );
     expect(find.text('Video local'), findsNothing);
     expect(find.text('Clip demo local'), findsNothing);
     expect(find.byIcon(Icons.volume_off_rounded), findsOneWidget);

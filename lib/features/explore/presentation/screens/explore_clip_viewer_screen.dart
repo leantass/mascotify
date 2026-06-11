@@ -513,7 +513,7 @@ class _ViewerClipPage extends StatelessWidget {
                       children: [
                         Positioned(
                           left: metrics.horizontalPadding,
-                          right: metrics.actionRailWidth + 22,
+                          right: metrics.actionRailWidth + 18,
                           top: metrics.topChipsOffset,
                           child: _ClipBadgeRow(
                             badges: _topBadgesFor(clip, topMediaLabel),
@@ -535,7 +535,7 @@ class _ViewerClipPage extends StatelessWidget {
                         ),
                         Positioned(
                           left: metrics.horizontalPadding,
-                          right: metrics.actionRailWidth + 22,
+                          right: metrics.actionRailWidth + 18,
                           bottom: metrics.bottomPadding,
                           child: _ClipBottomInfo(
                             clip: clip,
@@ -608,9 +608,9 @@ class ClipViewerMetrics {
       actionLabelFontSize: (10.5 * scale).clamp(10.0, 12.0),
       chipFontSize: (11.5 * scale).clamp(11.0, 13.0),
       chipHeight: (30 * scale).clamp(28.0, 32.0),
-      bottomTitleSize: (21 * scale).clamp(20.0, 24.0),
-      bottomCaptionSize: (13.5 * scale).clamp(13.0, 15.0),
-      bottomPadding: (34 * scale).clamp(30.0, 42.0),
+      bottomTitleSize: (19 * scale).clamp(18.0, 21.0),
+      bottomCaptionSize: (13 * scale).clamp(12.0, 14.0),
+      bottomPadding: (28 * scale).clamp(24.0, 34.0),
       sideRailSpacing: (7 * scale).clamp(5.0, 9.0),
       seekBarHeight: (6 * scale).clamp(5.0, 7.0),
       horizontalPadding: (16 * scale).clamp(14.0, 20.0),
@@ -873,9 +873,10 @@ List<String> _topBadgesFor(ExploreClip clip, String mediaLabel) {
   final values = <String>[
     mediaLabel,
     if (clip.contentOriginLabel != null) clip.contentOriginLabel!,
-    clip.category,
+    if (clip.sourceType != 'officialMascotify') clip.category,
   ];
-  return values.take(3).toList(growable: false);
+  final maxBadges = clip.sourceType == 'officialMascotify' ? 2 : 3;
+  return values.take(maxBadges).toList(growable: false);
 }
 
 class _ClipBadgeRow extends StatelessWidget {
@@ -965,11 +966,11 @@ class _ClipBottomInfo extends StatelessWidget {
         ],
         Text(
           clip.title,
-          maxLines: 2,
+          maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             color: Colors.white,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w800,
             fontSize: metrics.bottomTitleSize,
             height: 1.05,
             shadows: [
@@ -980,7 +981,7 @@ class _ClipBottomInfo extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 5),
         Text(
           clip.description,
           maxLines: 2,
@@ -1340,19 +1341,53 @@ class ClipVideoSeekBar extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           onTapDown: (details) => seek(details.localPosition),
           onHorizontalDragUpdate: (details) => seek(details.localPosition),
-          child: SizedBox(
-            height: 22,
-            child: Align(
-              alignment: Alignment.center,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(999),
-                child: LinearProgressIndicator(
-                  value: progress.clamp(0.0, 1.0),
-                  minHeight: height,
-                  color: AppColors.accent,
-                  backgroundColor: Colors.white.withValues(alpha: 0.34),
-                ),
+          child: Container(
+            key: const ValueKey('clip-video-seekbar-overlay'),
+            height: 24,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black.withValues(alpha: 0.00),
+                  Colors.black.withValues(alpha: 0.16),
+                  Colors.black.withValues(alpha: 0.00),
+                ],
               ),
+            ),
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                Container(
+                  height: height,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.22),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                FractionallySizedBox(
+                  widthFactor: progress.clamp(0.0, 1.0),
+                  child: Container(
+                    height: height,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.88),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment((progress.clamp(0.0, 1.0) * 2) - 1, 0),
+                  child: Container(
+                    width: height + 4,
+                    height: height + 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         );
