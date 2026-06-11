@@ -13,6 +13,7 @@ const double _clipViewerDesktopBreakpoint = 700;
 const double _clipViewerDesktopMaxWidth = 420;
 const double _clipViewerDesktopSideGutter = 48;
 const double _clipViewerDesktopVerticalGutter = 16;
+const double _clipControlDockHeight = 44;
 
 class ExploreClipViewerScreen extends StatefulWidget {
   const ExploreClipViewerScreen({
@@ -210,7 +211,7 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
                 Positioned(
                   right: 17,
                   top: 96,
-                  bottom: 28,
+                  bottom: _clipControlDockHeight + 18,
                   child: RotatedBox(
                     quarterTurns: 1,
                     child: LinearProgressIndicator(
@@ -496,22 +497,25 @@ class _ViewerClipPage extends StatelessWidget {
                   isActive: isActive,
                   isMuted: isMuted,
                 ),
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.black.withValues(alpha: 0.22),
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.28),
-                        Colors.black.withValues(alpha: 0.84),
-                      ],
-                      stops: const [0, 0.32, 0.58, 1],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+                IgnorePointer(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withValues(alpha: 0.22),
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.28),
+                          Colors.black.withValues(alpha: 0.84),
+                        ],
+                        stops: const [0, 0.32, 0.58, 1],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
                     ),
                   ),
                 ),
                 Positioned.fill(
+                  bottom: _clipControlDockHeight,
                   child: _VerticalSwipeLayer(
                     onNext: onSwipeNext,
                     onPrevious: onSwipePrevious,
@@ -623,13 +627,13 @@ class ClipViewerMetrics {
       chipHeight: (30 * scale).clamp(28.0, 32.0),
       bottomTitleSize: (19 * scale).clamp(18.0, 21.0),
       bottomCaptionSize: (13 * scale).clamp(12.0, 14.0),
-      bottomPadding: (28 * scale).clamp(24.0, 34.0),
+      bottomPadding: _clipControlDockHeight + (24 * scale).clamp(20.0, 30.0),
       sideRailSpacing: (7 * scale).clamp(5.0, 9.0),
       seekBarHeight: (6 * scale).clamp(5.0, 7.0),
       horizontalPadding: (16 * scale).clamp(14.0, 20.0),
       topChipsOffset: (76 * scale).clamp(68.0, 86.0),
       actionRailWidth: (62 * scale).clamp(58.0, 68.0),
-      actionRailBottom: (58 * scale).clamp(52.0, 68.0),
+      actionRailBottom: _clipControlDockHeight + (48 * scale).clamp(44.0, 58.0),
     );
   }
 }
@@ -781,94 +785,105 @@ class _ClipVideoSurface extends StatelessWidget {
 
   Widget _buildFallback(String message) {
     if (thumbnail == null) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          _ViewerPlaceholder(message: message),
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 10,
-            child: ClipVideoSeekBar(progress: 0, onSeek: (_) {}),
-          ),
-        ],
+      return _ClipSurfaceWithControls(
+        visual: _ViewerPlaceholder(message: message),
+        progress: 0,
+        onSeek: (_) {},
       );
     }
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Image.asset(thumbnail!, fit: BoxFit.cover),
-        Align(
-          alignment: Alignment.center,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.86),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              message,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w900,
+    return _ClipSurfaceWithControls(
+      progress: 0,
+      onSeek: (_) {},
+      visual: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(thumbnail!, fit: BoxFit.cover),
+          Align(
+            alignment: Alignment.center,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.86),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
           ),
-        ),
-        Positioned(
-          left: 16,
-          right: 16,
-          bottom: 10,
-          child: ClipVideoSeekBar(progress: 0, onSeek: (_) {}),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildLoadingSurface(BuildContext context) {
     final thumbnailPath = thumbnail;
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        if (thumbnailPath != null)
-          Image.asset(thumbnailPath, fit: BoxFit.cover)
-        else
-          const DecoratedBox(
+    return _ClipSurfaceWithControls(
+      progress: 0,
+      onSeek: (_) {},
+      visual: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (thumbnailPath != null)
+            Image.asset(thumbnailPath, fit: BoxFit.cover)
+          else
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF132326), Color(0xFF182A30)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+          DecoratedBox(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF132326), Color(0xFF182A30)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+              color: Colors.black.withValues(alpha: 0.18),
+            ),
+          ),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.34),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+              ),
+              child: PawLoadingIndicator(
+                message: 'Cargando video...',
+                foregroundColor: Colors.white,
+                backgroundColor: AppColors.primaryDeep.withValues(alpha: 0.82),
+                compact: true,
               ),
             ),
           ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.18),
-          ),
-        ),
-        Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.34),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-            ),
-            child: PawLoadingIndicator(
-              message: 'Cargando video...',
-              foregroundColor: Colors.white,
-              backgroundColor: AppColors.primaryDeep.withValues(alpha: 0.82),
-              compact: true,
-            ),
-          ),
-        ),
-        Positioned(
-          left: 16,
-          right: 16,
-          bottom: 10,
-          child: ClipVideoSeekBar(progress: 0, onSeek: (_) {}),
-        ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ClipSurfaceWithControls extends StatelessWidget {
+  const _ClipSurfaceWithControls({
+    required this.visual,
+    required this.progress,
+    required this.onSeek,
+  });
+
+  final Widget visual;
+  final double progress;
+  final ValueChanged<double> onSeek;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(child: visual),
+        _ClipControlDock(progress: progress, onSeek: onSeek),
       ],
     );
   }
@@ -1265,65 +1280,88 @@ class _VideoPlayerFrame extends StatelessWidget {
         ? 0.0
         : (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        if (controller.value.isPlaying) {
-          controller.pause();
-        } else {
-          controller.play();
-        }
-      },
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          ColoredBox(
-            color: const Color(0xFF070B0D),
-            child: Center(
-              child: FittedBox(
-                fit: BoxFit.contain,
-                child: SizedBox(
-                  width: controller.value.size.width,
-                  height: controller.value.size.height,
-                  child: VideoPlayer(controller),
+    return Column(
+      children: [
+        Expanded(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              if (controller.value.isPlaying) {
+                controller.pause();
+              } else {
+                controller.play();
+              }
+            },
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                ColoredBox(
+                  color: const Color(0xFF070B0D),
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: SizedBox(
+                        width: controller.value.size.width,
+                        height: controller.value.size.height,
+                        child: VideoPlayer(controller),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                Center(
+                  child: AnimatedOpacity(
+                    opacity: controller.value.isPlaying ? 0 : 1,
+                    duration: const Duration(milliseconds: 180),
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: AppColors.primaryDeep,
+                        size: 38,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          Center(
-            child: AnimatedOpacity(
-              opacity: controller.value.isPlaying ? 0 : 1,
-              duration: const Duration(milliseconds: 180),
-              child: Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.play_arrow_rounded,
-                  color: AppColors.primaryDeep,
-                  size: 38,
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 10,
-            child: ClipVideoSeekBar(
-              progress: progress,
-              height: 6,
-              onSeek: (value) {
-                final target = duration * value;
-                controller.seekTo(target);
-              },
-            ),
-          ),
-        ],
+        ),
+        _ClipControlDock(
+          progress: progress,
+          onSeek: (value) {
+            final target = duration * value;
+            controller.seekTo(target);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _ClipControlDock extends StatelessWidget {
+  const _ClipControlDock({required this.progress, required this.onSeek});
+
+  final double progress;
+  final ValueChanged<double> onSeek;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('clip-video-seekbar-dock'),
+      height: _clipControlDockHeight,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF070B0D),
+        border: Border(
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+        ),
       ),
+      child: ClipVideoSeekBar(progress: progress, height: 5, onSeek: onSeek),
     );
   }
 }
@@ -1355,20 +1393,11 @@ class ClipVideoSeekBar extends StatelessWidget {
           onTapDown: (details) => seek(details.localPosition),
           onHorizontalDragUpdate: (details) => seek(details.localPosition),
           child: Container(
-            key: const ValueKey('clip-video-seekbar-overlay'),
+            key: const ValueKey('clip-video-seekbar-control'),
             height: 24,
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(horizontal: 2),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(999),
-              gradient: LinearGradient(
-                colors: [
-                  Colors.black.withValues(alpha: 0.00),
-                  Colors.black.withValues(alpha: 0.16),
-                  Colors.black.withValues(alpha: 0.00),
-                ],
-              ),
-            ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(999)),
             child: Stack(
               alignment: Alignment.centerLeft,
               children: [

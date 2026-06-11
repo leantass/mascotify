@@ -45,9 +45,10 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(find.byKey(const ValueKey('clip-video-seekbar-dock')), findsWidgets);
     expect(
       find.byKey(const ValueKey('clip-video-seekbar-overlay')),
-      findsWidgets,
+      findsNothing,
     );
   });
 
@@ -71,10 +72,7 @@ void main() {
 
     expect(find.text('Tema abierto: Clips.'), findsOneWidget);
     expect(find.textContaining('Feed de videos cortos'), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('clip-video-seekbar-overlay')),
-      findsNothing,
-    );
+    expect(find.byKey(const ValueKey('clip-video-seekbar-dock')), findsNothing);
   });
 
   testWidgets('like y unlike cambia el estado visual en el visor', (
@@ -224,6 +222,39 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('clip-video-seekbar')), findsWidgets);
+    expect(find.byKey(const ValueKey('clip-video-seekbar-dock')), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('clip-video-seekbar-overlay')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('seekbar permite adelantar y retroceder', (tester) async {
+    double? seekValue;
+
+    await tester.pumpWidget(
+      buildTestApp(
+        Center(
+          child: SizedBox(
+            width: 240,
+            child: ClipVideoSeekBar(
+              progress: 0.5,
+              onSeek: (value) => seekValue = value,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final bar = find.byKey(const ValueKey('clip-video-seekbar'));
+    final rect = tester.getRect(bar);
+
+    await tester.tapAt(Offset(rect.left + rect.width * 0.82, rect.center.dy));
+    expect(seekValue, greaterThan(0.75));
+
+    await tester.tapAt(Offset(rect.left + rect.width * 0.18, rect.center.dy));
+
+    expect(seekValue, lessThan(0.30));
   });
 
   testWidgets('mobile mantiene visor de alto completo', (tester) async {
@@ -299,9 +330,10 @@ void main() {
 
     expect(find.text('Mascotify'), findsWidgets);
     expect(find.text('Contenido oficial'), findsWidgets);
+    expect(find.byKey(const ValueKey('clip-video-seekbar-dock')), findsWidgets);
     expect(
       find.byKey(const ValueKey('clip-video-seekbar-overlay')),
-      findsWidgets,
+      findsNothing,
     );
     expect(find.text('Video local'), findsNothing);
     expect(find.text('Clip demo local'), findsNothing);
