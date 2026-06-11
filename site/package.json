@@ -1,0 +1,8 @@
+{
+  "name": "mascotify-public-website",
+  "private": true,
+  "scripts": {
+    "start": "python -m http.server 8088",
+    "serve": "python -m http.server 8088"
+  }
+}

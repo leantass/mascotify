@@ -1,0 +1,10 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="paw-title paw-desc">
+  <title id="paw-title">Ícono huellita Mascotify</title>
+  <desc id="paw-desc">Huellita simple en color menta y rosa</desc>
+  <circle cx="17" cy="20" r="7" fill="#66CCCC"/>
+  <circle cx="31" cy="14" r="7" fill="#66CCCC"/>
+  <circle cx="46" cy="20" r="7" fill="#66CCCC"/>
+  <circle cx="50" cy="35" r="6.5" fill="#66CCCC"/>
+  <path d="M32.5 28C23.5 28 16 35.1 16 44C16 50.5 21.3 56 27.8 56C30.5 56 33 55.1 34.9 53.6C36.4 52.4 38.5 52.3 40.1 53.4C42 54.7 44.2 55.4 46.6 55.4C53.4 55.4 58.8 49.8 58.8 43C58.8 34.7 48.7 28 39.2 28C37 28 34.8 28 32.5 28Z" fill="#FF3366"/>
+  <path d="M32.5 28C23.5 28 16 35.1 16 44C16 50.5 21.3 56 27.8 56C30.5 56 33 55.1 34.9 53.6C36.4 52.4 38.5 52.3 40.1 53.4C42 54.7 44.2 55.4 46.6 55.4C53.4 55.4 58.8 49.8 58.8 43C58.8 34.7 48.7 28 39.2 28C37 28 34.8 28 32.5 28Z" stroke="#333333" stroke-width="2"/>
+</svg>
