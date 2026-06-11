@@ -30,30 +30,34 @@ void main() {
     expect(AppData.notifications.length, 1);
   });
 
-  testWidgets('professional profile activation creates a notification', (
-    tester,
-  ) async {
-    setDesktopViewport(tester);
-    final session = await buildPersistentTestAppSession();
-    await session.controller.register(
-      ownerName: 'Profesional Notificaciones QA',
-      email: 'professional-notification@mascotify.local',
-      city: 'Buenos Aires',
-      password: 'password123',
-      experience: AccountExperience.professional,
-    );
-    await session.controller.completeOnboarding();
-    await AppData.activateCurrentProfessionalProfile();
+  testWidgets(
+    'professional registration does not activate professional notices',
+    (tester) async {
+      setDesktopViewport(tester);
+      final session = await buildPersistentTestAppSession();
+      await session.controller.register(
+        ownerName: 'Profesional Notificaciones QA',
+        email: 'professional-notification@mascotify.local',
+        city: 'Buenos Aires',
+        password: 'password123',
+        experience: AccountExperience.professional,
+      );
+      await session.controller.completeOnboarding();
+      await AppData.syncCurrentUserState();
 
-    await tester.pumpWidget(
-      buildTestApp(const NotificationsScreen(), controller: session.controller),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        buildTestApp(
+          const NotificationsScreen(),
+          controller: session.controller,
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('Presencia profesional activada'), findsOneWidget);
-    expect(find.text('Ver profesionales'), findsOneWidget);
-    expect(AppData.unreadNotificationsCount, 1);
-  });
+      expect(find.text('Presencia profesional activada'), findsNothing);
+      expect(find.text('Ver profesionales'), findsNothing);
+      expect(AppData.unreadNotificationsCount, 0);
+    },
+  );
 
   testWidgets('marking one notification read leaves the other unread', (
     tester,

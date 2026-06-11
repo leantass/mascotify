@@ -1430,7 +1430,7 @@ class _ProfessionalsEntryCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Profesionales y contenido',
+                        'Profesionales pet',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 4),
@@ -1449,14 +1449,14 @@ class _ProfessionalsEntryCard extends StatelessWidget {
                 Expanded(
                   child: _MiniMetric(
                     label: 'Profesionales',
-                    value: '3 destacados',
+                    value: 'Beta',
                   ),
                 ),
                 SizedBox(width: 10),
                 Expanded(
                   child: _MiniMetric(
                     label: 'Contenidos',
-                    value: 'Charlas breves',
+                    value: 'Preview',
                   ),
                 ),
               ],
@@ -1466,7 +1466,7 @@ class _ProfessionalsEntryCard extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: onOpenProfessionals,
-                child: const Text('Explorar profesionales'),
+                child: const Text('Ver preview beta'),
               ),
             ),
           ],

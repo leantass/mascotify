@@ -35,7 +35,7 @@ class HelpScreen extends StatelessWidget {
       topic: HelpTopic.gettingStarted,
       title: 'Primeros pasos',
       icon: Icons.flag_outlined,
-      what: 'La forma rapida de empezar con una cuenta familiar o profesional.',
+      what: 'La forma rapida de empezar con una cuenta familiar.',
       how:
           'Carga una mascota, revisa Inicio y usa Mascotas para completar su perfil.',
       data:
@@ -126,7 +126,8 @@ class HelpScreen extends StatelessWidget {
       topic: HelpTopic.explore,
       title: 'Explorar',
       icon: Icons.explore_outlined,
-      what: 'Espacio para descubrir perfiles, comunidad y profesionales.',
+      what:
+          'Espacio para descubrir perfiles, comunidad y la preview beta profesional.',
       how:
           'Filtra perfiles, guarda los que te interesan y abre accesos a comunidad.',
       data:
@@ -203,14 +204,16 @@ class HelpScreen extends StatelessWidget {
     ),
     HelpSection(
       topic: HelpTopic.professionals,
-      title: 'Profesionales y servicios',
+      title: 'Profesionales pet beta',
       icon: Icons.storefront_outlined,
-      what: 'Area para perfiles profesionales, contenido y servicios.',
+      what:
+          'Preview futura para veterinarias, paseadores, cuidadores y servicios pet.',
       how:
-          'Explora profesionales o usa el modo profesional si esta disponible en la cuenta.',
+          'Puedes ver una muestra visual, pero la experiencia activa hoy es para familias.',
       data:
-          'Muestra perfil, ciudad, especialidad, presencia publica y contenido demo.',
-      note: 'Reservas, pagos y contrataciones reales son funciones futuras.',
+          'Usa perfiles y servicios demo. No pide matricula, telefono, email ni datos reales.',
+      note:
+          'Agenda, reservas, pagos, contacto y servicios reales son funciones futuras.',
     ),
     HelpSection(
       topic: HelpTopic.plans,

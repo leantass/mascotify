@@ -67,7 +67,7 @@ void main() {
     expect(find.text('Mascotas'), findsNothing);
   });
 
-  testWidgets('complete professional flow keeps workspace and profile usable', (
+  testWidgets('professional beta preview stays locked in local demo', (
     tester,
   ) async {
     setDesktopViewport(tester);
@@ -76,28 +76,12 @@ void main() {
     await tester.pumpWidget(session.buildApp());
     await tester.pumpAndSettle();
 
-    await _tapVisibleText(tester, 'Demo profesional');
-    expect(find.text('Modo profesional'), findsWidgets);
-
-    await _openMainTab(tester, 'Servicios');
-    expect(find.text('Servicios contemplados'), findsOneWidget);
-    if (find.text('Activar presencia profesional').evaluate().isNotEmpty) {
-      await _tapVisibleText(tester, 'Activar presencia profesional');
-    }
-    expect(find.textContaining('perfil'), findsWidgets);
-    await _tapVisibleText(tester, 'perfil');
-    expect(find.text('Perfil profesional'), findsOneWidget);
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-
-    await _openMainTab(tester, 'Actividad');
-    expect(find.text('Feed general'), findsOneWidget);
-    await _openMainTab(tester, 'Perfil');
-    expect(find.text('Cuenta base'), findsOneWidget);
-    await _logoutFromProfile(tester);
-
-    expect(find.text('Iniciar sesión'), findsWidgets);
-    expect(find.text('Servicios'), findsNothing);
+    await _tapVisibleText(tester, 'Preview profesional beta');
+    expect(session.controller.isAuthenticated, isFalse);
+    expect(find.text('Profesionales pet beta'), findsWidgets);
+    expect(find.textContaining('Sin agenda real'), findsWidgets);
+    expect(find.text('Activar presencia profesional'), findsNothing);
+    expect(find.text('Publicar base profesional'), findsNothing);
   });
 
   testWidgets('family data does not leak into another local account', (

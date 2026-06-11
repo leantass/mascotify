@@ -49,7 +49,7 @@ class LocalAuthRepository {
       _buildSeededAccount(
         account: AccountIdentityMockData.professionalAccount,
         password: LocalAuthSeedData.demoPassword,
-        lastActiveExperience: AccountExperience.professional,
+        lastActiveExperience: AccountExperience.family,
         onboardingCompleted: true,
       ),
     ];
@@ -68,9 +68,13 @@ class LocalAuthRepository {
       return null;
     }
 
-    final resolvedExperience =
-        account.supportsExperience(session.activeExperience)
-        ? session.activeExperience
+    final requestedExperience =
+        session.activeExperience == AccountExperience.professional &&
+            account.supportsExperience(AccountExperience.family)
+        ? AccountExperience.family
+        : session.activeExperience;
+    final resolvedExperience = account.supportsExperience(requestedExperience)
+        ? requestedExperience
         : account.lastActiveExperience;
 
     final nextSession = StoredAuthSession(
@@ -150,20 +154,24 @@ class LocalAuthRepository {
       );
     }
 
+    final effectiveExperience = experience == AccountExperience.professional
+        ? AccountExperience.family
+        : experience;
+
     final account = StoredAuthAccount(
       id: 'local-${DateTime.now().microsecondsSinceEpoch}',
       ownerName: trimmedName,
       email: normalizedEmail,
       passwordHash: hashPassword(trimmedPassword),
-      planName: experience == AccountExperience.family
+      planName: effectiveExperience == AccountExperience.family
           ? 'Mascotify Plus'
           : 'Mascotify Pro',
       city: trimmedCity,
       memberSince: _buildMemberSinceLabel(DateTime.now()),
-      availableExperiences: <AccountExperience>[experience],
-      lastActiveExperience: experience,
+      availableExperiences: <AccountExperience>[effectiveExperience],
+      lastActiveExperience: effectiveExperience,
       onboardingCompleted: false,
-      familyProfile: experience == AccountExperience.family
+      familyProfile: effectiveExperience == AccountExperience.family
           ? StoredFamilyProfile(
               householdName: 'Hogar de ${_firstName(trimmedName)}',
               petsSummaryLabel: 'Todavía no cargaste mascotas',
@@ -178,7 +186,7 @@ class LocalAuthRepository {
               ],
             )
           : null,
-      professionalProfile: experience == AccountExperience.professional
+      professionalProfile: effectiveExperience == AccountExperience.professional
           ? StoredProfessionalProfile(
               businessName: trimmedName,
               category: 'Perfil profesional inicial',
@@ -204,7 +212,7 @@ class LocalAuthRepository {
     final updatedUsers = <StoredAuthAccount>[...users, account];
     final session = StoredAuthSession(
       userId: account.id,
-      activeExperience: experience,
+      activeExperience: effectiveExperience,
     );
 
     await _saveUsers(updatedUsers);
@@ -240,7 +248,9 @@ class LocalAuthRepository {
       return AuthOperationResult.success(account: account, session: session);
     }
 
-    final experience = fallbackExperience;
+    final experience = fallbackExperience == AccountExperience.professional
+        ? AccountExperience.family
+        : fallbackExperience;
     final ownerName = profile.displayName.trim().isEmpty
         ? normalizedEmail.split('@').first
         : profile.displayName.trim();
@@ -348,6 +358,12 @@ class LocalAuthRepository {
     }
 
     final account = users[index];
+    if (experience == AccountExperience.professional) {
+      return const AuthOperationResult.failure(
+        'Profesionales pet esta en beta. La experiencia activa hoy es familiar.',
+      );
+    }
+
     if (!account.supportsExperience(experience)) {
       return const AuthOperationResult.failure(
         'Ese perfil todavía no está disponible en esta cuenta.',

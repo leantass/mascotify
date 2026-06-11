@@ -7,7 +7,6 @@ import '../../features/matching/presentation/screens/matching_screen.dart';
 import '../../features/pets/presentation/screens/pets_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/professional/presentation/screens/professional_dashboard_screen.dart';
-import '../../features/professional/presentation/screens/professional_workspace_screen.dart';
 import '../../shared/models/account_identity_models.dart';
 import '../../theme/app_colors.dart';
 
@@ -71,13 +70,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             screen: ProfessionalDashboardScreen(),
             icon: Icons.home_outlined,
             selectedIcon: Icons.home_rounded,
-            label: 'Inicio',
-          ),
-          _NavigationItem(
-            screen: ProfessionalWorkspaceScreen(),
-            icon: Icons.storefront_outlined,
-            selectedIcon: Icons.storefront_rounded,
-            label: 'Servicios',
+            label: 'Beta',
           ),
           _NavigationItem(
             screen: ExploreScreen(),
@@ -187,7 +180,7 @@ class _RailHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final roleLabel = experience == AccountExperience.family
         ? 'Modo familia'
-        : 'Modo profesional';
+        : 'Beta profesional';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),

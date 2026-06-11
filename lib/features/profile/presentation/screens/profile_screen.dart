@@ -109,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Text(
                             isFamily
                                 ? 'Modo familia - ${account.city}'
-                                : 'Modo profesional - ${account.city}',
+                                : 'Beta profesional - ${account.city}',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.bodyMedium
@@ -263,9 +263,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               (item) => _ModeChip(
                                 label: item == AccountExperience.family
                                     ? 'Familia'
-                                    : 'Profesional',
+                                    : 'Profesional beta',
                                 isActive: item == widget.experience,
                                 onTap: auth.isBusy
+                                    ? null
+                                    : item == AccountExperience.professional
                                     ? null
                                     : () => auth.switchExperience(item),
                               ),

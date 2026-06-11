@@ -32,7 +32,7 @@ void main() {
     expect(find.text('Inicio'), findsOneWidget);
   });
 
-  testWidgets('professional onboarding completes into professional dashboard', (
+  testWidgets('professional registration falls back to family onboarding', (
     tester,
   ) async {
     setDesktopViewport(tester);
@@ -48,18 +48,15 @@ void main() {
     await tester.pumpWidget(session.buildApp());
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Onboarding inicial para profesionales y negocios'),
-      findsOneWidget,
-    );
-    expect(find.text('Activar el perfil profesional'), findsOneWidget);
-    expect(find.text('Preparar publicación futura'), findsOneWidget);
+    expect(find.text('Onboarding inicial para familias'), findsOneWidget);
+    expect(find.text('Activar el perfil familia'), findsOneWidget);
+    expect(find.text('Profesionales pet beta'), findsNothing);
 
-    await tester.tap(find.text('Continuar como profesional'));
+    await tester.tap(find.text('Continuar como familia'));
     await tester.pumpAndSettle();
 
     expect(session.controller.hasCompletedOnboarding, isTrue);
-    expect(find.text('Modo profesional'), findsWidgets);
-    expect(find.text('Servicios'), findsWidgets);
+    expect(find.text('Modo familia'), findsWidgets);
+    expect(find.text('Servicios'), findsNothing);
   });
 }

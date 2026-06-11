@@ -39,43 +39,26 @@ void main() {
     expect(find.text('Cuenta base'), findsOneWidget);
     await _logoutFromProfile(tester);
 
-    expect(find.text('Iniciar sesión'), findsWidgets);
+    expect(find.textContaining('Iniciar sesi'), findsWidgets);
     expect(find.text('Perfil'), findsNothing);
   });
 
-  testWidgets(
-    'demo professional route supports dashboard workspace and profile',
-    (tester) async {
-      setDesktopViewport(tester);
-      final session = await buildPersistentTestAppSession();
+  testWidgets('professional beta preview stays locked from auth', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    final session = await buildPersistentTestAppSession();
 
-      await tester.pumpWidget(session.buildApp());
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(session.buildApp());
+    await tester.pumpAndSettle();
 
-      await _tapVisibleText(tester, 'Demo profesional');
-      expect(find.text('Modo profesional'), findsWidgets);
-
-      await _openTab(tester, 'Servicios');
-      expect(find.text('Servicios contemplados'), findsOneWidget);
-      if (find.text('Activar presencia profesional').evaluate().isNotEmpty) {
-        await _tapVisibleText(tester, 'Activar presencia profesional');
-      }
-      await _tapVisibleText(tester, 'perfil');
-      expect(find.text('Perfil profesional'), findsOneWidget);
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-
-      await _openTab(tester, 'Actividad');
-      expect(find.text('Feed general'), findsOneWidget);
-
-      await _openTab(tester, 'Perfil');
-      expect(find.text('Cuenta base'), findsOneWidget);
-      await _logoutFromProfile(tester);
-
-      expect(find.text('Iniciar sesión'), findsWidgets);
-      expect(find.text('Servicios'), findsNothing);
-    },
-  );
+    await _tapVisibleText(tester, 'Preview profesional beta');
+    expect(session.controller.isAuthenticated, isFalse);
+    expect(find.text('Profesionales pet beta'), findsWidgets);
+    expect(find.textContaining('Sin agenda real'), findsWidgets);
+    expect(find.text('Modo profesional'), findsNothing);
+    expect(find.text('Activar presencia profesional'), findsNothing);
+  });
 
   testWidgets(
     'main demo screens do not expose basic technical placeholder text',
@@ -132,7 +115,7 @@ Future<void> _openTab(WidgetTester tester, String label) async {
 }
 
 Future<void> _logoutFromProfile(WidgetTester tester) async {
-  final logoutButton = find.widgetWithText(OutlinedButton, 'Cerrar sesión');
+  final logoutButton = find.textContaining('Cerrar sesi');
   final mainScroll = find.byType(Scrollable).first;
   for (
     var attempt = 0;
@@ -142,9 +125,9 @@ Future<void> _logoutFromProfile(WidgetTester tester) async {
     await tester.drag(mainScroll, const Offset(0, -900), warnIfMissed: false);
     await tester.pumpAndSettle();
   }
-  await tester.ensureVisible(logoutButton);
+  await tester.ensureVisible(logoutButton.first);
   await tester.pumpAndSettle();
-  await tester.tap(logoutButton);
+  await tester.tap(logoutButton.first);
   await tester.pumpAndSettle();
 }
 

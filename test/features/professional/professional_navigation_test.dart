@@ -4,42 +4,44 @@ import 'package:mascotify/shared/models/account_identity_models.dart';
 import '../../test_helpers.dart';
 
 void main() {
-  testWidgets('professional navigation activates and opens public profile', (
-    tester,
-  ) async {
-    setDesktopViewport(tester);
-    final session = await buildPersistentTestAppSession();
-    await session.controller.register(
-      ownerName: 'Profesional futuro QA',
-      email: 'professional-navigation-qa@mascotify.local',
-      city: 'Buenos Aires',
-      password: 'password123',
-      experience: AccountExperience.professional,
-    );
-    await session.controller.completeOnboarding();
+  testWidgets(
+    'professional account request remains family-first and beta locked',
+    (tester) async {
+      setDesktopViewport(tester);
+      final session = await buildPersistentTestAppSession();
+      await session.controller.register(
+        ownerName: 'Profesional futuro QA',
+        email: 'professional-navigation-qa@mascotify.local',
+        city: 'Buenos Aires',
+        password: 'password123',
+        experience: AccountExperience.professional,
+      );
+      await session.controller.completeOnboarding();
 
-    await tester.pumpWidget(session.buildApp());
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(session.buildApp());
+      await tester.pumpAndSettle();
 
-    expect(find.text('Modo profesional'), findsWidgets);
-    expect(
-      find.textContaining('Presencia profesional pendiente'),
-      findsWidgets,
-    );
+      expect(find.text('Modo familia'), findsWidgets);
+      expect(find.text('Modo profesional'), findsNothing);
+      expect(find.text('Servicios'), findsNothing);
 
-    await tester.tap(find.text('Servicios').first);
-    await tester.pumpAndSettle();
-    expect(find.textContaining('Servicios y operaci'), findsOneWidget);
-    expect(find.text('Servicios contemplados'), findsOneWidget);
-    expect(find.text('Activar presencia profesional'), findsOneWidget);
+      await _openTab(tester, 'Explorar');
+      await tester.scrollUntilVisible(find.text('Ver preview beta'), 500);
+      await tester.tap(find.text('Ver preview beta').first);
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Activar presencia profesional'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('Abrir perfil'), findsOneWidget);
+      expect(find.text('Profesionales pet beta'), findsWidgets);
+      expect(find.textContaining('Sin agenda real'), findsWidgets);
+      expect(find.text('Activar presencia profesional'), findsNothing);
+      expect(find.text('Publicar base profesional'), findsNothing);
+    },
+  );
+}
 
-    await tester.tap(find.textContaining('Abrir perfil'));
-    await tester.pumpAndSettle();
-    expect(find.text('Perfil profesional'), findsOneWidget);
-    expect(find.textContaining('Perfil profesional persistido'), findsWidgets);
-  });
+Future<void> _openTab(WidgetTester tester, String label) async {
+  final finder = find.text(label).first;
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+  await tester.pumpAndSettle();
 }

@@ -29,11 +29,11 @@ void main() {
 
     expect(restoredSession.controller.isAuthenticated, isTrue);
     expect(find.text('Modo familia'), findsWidgets);
-    expect(find.text('Iniciar sesión'), findsNothing);
+    expect(find.textContaining('Iniciar sesi'), findsNothing);
   });
 
   testWidgets(
-    'demo professional login remains authenticated after reconstruction',
+    'demo professional account restores into family-first experience',
     (tester) async {
       setDesktopViewport(tester);
       final session = await buildPersistentTestAppSession();
@@ -45,7 +45,8 @@ void main() {
       await tester.pumpWidget(session.buildApp());
       await tester.pumpAndSettle();
 
-      expect(find.text('Modo profesional'), findsWidgets);
+      expect(find.text('Modo familia'), findsWidgets);
+      expect(find.text('Modo profesional'), findsNothing);
 
       final restoredSession = await buildPersistentTestAppSession(
         resetPreferences: false,
@@ -54,8 +55,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(restoredSession.controller.isAuthenticated, isTrue);
-      expect(find.text('Modo profesional'), findsWidgets);
-      expect(find.text('Iniciar sesión'), findsNothing);
+      expect(find.text('Modo familia'), findsWidgets);
+      expect(find.text('Modo profesional'), findsNothing);
+      expect(find.textContaining('Iniciar sesi'), findsNothing);
     },
   );
 
@@ -75,7 +77,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(session.controller.isAuthenticated, isFalse);
-    expect(find.text('Iniciar sesión'), findsWidgets);
+    expect(find.textContaining('Iniciar sesi'), findsWidgets);
     expect(find.text('Mascotas'), findsNothing);
   });
 
@@ -95,7 +97,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.widgetWithText(ElevatedButton, 'Crear cuenta'), findsOneWidget);
 
-    await tester.tap(find.text('Iniciar sesión').first);
+    await tester.tap(find.textContaining('Iniciar sesi').first);
     await tester.pumpAndSettle();
     expect(find.widgetWithText(ElevatedButton, 'Ingresar'), findsOneWidget);
     expect(find.text('Demo familiar'), findsOneWidget);
