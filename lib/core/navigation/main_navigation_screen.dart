@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../features/home/presentation/screens/activity_feed_screen.dart';
 import '../../features/explore/presentation/screens/explore_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/matching/presentation/screens/matching_screen.dart';
 import '../../features/pets/presentation/screens/pets_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/professional/presentation/screens/professional_dashboard_screen.dart';
@@ -39,6 +40,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             icon: Icons.pets_outlined,
             selectedIcon: Icons.pets,
             label: 'Mascotas',
+          ),
+          _NavigationItem(
+            screen: MatchingScreen(),
+            icon: Icons.favorite_border_rounded,
+            selectedIcon: Icons.favorite_rounded,
+            label: 'Matching',
           ),
           _NavigationItem(
             screen: ExploreScreen(),
@@ -148,10 +155,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       bottomNavigationBar: useRailNavigation
           ? null
           : NavigationBar(
+              height: screenWidth < 430 ? 66 : null,
               selectedIndex: _currentIndex,
-              labelBehavior: screenWidth < 380
-                  ? NavigationDestinationLabelBehavior.onlyShowSelected
-                  : NavigationDestinationLabelBehavior.alwaysShow,
+              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
               onDestinationSelected: (index) {
                 setState(() {
                   _currentIndex = index;

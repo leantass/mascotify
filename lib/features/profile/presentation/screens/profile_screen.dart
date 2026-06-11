@@ -11,6 +11,7 @@ import '../../../../shared/models/plan_entitlements.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
+import 'help_screen.dart';
 import 'support_contacts_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -967,6 +968,19 @@ class _ConfigurationTab extends StatelessWidget {
           icon: Icons.tips_and_updates_outlined,
           value: user.ecosystemSuggestionsEnabled,
           onChanged: isBusy ? null : onEcosystemSuggestionsChanged,
+        ),
+        const SizedBox(height: 14),
+        _SettingsAction(
+          actionKey: const ValueKey('settings-help-action'),
+          title: 'Ayuda',
+          subtitle: 'Guias de uso, privacidad, clips y matching.',
+          icon: Icons.help_outline_rounded,
+          label: 'Abrir',
+          onPressed: isBusy
+              ? null
+              : () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const HelpScreen()),
+                ),
         ),
         const SizedBox(height: 14),
         _SettingsAction(

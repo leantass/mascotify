@@ -38,8 +38,22 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Privacidad'), findsOneWidget);
       expect(find.text('Seguridad'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('settings-help-action')),
+        findsOneWidget,
+      );
       expect(find.text('Modificar'), findsOneWidget);
       expect(find.text('Cambiar'), findsOneWidget);
+
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('settings-help-action')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('settings-help-action')));
+      await tester.pumpAndSettle();
+      expect(find.text('Centro de ayuda'), findsOneWidget);
+      expect(find.text('Matching'), findsOneWidget);
+      expect(find.text('Privacidad y seguridad'), findsOneWidget);
     },
   );
 }

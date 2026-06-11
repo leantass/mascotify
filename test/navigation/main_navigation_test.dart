@@ -16,11 +16,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Inicio'), findsOneWidget);
+    expect(find.text('Matching'), findsOneWidget);
     expect(find.text('Mascotas perdidas'), findsNothing);
 
     await tester.tap(find.text('Mascotas'));
     await tester.pumpAndSettle();
     expect(find.text('Centro de mascotas'), findsOneWidget);
+
+    await tester.tap(find.text('Matching'));
+    await tester.pumpAndSettle();
+    expect(find.text('Matching de mascotas'), findsOneWidget);
 
     await tester.tap(find.text('Explorar'));
     await tester.pumpAndSettle();

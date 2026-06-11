@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mascotify/features/explore/presentation/screens/explore_clip_viewer_screen.dart';
@@ -44,7 +46,6 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('QR'), findsWidgets);
-    expect(find.text('Perro'), findsWidgets);
   });
 
   testWidgets('like y unlike cambia el estado visual en el visor', (
@@ -148,11 +149,52 @@ void main() {
       find.byKey(const ValueKey('clips-vertical-page-view')),
     );
 
-    expect(frameSize.width, lessThan(520));
+    expect(frameSize.width, lessThanOrEqualTo(420));
     expect(frameSize.height, greaterThan(frameSize.width * 1.65));
     expect(frameSize.width / frameSize.height, closeTo(480 / 854, 0.03));
     expect(pageViewSize.width, closeTo(frameSize.width, 3));
     expect(pageViewSize.height, closeTo(frameSize.height, 3));
+  });
+
+  testWidgets('desktop escala controles internos de clips', (tester) async {
+    setDesktopViewport(tester);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        ExploreClipViewerScreen(
+          clips: ClipsMockData.clips,
+          initialClipId: ClipsMockData.clips.first.id,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final actionButtonSize = tester.getSize(
+      find.byKey(const ValueKey('clip-action-button')).first,
+    );
+    final badgeRowSize = tester.getSize(
+      find.byKey(const ValueKey('clip-badge-row')),
+    );
+
+    expect(actionButtonSize.width, lessThanOrEqualTo(68));
+    expect(badgeRowSize.height, lessThanOrEqualTo(36));
+    expect(find.byType(Wrap), findsNothing);
+  });
+
+  testWidgets('clip viewer muestra barra de reproduccion', (tester) async {
+    setDesktopViewport(tester);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        ExploreClipViewerScreen(
+          clips: ClipsMockData.clips,
+          initialClipId: ClipsMockData.clips.first.id,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('clip-video-seekbar')), findsWidgets);
   });
 
   testWidgets('mobile mantiene visor de alto completo', (tester) async {
@@ -228,10 +270,22 @@ void main() {
 
     expect(find.text('Mascotify'), findsWidgets);
     expect(find.text('Contenido oficial'), findsWidgets);
-    expect(find.text('Mascotify oficial'), findsWidgets);
+    expect(find.text('QR'), findsWidgets);
     expect(find.text('Video local'), findsNothing);
     expect(find.text('Clip demo local'), findsNothing);
     expect(find.byIcon(Icons.volume_off_rounded), findsOneWidget);
+  });
+
+  test('clips oficiales apuntan a videos V3 existentes con audio', () {
+    final officialClips = ClipsMockData.clips.where(
+      (clip) => clip.sourceType == 'officialMascotify',
+    );
+
+    expect(officialClips, hasLength(10));
+    for (final clip in officialClips) {
+      expect(clip.videoAssetPath, endsWith('_v3.mp4'));
+      expect(File(clip.videoAssetPath!).existsSync(), isTrue);
+    }
   });
 
   testWidgets('clip sin videoAssetPath muestra fallback seguro', (
