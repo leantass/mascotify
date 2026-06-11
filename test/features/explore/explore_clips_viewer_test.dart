@@ -126,6 +126,59 @@ void main() {
     expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsNothing);
   });
 
+  testWidgets('desktop usa frame vertical tipo telefono y no cuadrado', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        ExploreClipViewerScreen(
+          clips: ClipsMockData.clips,
+          initialClipId: ClipsMockData.clips.first.id,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final frameSize = tester.getSize(
+      find.byKey(const ValueKey('clips-vertical-frame')),
+    );
+    final pageViewSize = tester.getSize(
+      find.byKey(const ValueKey('clips-vertical-page-view')),
+    );
+
+    expect(frameSize.width, lessThan(520));
+    expect(frameSize.height, greaterThan(frameSize.width * 1.65));
+    expect(frameSize.width / frameSize.height, closeTo(480 / 854, 0.03));
+    expect(pageViewSize.width, closeTo(frameSize.width, 3));
+    expect(pageViewSize.height, closeTo(frameSize.height, 3));
+  });
+
+  testWidgets('mobile mantiene visor de alto completo', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        ExploreClipViewerScreen(
+          clips: ClipsMockData.clips,
+          initialClipId: ClipsMockData.clips.first.id,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final frameSize = tester.getSize(
+      find.byKey(const ValueKey('clips-vertical-frame')),
+    );
+
+    expect(frameSize.width, 390);
+    expect(frameSize.height, 844);
+  });
+
   testWidgets('volver desde el visor retorna a Explorar Clips', (tester) async {
     setDesktopViewport(tester);
 

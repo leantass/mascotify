@@ -7,6 +7,12 @@ import '../../../../shared/widgets/paw_loading_indicator.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
 
+const double _clipViewerAspectRatio = 480 / 854;
+const double _clipViewerDesktopBreakpoint = 700;
+const double _clipViewerDesktopMaxWidth = 520;
+const double _clipViewerDesktopSideGutter = 48;
+const double _clipViewerDesktopVerticalGutter = 16;
+
 class ExploreClipViewerScreen extends StatefulWidget {
   const ExploreClipViewerScreen({
     super.key,
@@ -83,123 +89,155 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
   }
 
   Widget _buildViewer() {
-    return ResponsivePageBody(
-      maxWidth: 560,
-      child: SizedBox.expand(
-        child: Stack(
-          children: [
-            Semantics(
-              label: 'Feed vertical de clips',
-              child: PageView.builder(
-                controller: _pageController,
-                scrollDirection: Axis.vertical,
-                itemCount: _clips.length,
-                onPageChanged: (index) => setState(() => _currentIndex = index),
-                itemBuilder: (context, index) {
-                  final clip = _clips[index];
-                  return _ViewerClipPage(
-                    key: ValueKey(clip.id),
-                    clip: clip,
-                    isActive: index == _currentIndex,
-                    isMuted: _isMuted,
-                    onSwipeNext: () => _goToClip(index + 1),
-                    onSwipePrevious: () => _goToClip(index - 1),
-                    onToggleLike: () => _toggleClipLike(clip.id),
-                    onShare: () => _shareClip(clip.id),
-                    onToggleSave: () => _toggleClipSave(clip.id),
-                    onComments: _showCommentsComingSoon,
-                    onToggleFollow: clip.authorId == null
-                        ? null
-                        : () => _toggleClipFollow(clip.id),
-                  );
-                },
-              ),
-            ),
-            Positioned(
-              left: 14,
-              right: 14,
-              top: 12,
-              child: Row(
-                children: [
-                  TextButton.icon(
-                    onPressed: _close,
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    label: const Text('Volver'),
-                    style: _viewerNavigationButtonStyle(),
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 11,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.34),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.14),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final frameSize = _viewerFrameSizeFor(constraints);
+        final isDesktopFrame =
+            constraints.maxWidth >= _clipViewerDesktopBreakpoint;
+
+        return Center(
+          child: Container(
+            key: const ValueKey('clips-vertical-frame'),
+            width: frameSize.width,
+            height: frameSize.height,
+            decoration: BoxDecoration(
+              color: const Color(0xFF070B0D),
+              borderRadius: BorderRadius.circular(isDesktopFrame ? 28 : 0),
+              border: isDesktopFrame
+                  ? Border.all(color: Colors.white.withValues(alpha: 0.08))
+                  : null,
+              boxShadow: isDesktopFrame
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.38),
+                        blurRadius: 36,
+                        offset: const Offset(0, 20),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.22),
-                          blurRadius: 16,
-                          offset: const Offset(0, 8),
+                    ]
+                  : null,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              clipBehavior: Clip.hardEdge,
+              children: [
+                Semantics(
+                  label: 'Feed vertical de clips',
+                  child: PageView.builder(
+                    key: const ValueKey('clips-vertical-page-view'),
+                    controller: _pageController,
+                    scrollDirection: Axis.vertical,
+                    clipBehavior: Clip.hardEdge,
+                    itemCount: _clips.length,
+                    onPageChanged: (index) =>
+                        setState(() => _currentIndex = index),
+                    itemBuilder: (context, index) {
+                      final clip = _clips[index];
+                      return _ViewerClipPage(
+                        key: ValueKey('clip-page-${clip.id}'),
+                        clip: clip,
+                        isActive: index == _currentIndex,
+                        isMuted: _isMuted,
+                        onSwipeNext: () => _goToClip(index + 1),
+                        onSwipePrevious: () => _goToClip(index - 1),
+                        onToggleLike: () => _toggleClipLike(clip.id),
+                        onShare: () => _shareClip(clip.id),
+                        onToggleSave: () => _toggleClipSave(clip.id),
+                        onComments: _showCommentsComingSoon,
+                        onToggleFollow: clip.authorId == null
+                            ? null
+                            : () => _toggleClipFollow(clip.id),
+                      );
+                    },
+                  ),
+                ),
+                Positioned(
+                  left: 14,
+                  right: 14,
+                  top: 12,
+                  child: Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: _close,
+                        icon: const Icon(Icons.arrow_back_rounded),
+                        label: const Text('Volver'),
+                        style: _viewerNavigationButtonStyle(),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 11,
+                          vertical: 6,
                         ),
-                      ],
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.34),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.14),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.22),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          '${_currentIndex + 1}/${_clips.length}',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  right: 17,
+                  top: 96,
+                  bottom: 28,
+                  child: RotatedBox(
+                    quarterTurns: 1,
+                    child: LinearProgressIndicator(
+                      value: (_currentIndex + 1) / _clips.length,
+                      minHeight: 3,
+                      color: AppColors.accent,
+                      backgroundColor: Colors.white.withValues(alpha: 0.16),
                     ),
-                    child: Text(
-                      '${_currentIndex + 1}/${_clips.length}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Positioned(
+                  right: 14,
+                  top: 58,
+                  child: Tooltip(
+                    message: _isMuted ? 'Activar sonido' : 'Silenciar',
+                    child: Semantics(
+                      button: true,
+                      label: _isMuted ? 'Activar sonido' : 'Silenciar video',
+                      child: IconButton.filled(
+                        onPressed: () => setState(() => _isMuted = !_isMuted),
+                        icon: Icon(
+                          _isMuted
+                              ? Icons.volume_off_rounded
+                              : Icons.volume_up_rounded,
+                        ),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.black.withValues(alpha: 0.42),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(42, 42),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-            Positioned(
-              right: 17,
-              top: 96,
-              bottom: 28,
-              child: RotatedBox(
-                quarterTurns: 1,
-                child: LinearProgressIndicator(
-                  value: (_currentIndex + 1) / _clips.length,
-                  minHeight: 3,
-                  color: AppColors.accent,
-                  backgroundColor: Colors.white.withValues(alpha: 0.16),
                 ),
-              ),
+              ],
             ),
-            Positioned(
-              right: 14,
-              top: 58,
-              child: Tooltip(
-                message: _isMuted ? 'Activar sonido' : 'Silenciar',
-                child: Semantics(
-                  button: true,
-                  label: _isMuted ? 'Activar sonido' : 'Silenciar video',
-                  child: IconButton.filled(
-                    onPressed: () => setState(() => _isMuted = !_isMuted),
-                    icon: Icon(
-                      _isMuted
-                          ? Icons.volume_off_rounded
-                          : Icons.volume_up_rounded,
-                    ),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.black.withValues(alpha: 0.42),
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(42, 42),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -358,6 +396,39 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
   }
 }
 
+Size _viewerFrameSizeFor(BoxConstraints constraints) {
+  final availableWidth = constraints.maxWidth.isFinite
+      ? constraints.maxWidth
+      : _clipViewerDesktopMaxWidth;
+  final availableHeight = constraints.maxHeight.isFinite
+      ? constraints.maxHeight
+      : _clipViewerDesktopMaxWidth / _clipViewerAspectRatio;
+  final isDesktopFrame = availableWidth >= _clipViewerDesktopBreakpoint;
+
+  if (!isDesktopFrame) {
+    return Size(availableWidth, availableHeight);
+  }
+
+  final maxFrameHeight = (availableHeight - _clipViewerDesktopVerticalGutter)
+      .clamp(0.0, double.infinity);
+  final maxFrameWidth = (availableWidth - _clipViewerDesktopSideGutter).clamp(
+    0.0,
+    _clipViewerDesktopMaxWidth,
+  );
+
+  var width = maxFrameHeight * _clipViewerAspectRatio;
+  if (width > maxFrameWidth) {
+    width = maxFrameWidth;
+  }
+  var height = width / _clipViewerAspectRatio;
+  if (height > maxFrameHeight) {
+    height = maxFrameHeight;
+    width = height * _clipViewerAspectRatio;
+  }
+
+  return Size(width, height);
+}
+
 class _ViewerClipPage extends StatelessWidget {
   const _ViewerClipPage({
     super.key,
@@ -393,176 +464,186 @@ class _ViewerClipPage extends StatelessWidget {
         clip.authorDisplayName ??
         (clip.authorId == null ? clip.sourceLabel : 'Creador ${clip.authorId}');
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(22),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            _ClipVideoSurface(
-              clip: clip,
-              thumbnail: thumbnail,
-              isActive: isActive,
-              isMuted: isMuted,
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withValues(alpha: 0.22),
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.28),
-                    Colors.black.withValues(alpha: 0.84),
-                  ],
-                  stops: const [0, 0.32, 0.58, 1],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+    return RepaintBoundary(
+      child: ColoredBox(
+        color: const Color(0xFF070B0D),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              fit: StackFit.expand,
+              clipBehavior: Clip.hardEdge,
+              children: [
+                _ClipVideoSurface(
+                  clip: clip,
+                  thumbnail: thumbnail,
+                  isActive: isActive,
+                  isMuted: isMuted,
                 ),
-              ),
-            ),
-            Positioned.fill(
-              child: _VerticalSwipeLayer(
-                onNext: onSwipeNext,
-                onPrevious: onSwipePrevious,
-              ),
-            ),
-            Positioned(
-              left: 18,
-              right: 86,
-              top: 82,
-              child: Wrap(
-                spacing: 7,
-                runSpacing: 7,
-                children: [
-                  _ViewerBadge(label: topMediaLabel),
-                  if (clip.contentOriginLabel != null)
-                    _ViewerBadge(label: clip.contentOriginLabel!),
-                  if (clip.sourceLabel != null)
-                    _ViewerBadge(label: clip.sourceLabel!),
-                  _ViewerBadge(label: clip.category),
-                  _ViewerBadge(label: clip.animalType),
-                ],
-              ),
-            ),
-            Positioned(
-              right: 10,
-              bottom: 24,
-              child: _ReelActionRail(
-                clip: clip,
-                onToggleLike: onToggleLike,
-                onComments: onComments,
-                onToggleSave: onToggleSave,
-                onShare: onShare,
-                onToggleFollow: onToggleFollow,
-              ),
-            ),
-            Positioned(
-              left: 18,
-              right: 90,
-              bottom: 22,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (!hasVideo) const _ViewerBadge(label: 'Clip demo local'),
-                  const SizedBox(height: 10),
-                  if (creatorLabel != null) ...[
-                    Row(
-                      children: [
-                        Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: AppColors.accent.withValues(alpha: 0.9),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.58),
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.pets_rounded,
-                            color: Colors.white,
-                            size: 14,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            creatorLabel,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.86),
-                                  fontWeight: FontWeight.w800,
-                                ),
-                          ),
-                        ),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.black.withValues(alpha: 0.22),
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.28),
+                        Colors.black.withValues(alpha: 0.84),
                       ],
-                    ),
-                    const SizedBox(height: 7),
-                  ],
-                  Text(
-                    clip.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      height: 1.05,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.65),
-                          blurRadius: 12,
-                        ),
-                      ],
+                      stops: const [0, 0.32, 0.58, 1],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                     ),
                   ),
-                  const SizedBox(height: 7),
-                  Text(
-                    clip.description,
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      height: 1.34,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.72),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
+                ),
+                Positioned.fill(
+                  child: _VerticalSwipeLayer(
+                    onNext: onSwipeNext,
+                    onPrevious: onSwipePrevious,
                   ),
-                  const SizedBox(height: 10),
-                  Row(
+                ),
+                Positioned(
+                  left: 18,
+                  right: 86,
+                  top: 82,
+                  child: Wrap(
+                    spacing: 7,
+                    runSpacing: 7,
+                    children: [
+                      _ViewerBadge(label: topMediaLabel),
+                      if (clip.contentOriginLabel != null)
+                        _ViewerBadge(label: clip.contentOriginLabel!),
+                      if (clip.sourceLabel != null)
+                        _ViewerBadge(label: clip.sourceLabel!),
+                      _ViewerBadge(label: clip.category),
+                      _ViewerBadge(label: clip.animalType),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  right: 10,
+                  bottom: 24,
+                  child: _ReelActionRail(
+                    clip: clip,
+                    onToggleLike: onToggleLike,
+                    onComments: onComments,
+                    onToggleSave: onToggleSave,
+                    onShare: onShare,
+                    onToggleFollow: onToggleFollow,
+                  ),
+                ),
+                Positioned(
+                  left: 18,
+                  right: 90,
+                  bottom: 22,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.swap_vert_rounded,
-                        color: Colors.white.withValues(alpha: 0.74),
-                        size: 16,
-                      ),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          'Desliza para ver mas clips',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.74),
-                                fontWeight: FontWeight.w700,
+                      if (!hasVideo)
+                        const _ViewerBadge(label: 'Clip demo local'),
+                      const SizedBox(height: 10),
+                      if (creatorLabel != null) ...[
+                        Row(
+                          children: [
+                            Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: AppColors.accent.withValues(alpha: 0.9),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.58),
+                                ),
                               ),
+                              child: const Icon(
+                                Icons.pets_rounded,
+                                color: Colors.white,
+                                size: 14,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                creatorLabel,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.86,
+                                      ),
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                              ),
+                            ),
+                          ],
                         ),
+                        const SizedBox(height: 7),
+                      ],
+                      Text(
+                        clip.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          height: 1.05,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.65),
+                              blurRadius: 12,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 7),
+                      Text(
+                        clip.description,
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          height: 1.34,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.72),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.swap_vert_rounded,
+                            color: Colors.white.withValues(alpha: 0.74),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              'Desliza para ver mas clips',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.74),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -1055,12 +1136,17 @@ class _VideoPlayerFrame extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          FittedBox(
-            fit: BoxFit.cover,
-            child: SizedBox(
-              width: controller.value.size.width,
-              height: controller.value.size.height,
-              child: VideoPlayer(controller),
+          ColoredBox(
+            color: const Color(0xFF070B0D),
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: SizedBox(
+                  width: controller.value.size.width,
+                  height: controller.value.size.height,
+                  child: VideoPlayer(controller),
+                ),
+              ),
             ),
           ),
           Center(
