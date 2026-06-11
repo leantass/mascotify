@@ -6,8 +6,6 @@ import '../../../../shared/models/social_models.dart';
 import '../../../../shared/widgets/paw_loading_indicator.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
-import 'clip_web_asset_video_view.dart'
-    if (dart.library.js_interop) 'clip_web_asset_video_view_web.dart';
 
 class ExploreClipViewerScreen extends StatefulWidget {
   const ExploreClipViewerScreen({
@@ -818,7 +816,6 @@ class _AssetClipVideoPlayer extends StatefulWidget {
 class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
   VideoPlayerController? _controller;
   bool _hasError = false;
-  bool _webVideoReady = false;
 
   @override
   void initState() {
@@ -832,7 +829,6 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
     if (oldWidget.assetPath != widget.assetPath) {
       _disposeController();
       _hasError = false;
-      _webVideoReady = false;
       _initialize();
     } else if (oldWidget.isActive != widget.isActive) {
       _syncPlayback();
@@ -849,8 +845,11 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
   }
 
   Future<void> _initialize() async {
-    if (kIsWeb) return;
-    final controller = VideoPlayerController.asset(widget.assetPath);
+    final controller = kIsWeb
+        ? VideoPlayerController.networkUrl(
+            Uri.base.resolve('assets/${widget.assetPath}'),
+          )
+        : VideoPlayerController.asset(widget.assetPath);
     _controller = controller;
     controller.addListener(_onControllerChanged);
     try {
@@ -901,34 +900,6 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) {
-      if (_hasError) {
-        return widget.fallback;
-      }
-
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          WebAssetClipVideoView(
-            assetPath: widget.assetPath,
-            isActive: widget.isActive,
-            isMuted: widget.isMuted,
-            onReady: () {
-              if (mounted && !_webVideoReady) {
-                setState(() => _webVideoReady = true);
-              }
-            },
-            onError: () {
-              if (mounted) {
-                setState(() => _hasError = true);
-              }
-            },
-          ),
-          if (!_webVideoReady) widget.loading,
-        ],
-      );
-    }
-
     final controller = _controller;
     if (_hasError || controller == null) {
       return widget.fallback;
