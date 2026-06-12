@@ -84,6 +84,7 @@ $port = $null
 $url = $null
 $listener = $null
 $urlFile = Join-Path $root '.mascotify-demo-url.txt'
+$buildStamp = Get-Date -Format 'yyyyMMddHHmmss'
 
 Add-Type -AssemblyName System.Web
 
@@ -223,7 +224,7 @@ foreach ($candidatePort in $preferredPort..$lastPort) {
     $candidateListener.Start()
     $listener = $candidateListener
     $port = $candidatePort
-    $url = "http://127.0.0.1:$port/"
+    $url = "http://127.0.0.1:$port/?build=$buildStamp"
     break
   } catch {
     if ($candidatePort -eq $preferredPort) {
