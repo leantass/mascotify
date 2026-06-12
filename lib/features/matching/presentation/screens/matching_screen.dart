@@ -42,52 +42,82 @@ class _MatchingScreenState extends State<MatchingScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: ResponsivePageBody(
-          maxWidth: 920,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-            children: [
-              _Header(onReset: selectedPet == null ? null : _resetDeck),
-              const SizedBox(height: 14),
-              if (selectedPet == null)
-                const _EmptyPetsState()
-              else ...[
-                _CompactControls(
-                  pets: pets,
-                  selectedPet: selectedPet,
-                  goal: _goal,
-                  onPetSelected: (pet) {
-                    setState(() => _selectedPet = pet);
-                    _resetDeck();
-                  },
-                  onGoalChanged: (goal) {
-                    setState(() => _goal = goal);
-                    _resetDeck();
-                  },
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isCompact =
+                constraints.maxHeight < 760 || constraints.maxWidth < 430;
+            final horizontalPadding = isCompact ? 12.0 : 20.0;
+            final topPadding = isCompact ? 8.0 : 12.0;
+            final bottomPadding = isCompact ? 8.0 : 18.0;
+            final gap = isCompact ? 8.0 : 12.0;
+
+            return ResponsivePageBody(
+              maxWidth: 620,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  topPadding,
+                  horizontalPadding,
+                  bottomPadding,
                 ),
-                const SizedBox(height: 16),
-                if (_isSearching)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 80),
-                    child: PawLoadingIndicator(message: 'Buscando matches...'),
-                  )
-                else
-                  _SwipeDeck(
-                    matches: _matches,
-                    currentIndex: _currentIndex,
-                    selectedPet: selectedPet,
-                    onPass: _passMatch,
-                    onLike: _likeMatch,
-                    onReset: _resetDeck,
-                  ),
-                const SizedBox(height: 16),
-                const ContextualHelpLink(
-                  topic: HelpTopic.matching,
-                  label: 'Ver ayuda sobre Matching',
+                child: Column(
+                  key: const ValueKey('matching-above-fold-layout'),
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _Header(
+                      onReset: selectedPet == null ? null : _resetDeck,
+                      compact: isCompact,
+                    ),
+                    SizedBox(height: gap),
+                    if (selectedPet == null)
+                      const Expanded(child: Center(child: _EmptyPetsState()))
+                    else ...[
+                      _CompactControls(
+                        pets: pets,
+                        selectedPet: selectedPet,
+                        goal: _goal,
+                        compact: isCompact,
+                        onPetSelected: (pet) {
+                          setState(() => _selectedPet = pet);
+                          _resetDeck();
+                        },
+                        onGoalChanged: (goal) {
+                          setState(() => _goal = goal);
+                          _resetDeck();
+                        },
+                      ),
+                      SizedBox(height: gap),
+                      Expanded(
+                        child: _isSearching
+                            ? const Center(
+                                child: PawLoadingIndicator(
+                                  message: 'Buscando matches...',
+                                ),
+                              )
+                            : _SwipeDeck(
+                                matches: _matches,
+                                currentIndex: _currentIndex,
+                                selectedPet: selectedPet,
+                                compact: isCompact,
+                                onPass: _passMatch,
+                                onLike: _likeMatch,
+                                onReset: _resetDeck,
+                              ),
+                      ),
+                      SizedBox(height: isCompact ? 4 : 8),
+                      const Align(
+                        alignment: Alignment.center,
+                        child: ContextualHelpLink(
+                          topic: HelpTopic.matching,
+                          label: 'Ver ayuda sobre Matching',
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              ],
-            ],
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -148,20 +178,21 @@ class _MatchingScreenState extends State<MatchingScreen> {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.onReset});
+  const _Header({required this.onReset, required this.compact});
 
   final VoidCallback? onReset;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Container(
-          width: 46,
-          height: 46,
+          width: compact ? 38 : 46,
+          height: compact ? 38 : 46,
           decoration: BoxDecoration(
             color: AppColors.accentSoft,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(compact ? 14 : 16),
           ),
           child: const Icon(
             Icons.favorite_rounded,
@@ -175,14 +206,19 @@ class _Header extends StatelessWidget {
             children: [
               Text(
                 'Matching de mascotas',
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: compact
+                    ? Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      )
+                    : Theme.of(context).textTheme.headlineSmall,
               ),
-              Text(
-                'Desliza y encontra compatibles cerca.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
+              if (!compact)
+                Text(
+                  'Desliza y encontra compatibles cerca.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -202,6 +238,7 @@ class _CompactControls extends StatelessWidget {
     required this.pets,
     required this.selectedPet,
     required this.goal,
+    required this.compact,
     required this.onPetSelected,
     required this.onGoalChanged,
   });
@@ -209,49 +246,84 @@ class _CompactControls extends StatelessWidget {
   final List<Pet> pets;
   final Pet selectedPet;
   final PetMatchingGoal goal;
+  final bool compact;
   final ValueChanged<Pet> onPetSelected;
   final ValueChanged<PetMatchingGoal> onGoalChanged;
 
   @override
   Widget build(BuildContext context) {
+    final selector = DropdownButtonHideUnderline(
+      child: DropdownButton<Pet>(
+        key: const ValueKey('matching-pet-selector'),
+        value: selectedPet,
+        borderRadius: BorderRadius.circular(16),
+        isDense: true,
+        items: pets
+            .map(
+              (pet) => DropdownMenuItem<Pet>(
+                value: pet,
+                child: Text(
+                  '${pet.name} - ${pet.species}',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            )
+            .toList(),
+        onChanged: (pet) {
+          if (pet != null) onPetSelected(pet);
+        },
+      ),
+    );
+    final goals = SegmentedButton<PetMatchingGoal>(
+      key: const ValueKey('matching-goal-selector'),
+      showSelectedIcon: false,
+      style: compact
+          ? ButtonStyle(
+              visualDensity: VisualDensity.compact,
+              padding: WidgetStateProperty.all(
+                const EdgeInsets.symmetric(horizontal: 8),
+              ),
+            )
+          : null,
+      segments: PetMatchingGoal.values
+          .map(
+            (item) => ButtonSegment<PetMatchingGoal>(
+              value: item,
+              label: Text(item.label),
+              icon: Icon(_iconForGoal(item)),
+            ),
+          )
+          .toList(),
+      selected: {goal},
+      onSelectionChanged: (values) => onGoalChanged(values.first),
+    );
+
+    if (compact) {
+      return Column(
+        key: const ValueKey('matching-compact-controls'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 38,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: selector,
+          ),
+          const SizedBox(height: 6),
+          SingleChildScrollView(scrollDirection: Axis.horizontal, child: goals),
+        ],
+      );
+    }
+
     return Wrap(
       spacing: 10,
       runSpacing: 10,
       crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        DropdownButton<Pet>(
-          key: const ValueKey('matching-pet-selector'),
-          value: selectedPet,
-          borderRadius: BorderRadius.circular(16),
-          underline: const SizedBox.shrink(),
-          items: pets
-              .map(
-                (pet) => DropdownMenuItem<Pet>(
-                  value: pet,
-                  child: Text('${pet.name} - ${pet.species}'),
-                ),
-              )
-              .toList(),
-          onChanged: (pet) {
-            if (pet != null) onPetSelected(pet);
-          },
-        ),
-        SegmentedButton<PetMatchingGoal>(
-          key: const ValueKey('matching-goal-selector'),
-          showSelectedIcon: false,
-          segments: PetMatchingGoal.values
-              .map(
-                (item) => ButtonSegment<PetMatchingGoal>(
-                  value: item,
-                  label: Text(item.label),
-                  icon: Icon(_iconForGoal(item)),
-                ),
-              )
-              .toList(),
-          selected: {goal},
-          onSelectionChanged: (values) => onGoalChanged(values.first),
-        ),
-      ],
+      children: [selector, goals],
     );
   }
 }
@@ -261,6 +333,7 @@ class _SwipeDeck extends StatelessWidget {
     required this.matches,
     required this.currentIndex,
     required this.selectedPet,
+    required this.compact,
     required this.onPass,
     required this.onLike,
     required this.onReset,
@@ -269,16 +342,13 @@ class _SwipeDeck extends StatelessWidget {
   final List<PetMatchScore> matches;
   final int currentIndex;
   final Pet selectedPet;
+  final bool compact;
   final ValueChanged<PetMatchScore> onPass;
   final ValueChanged<PetMatchScore> onLike;
   final VoidCallback onReset;
 
   @override
   Widget build(BuildContext context) {
-    final deckHeight = (MediaQuery.sizeOf(context).height - 245).clamp(
-      430.0,
-      560.0,
-    );
     if (currentIndex >= matches.length) {
       return _EmptyDeckState(selectedPet: selectedPet, onReset: onReset);
     }
@@ -288,51 +358,77 @@ class _SwipeDeck extends StatelessWidget {
         ? matches[currentIndex + 1]
         : null;
 
-    return Column(
-      key: const ValueKey('matching-swipe-deck'),
-      children: [
-        SizedBox(
-          height: deckHeight,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              if (next != null)
-                Transform.scale(
-                  scale: 0.94,
-                  child: Opacity(
-                    opacity: 0.62,
-                    child: _MatchSwipeCard(score: next, isPreview: true),
-                  ),
-                ),
-              _SwipeableMatchCard(
-                key: ValueKey('swipeable-${current.candidate.id}'),
-                score: current,
-                onPass: () => onPass(current),
-                onLike: () => onLike(current),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxHeight = constraints.maxHeight.isFinite
+            ? constraints.maxHeight
+            : MediaQuery.sizeOf(context).height * 0.70;
+        final deckCompact = compact || maxHeight < 560;
+        final actionSize = deckCompact ? 54.0 : 62.0;
+        final actionGap = deckCompact ? 8.0 : 14.0;
+        final availableCardHeight = (maxHeight - actionSize - actionGap).clamp(
+          0.0,
+          double.infinity,
+        );
+        final cardHeight = availableCardHeight.clamp(
+          deckCompact ? 320.0 : 410.0,
+          deckCompact ? 430.0 : 540.0,
+        );
+
+        return Column(
+          key: const ValueKey('matching-swipe-deck'),
           children: [
-            _RoundActionButton(
-              key: const ValueKey('matching-pass-button'),
-              icon: Icons.close_rounded,
-              foreground: AppColors.accentDeep,
-              onPressed: () => onPass(current),
+            SizedBox(
+              height: cardHeight,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (next != null)
+                    Transform.scale(
+                      scale: 0.94,
+                      child: Opacity(
+                        opacity: 0.62,
+                        child: _MatchSwipeCard(
+                          score: next,
+                          isPreview: true,
+                          compact: deckCompact,
+                        ),
+                      ),
+                    ),
+                  _SwipeableMatchCard(
+                    key: ValueKey('swipeable-${current.candidate.id}'),
+                    score: current,
+                    compact: deckCompact,
+                    onPass: () => onPass(current),
+                    onLike: () => onLike(current),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(width: 22),
-            _RoundActionButton(
-              key: const ValueKey('matching-like-button'),
-              icon: Icons.favorite_rounded,
-              foreground: AppColors.primaryDeep,
-              onPressed: () => onLike(current),
+            SizedBox(height: actionGap),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _RoundActionButton(
+                  key: const ValueKey('matching-pass-button'),
+                  icon: Icons.close_rounded,
+                  foreground: AppColors.accentDeep,
+                  compact: deckCompact,
+                  onPressed: () => onPass(current),
+                ),
+                SizedBox(width: deckCompact ? 18 : 22),
+                _RoundActionButton(
+                  key: const ValueKey('matching-like-button'),
+                  icon: Icons.favorite_rounded,
+                  foreground: AppColors.primaryDeep,
+                  compact: deckCompact,
+                  onPressed: () => onLike(current),
+                ),
+              ],
             ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 }
@@ -341,11 +437,13 @@ class _SwipeableMatchCard extends StatefulWidget {
   const _SwipeableMatchCard({
     super.key,
     required this.score,
+    required this.compact,
     required this.onPass,
     required this.onLike,
   });
 
   final PetMatchScore score;
+  final bool compact;
   final VoidCallback onPass;
   final VoidCallback onLike;
 
@@ -388,10 +486,10 @@ class _SwipeableMatchCardState extends State<_SwipeableMatchCard> {
             angle: angle,
             child: Stack(
               children: [
-                _MatchSwipeCard(score: widget.score),
+                _MatchSwipeCard(score: widget.score, compact: widget.compact),
                 Positioned(
-                  top: 28,
-                  left: 22,
+                  top: widget.compact ? 18 : 28,
+                  left: widget.compact ? 16 : 22,
                   child: _SwipeFeedbackBadge(
                     label: 'Me gusta',
                     color: AppColors.primaryDeep,
@@ -399,8 +497,8 @@ class _SwipeableMatchCardState extends State<_SwipeableMatchCard> {
                   ),
                 ),
                 Positioned(
-                  top: 28,
-                  right: 22,
+                  top: widget.compact ? 18 : 28,
+                  right: widget.compact ? 16 : 22,
                   child: _SwipeFeedbackBadge(
                     label: 'Pasar',
                     color: AppColors.accentDeep,
@@ -417,10 +515,15 @@ class _SwipeableMatchCardState extends State<_SwipeableMatchCard> {
 }
 
 class _MatchSwipeCard extends StatelessWidget {
-  const _MatchSwipeCard({required this.score, this.isPreview = false});
+  const _MatchSwipeCard({
+    required this.score,
+    this.isPreview = false,
+    this.compact = false,
+  });
 
   final PetMatchScore score;
   final bool isPreview;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -448,9 +551,14 @@ class _MatchSwipeCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _CardHero(candidate: candidate, score: score),
+            _CardHero(candidate: candidate, score: score, compact: compact),
             Padding(
-              padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+              padding: EdgeInsets.fromLTRB(
+                compact ? 14 : 18,
+                compact ? 9 : 12,
+                compact ? 14 : 18,
+                compact ? 10 : 14,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -459,8 +567,13 @@ class _MatchSwipeCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           candidate.name,
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(fontWeight: FontWeight.w900),
+                          style:
+                              (compact
+                                      ? Theme.of(context).textTheme.titleLarge
+                                      : Theme.of(
+                                          context,
+                                        ).textTheme.headlineSmall)
+                                  ?.copyWith(fontWeight: FontWeight.w900),
                         ),
                       ),
                       _InfoPill(
@@ -469,7 +582,7 @@ class _MatchSwipeCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: compact ? 4 : 6),
                   Text(
                     '${candidate.species} - ${candidate.breed} - ${candidate.ageLabel}',
                     maxLines: 1,
@@ -479,40 +592,43 @@ class _MatchSwipeCard extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: compact ? 7 : 10),
                   Wrap(
                     spacing: 8,
-                    runSpacing: 8,
+                    runSpacing: compact ? 6 : 8,
                     children: [
                       _InfoPill(
                         label: candidate.zone,
                         color: AppColors.primarySoft,
                       ),
-                      _InfoPill(
-                        label: candidate.sizeLabel,
-                        color: AppColors.surfaceAlt,
-                      ),
+                      if (!compact)
+                        _InfoPill(
+                          label: candidate.sizeLabel,
+                          color: AppColors.surfaceAlt,
+                        ),
                       _InfoPill(
                         label: candidate.energyLabel,
                         color: AppColors.supportSoft,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    candidate.summary,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(height: 1.35),
-                  ),
-                  const SizedBox(height: 10),
+                  if (!compact) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      candidate.summary,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(height: 1.35),
+                    ),
+                  ],
+                  SizedBox(height: compact ? 7 : 10),
                   Wrap(
                     spacing: 8,
-                    runSpacing: 8,
+                    runSpacing: compact ? 6 : 8,
                     children: score.reasons
-                        .take(3)
+                        .take(compact ? 2 : 3)
                         .map(
                           (reason) => _InfoPill(
                             label: reason,
@@ -532,15 +648,20 @@ class _MatchSwipeCard extends StatelessWidget {
 }
 
 class _CardHero extends StatelessWidget {
-  const _CardHero({required this.candidate, required this.score});
+  const _CardHero({
+    required this.candidate,
+    required this.score,
+    required this.compact,
+  });
 
   final PetMatchCandidate candidate;
   final PetMatchScore score;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 220,
+      height: compact ? 150 : 220,
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -564,15 +685,17 @@ class _CardHero extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.35),
             ),
           ),
-          Center(child: _PetAvatar(candidate: candidate, size: 116)),
+          Center(
+            child: _PetAvatar(candidate: candidate, size: compact ? 82 : 116),
+          ),
           Positioned(
-            left: 18,
-            top: 18,
+            left: compact ? 14 : 18,
+            top: compact ? 14 : 18,
             child: _InfoPill(label: score.label, color: Colors.white),
           ),
           Positioned(
-            right: 18,
-            bottom: 18,
+            right: compact ? 14 : 18,
+            bottom: compact ? 14 : 18,
             child: _InfoPill(
               label: candidate.distanceLabel,
               color: AppColors.supportSoft,
@@ -660,21 +783,23 @@ class _RoundActionButton extends StatelessWidget {
     super.key,
     required this.icon,
     required this.foreground,
+    required this.compact,
     required this.onPressed,
   });
 
   final IconData icon;
   final Color foreground;
+  final bool compact;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 62,
-      height: 62,
+      width: compact ? 54 : 62,
+      height: compact ? 54 : 62,
       child: IconButton.filledTonal(
         onPressed: onPressed,
-        icon: Icon(icon, size: 30),
+        icon: Icon(icon, size: compact ? 27 : 30),
         style: IconButton.styleFrom(
           foregroundColor: foreground,
           backgroundColor: Colors.white,

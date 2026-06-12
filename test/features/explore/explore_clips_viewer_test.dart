@@ -155,6 +155,24 @@ void main() {
     expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsNothing);
   });
 
+  testWidgets('el visor no muestra indicador vertical derecho', (tester) async {
+    setDesktopViewport(tester);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        ExploreClipViewerScreen(
+          clips: ClipsMockData.clips,
+          initialClipId: ClipsMockData.clips.first.id,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PageView), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(find.byKey(const ValueKey('clip-video-seekbar-hud')), findsWidgets);
+  });
+
   testWidgets('desktop usa frame vertical tipo telefono y no cuadrado', (
     tester,
   ) async {

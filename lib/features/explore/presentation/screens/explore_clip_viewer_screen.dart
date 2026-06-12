@@ -214,20 +214,6 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
                   ),
                 ),
                 Positioned(
-                  right: 17,
-                  top: 96,
-                  bottom: _clipPlaybackHudReservedHeight + 18,
-                  child: RotatedBox(
-                    quarterTurns: 1,
-                    child: LinearProgressIndicator(
-                      value: (_currentIndex + 1) / _clips.length,
-                      minHeight: 3,
-                      color: AppColors.accent,
-                      backgroundColor: Colors.white.withValues(alpha: 0.16),
-                    ),
-                  ),
-                ),
-                Positioned(
                   right: 14,
                   top: 58,
                   child: Tooltip(

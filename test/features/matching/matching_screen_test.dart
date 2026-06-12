@@ -42,6 +42,47 @@ void main() {
     expect(find.textContaining('telefono'), findsNothing);
   });
 
+  testWidgets('Matching mobile muestra card y acciones sin scroll inicial', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(buildTestApp(const MatchingScreen()));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('matching-above-fold-layout')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('matching-compact-controls')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('matching-active-card')), findsOneWidget);
+    expect(find.byKey(const ValueKey('matching-pass-button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('matching-like-button')), findsOneWidget);
+
+    final screenHeight = tester.view.physicalSize.height;
+    final cardRect = tester.getRect(
+      find.byKey(const ValueKey('matching-active-card')),
+    );
+    final passRect = tester.getRect(
+      find.byKey(const ValueKey('matching-pass-button')),
+    );
+    final likeRect = tester.getRect(
+      find.byKey(const ValueKey('matching-like-button')),
+    );
+
+    expect(cardRect.top, greaterThanOrEqualTo(0));
+    expect(cardRect.bottom, lessThanOrEqualTo(screenHeight));
+    expect(passRect.bottom, lessThanOrEqualTo(screenHeight));
+    expect(likeRect.bottom, lessThanOrEqualTo(screenHeight));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('swipe y botones avanzan entre cards', (tester) async {
     setDesktopViewport(tester);
 
