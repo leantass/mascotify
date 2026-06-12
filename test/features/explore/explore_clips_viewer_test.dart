@@ -223,6 +223,12 @@ void main() {
 
     expect(find.byKey(const ValueKey('clip-video-seekbar')), findsWidgets);
     expect(find.byKey(const ValueKey('clip-video-seekbar-dock')), findsWidgets);
+    expect(find.byKey(const ValueKey('clip-video-time-row')), findsWidgets);
+    expect(find.byKey(const ValueKey('clip-video-current-time')), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('clip-video-duration-time')),
+      findsWidgets,
+    );
     expect(
       find.byKey(const ValueKey('clip-video-seekbar-overlay')),
       findsNothing,
@@ -255,6 +261,42 @@ void main() {
     await tester.tapAt(Offset(rect.left + rect.width * 0.18, rect.center.dy));
 
     expect(seekValue, lessThan(0.30));
+  });
+
+  testWidgets('seekbar tiene track progreso y thumb visibles', (tester) async {
+    await tester.pumpWidget(
+      buildTestApp(
+        Center(
+          child: SizedBox(
+            width: 260,
+            child: ClipVideoSeekBar(progress: 0.42, onSeek: (_) {}),
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.byKey(const ValueKey('clip-video-seekbar-track')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('clip-video-seekbar-progress')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('clip-video-seekbar-thumb')),
+      findsOneWidget,
+    );
+
+    final trackSize = tester.getSize(
+      find.byKey(const ValueKey('clip-video-seekbar-track')),
+    );
+    final thumbSize = tester.getSize(
+      find.byKey(const ValueKey('clip-video-seekbar-thumb')),
+    );
+
+    expect(trackSize.height, greaterThanOrEqualTo(6));
+    expect(thumbSize.width, greaterThan(trackSize.height));
   });
 
   testWidgets('mobile mantiene visor de alto completo', (tester) async {

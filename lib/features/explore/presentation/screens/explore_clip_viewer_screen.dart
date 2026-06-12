@@ -13,7 +13,7 @@ const double _clipViewerDesktopBreakpoint = 700;
 const double _clipViewerDesktopMaxWidth = 420;
 const double _clipViewerDesktopSideGutter = 48;
 const double _clipViewerDesktopVerticalGutter = 16;
-const double _clipControlDockHeight = 44;
+const double _clipControlDockHeight = 68;
 
 class ExploreClipViewerScreen extends StatefulWidget {
   const ExploreClipViewerScreen({
@@ -883,7 +883,12 @@ class _ClipSurfaceWithControls extends StatelessWidget {
     return Column(
       children: [
         Expanded(child: visual),
-        _ClipControlDock(progress: progress, onSeek: onSeek),
+        _ClipControlDock(
+          progress: progress,
+          position: Duration.zero,
+          duration: Duration.zero,
+          onSeek: onSeek,
+        ),
       ],
     );
   }
@@ -1333,6 +1338,8 @@ class _VideoPlayerFrame extends StatelessWidget {
         ),
         _ClipControlDock(
           progress: progress,
+          position: position,
+          duration: duration,
           onSeek: (value) {
             final target = duration * value;
             controller.seekTo(target);
@@ -1344,9 +1351,16 @@ class _VideoPlayerFrame extends StatelessWidget {
 }
 
 class _ClipControlDock extends StatelessWidget {
-  const _ClipControlDock({required this.progress, required this.onSeek});
+  const _ClipControlDock({
+    required this.progress,
+    required this.position,
+    required this.duration,
+    required this.onSeek,
+  });
 
   final double progress;
+  final Duration position;
+  final Duration duration;
   final ValueChanged<double> onSeek;
 
   @override
@@ -1354,16 +1368,64 @@ class _ClipControlDock extends StatelessWidget {
     return Container(
       key: const ValueKey('clip-video-seekbar-dock'),
       height: _clipControlDockHeight,
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF070B0D),
+        color: const Color(0xFF111820),
         border: Border(
-          top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
         ),
       ),
-      child: ClipVideoSeekBar(progress: progress, height: 5, onSeek: onSeek),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _ClipTimeRow(position: position, duration: duration),
+          const SizedBox(height: 6),
+          ClipVideoSeekBar(progress: progress, height: 8, onSeek: onSeek),
+        ],
+      ),
     );
   }
+}
+
+class _ClipTimeRow extends StatelessWidget {
+  const _ClipTimeRow({required this.position, required this.duration});
+
+  final Duration position;
+  final Duration duration;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.labelSmall?.copyWith(
+      color: Colors.white.withValues(alpha: 0.88),
+      fontWeight: FontWeight.w800,
+      fontFeatures: const [FontFeature.tabularFigures()],
+      height: 1,
+    );
+
+    return Row(
+      key: const ValueKey('clip-video-time-row'),
+      children: [
+        Text(
+          _formatClipTime(position),
+          key: const ValueKey('clip-video-current-time'),
+          style: style,
+        ),
+        const Spacer(),
+        Text(
+          _formatClipTime(duration),
+          key: const ValueKey('clip-video-duration-time'),
+          style: style,
+        ),
+      ],
+    );
+  }
+}
+
+String _formatClipTime(Duration value) {
+  final safeValue = value.isNegative ? Duration.zero : value;
+  final minutes = safeValue.inMinutes.remainder(60);
+  final seconds = safeValue.inSeconds.remainder(60).toString().padLeft(2, '0');
+  return '$minutes:$seconds';
 }
 
 class ClipVideoSeekBar extends StatelessWidget {
@@ -1394,38 +1456,59 @@ class ClipVideoSeekBar extends StatelessWidget {
           onHorizontalDragUpdate: (details) => seek(details.localPosition),
           child: Container(
             key: const ValueKey('clip-video-seekbar-control'),
-            height: 24,
+            height: 30,
             alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(999)),
             child: Stack(
               alignment: Alignment.centerLeft,
               children: [
                 Container(
+                  key: const ValueKey('clip-video-seekbar-track'),
                   height: height,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.22),
+                    color: Colors.white.withValues(alpha: 0.48),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
                 FractionallySizedBox(
                   widthFactor: progress.clamp(0.0, 1.0),
                   child: Container(
+                    key: const ValueKey('clip-video-seekbar-progress'),
                     height: height,
                     decoration: BoxDecoration(
-                      color: AppColors.accent.withValues(alpha: 0.88),
+                      color: AppColors.accent,
                       borderRadius: BorderRadius.circular(999),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.accent.withValues(alpha: 0.28),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                   ),
                 ),
                 Align(
                   alignment: Alignment((progress.clamp(0.0, 1.0) * 2) - 1, 0),
                   child: Container(
-                    width: height + 4,
-                    height: height + 4,
+                    key: const ValueKey('clip-video-seekbar-thumb'),
+                    width: height + 8,
+                    height: height + 8,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.92),
+                      color: Colors.white,
                       shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF111820),
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.42),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
                   ),
                 ),
