@@ -13,7 +13,10 @@ const double _clipViewerDesktopBreakpoint = 700;
 const double _clipViewerDesktopMaxWidth = 420;
 const double _clipViewerDesktopSideGutter = 48;
 const double _clipViewerDesktopVerticalGutter = 16;
-const double _clipControlDockHeight = 96;
+const double _clipPlaybackHudHeight = 58;
+const double _clipPlaybackHudBottomMargin = 14;
+const double _clipPlaybackHudReservedHeight =
+    _clipPlaybackHudHeight + _clipPlaybackHudBottomMargin + 8;
 
 class ExploreClipViewerScreen extends StatefulWidget {
   const ExploreClipViewerScreen({
@@ -211,7 +214,7 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
                 Positioned(
                   right: 17,
                   top: 96,
-                  bottom: _clipControlDockHeight + 18,
+                  bottom: _clipPlaybackHudReservedHeight + 18,
                   child: RotatedBox(
                     quarterTurns: 1,
                     child: LinearProgressIndicator(
@@ -443,7 +446,21 @@ Size _viewerFrameSizeFor(BoxConstraints constraints) {
   return Size(width, height);
 }
 
-class _ViewerClipPage extends StatelessWidget {
+class _ClipPlaybackState {
+  const _ClipPlaybackState({
+    this.progress = 0,
+    this.position = Duration.zero,
+    this.duration = Duration.zero,
+    this.onSeek,
+  });
+
+  final double progress;
+  final Duration position;
+  final Duration duration;
+  final ValueChanged<double>? onSeek;
+}
+
+class _ViewerClipPage extends StatefulWidget {
   const _ViewerClipPage({
     super.key,
     required this.clip,
@@ -470,7 +487,31 @@ class _ViewerClipPage extends StatelessWidget {
   final VoidCallback? onToggleFollow;
 
   @override
+  State<_ViewerClipPage> createState() => _ViewerClipPageState();
+}
+
+class _ViewerClipPageState extends State<_ViewerClipPage> {
+  final ValueNotifier<_ClipPlaybackState> _playback = ValueNotifier(
+    const _ClipPlaybackState(),
+  );
+
+  @override
+  void didUpdateWidget(covariant _ViewerClipPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.clip.id != widget.clip.id) {
+      _playback.value = const _ClipPlaybackState();
+    }
+  }
+
+  @override
+  void dispose() {
+    _playback.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final clip = widget.clip;
     final hasVideo = clip.hasPlayableVideo || !clip.isDemoContent;
     final thumbnail = clip.thumbnailAssetPath;
     final topMediaLabel = _mediaLabelFor(clip);
@@ -494,8 +535,9 @@ class _ViewerClipPage extends StatelessWidget {
                 _ClipVideoSurface(
                   clip: clip,
                   thumbnail: thumbnail,
-                  isActive: isActive,
-                  isMuted: isMuted,
+                  isActive: widget.isActive,
+                  isMuted: widget.isMuted,
+                  playback: _playback,
                 ),
                 IgnorePointer(
                   child: Container(
@@ -515,10 +557,10 @@ class _ViewerClipPage extends StatelessWidget {
                   ),
                 ),
                 Positioned.fill(
-                  bottom: _clipControlDockHeight,
+                  bottom: _clipPlaybackHudReservedHeight,
                   child: _VerticalSwipeLayer(
-                    onNext: onSwipeNext,
-                    onPrevious: onSwipePrevious,
+                    onNext: widget.onSwipeNext,
+                    onPrevious: widget.onSwipePrevious,
                   ),
                 ),
                 LayoutBuilder(
@@ -543,11 +585,11 @@ class _ViewerClipPage extends StatelessWidget {
                           child: _ReelActionRail(
                             clip: clip,
                             metrics: metrics,
-                            onToggleLike: onToggleLike,
-                            onComments: onComments,
-                            onToggleSave: onToggleSave,
-                            onShare: onShare,
-                            onToggleFollow: onToggleFollow,
+                            onToggleLike: widget.onToggleLike,
+                            onComments: widget.onComments,
+                            onToggleSave: widget.onToggleSave,
+                            onShare: widget.onShare,
+                            onToggleFollow: widget.onToggleFollow,
                           ),
                         ),
                         Positioned(
@@ -559,6 +601,17 @@ class _ViewerClipPage extends StatelessWidget {
                             creatorLabel: creatorLabel,
                             hasVideo: hasVideo,
                             metrics: metrics,
+                          ),
+                        ),
+                        Positioned(
+                          left: metrics.horizontalPadding,
+                          right: metrics.horizontalPadding,
+                          bottom: _clipPlaybackHudBottomMargin,
+                          child: ValueListenableBuilder<_ClipPlaybackState>(
+                            valueListenable: _playback,
+                            builder: (context, playback, _) {
+                              return _ClipPlaybackHud(playback: playback);
+                            },
                           ),
                         ),
                       ],
@@ -627,13 +680,15 @@ class ClipViewerMetrics {
       chipHeight: (30 * scale).clamp(28.0, 32.0),
       bottomTitleSize: (19 * scale).clamp(18.0, 21.0),
       bottomCaptionSize: (13 * scale).clamp(12.0, 14.0),
-      bottomPadding: _clipControlDockHeight + (24 * scale).clamp(20.0, 30.0),
+      bottomPadding:
+          _clipPlaybackHudReservedHeight + (20 * scale).clamp(18.0, 28.0),
       sideRailSpacing: (7 * scale).clamp(5.0, 9.0),
       seekBarHeight: (6 * scale).clamp(5.0, 7.0),
       horizontalPadding: (16 * scale).clamp(14.0, 20.0),
       topChipsOffset: (76 * scale).clamp(68.0, 86.0),
       actionRailWidth: (62 * scale).clamp(58.0, 68.0),
-      actionRailBottom: _clipControlDockHeight + (48 * scale).clamp(44.0, 58.0),
+      actionRailBottom:
+          _clipPlaybackHudReservedHeight + (48 * scale).clamp(44.0, 58.0),
     );
   }
 }
@@ -751,12 +806,14 @@ class _ClipVideoSurface extends StatelessWidget {
     required this.thumbnail,
     required this.isActive,
     required this.isMuted,
+    required this.playback,
   });
 
   final ExploreClip clip;
   final String? thumbnail;
   final bool isActive;
   final bool isMuted;
+  final ValueNotifier<_ClipPlaybackState> playback;
 
   @override
   Widget build(BuildContext context) {
@@ -765,6 +822,7 @@ class _ClipVideoSurface extends StatelessWidget {
         assetPath: clip.videoAssetPath!,
         isActive: isActive,
         isMuted: isMuted,
+        playback: playback,
         loading: _buildLoadingSurface(context),
         fallback: _buildFallback('No pudimos cargar este clip'),
       );
@@ -775,6 +833,7 @@ class _ClipVideoSurface extends StatelessWidget {
         videoUrl: clip.videoUrl!,
         isActive: isActive,
         isMuted: isMuted,
+        playback: playback,
         loading: _buildLoadingSurface(context),
         fallback: _buildFallback('No pudimos cargar este clip'),
       );
@@ -785,109 +844,70 @@ class _ClipVideoSurface extends StatelessWidget {
 
   Widget _buildFallback(String message) {
     if (thumbnail == null) {
-      return _ClipSurfaceWithControls(
-        visual: _ViewerPlaceholder(message: message),
-        progress: 0,
-        onSeek: (_) {},
-      );
+      return _ViewerPlaceholder(message: message);
     }
-    return _ClipSurfaceWithControls(
-      progress: 0,
-      onSeek: (_) {},
-      visual: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(thumbnail!, fit: BoxFit.cover),
-          Align(
-            alignment: Alignment.center,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.86),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                message,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w900,
-                ),
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(thumbnail!, fit: BoxFit.cover),
+        Align(
+          alignment: Alignment.center,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.86),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w900,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildLoadingSurface(BuildContext context) {
     final thumbnailPath = thumbnail;
-    return _ClipSurfaceWithControls(
-      progress: 0,
-      onSeek: (_) {},
-      visual: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (thumbnailPath != null)
-            Image.asset(thumbnailPath, fit: BoxFit.cover)
-          else
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF132326), Color(0xFF182A30)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.18),
-            ),
-          ),
-          Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.34),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-              ),
-              child: PawLoadingIndicator(
-                message: 'Cargando video...',
-                foregroundColor: Colors.white,
-                backgroundColor: AppColors.primaryDeep.withValues(alpha: 0.82),
-                compact: true,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ClipSurfaceWithControls extends StatelessWidget {
-  const _ClipSurfaceWithControls({
-    required this.visual,
-    required this.progress,
-    required this.onSeek,
-  });
-
-  final Widget visual;
-  final double progress;
-  final ValueChanged<double> onSeek;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
+    return Stack(
+      fit: StackFit.expand,
       children: [
-        Expanded(child: visual),
-        _ClipControlDock(
-          progress: progress,
-          position: Duration.zero,
-          duration: Duration.zero,
-          onSeek: onSeek,
+        if (thumbnailPath != null)
+          Image.asset(thumbnailPath, fit: BoxFit.cover)
+        else
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF132326), Color(0xFF182A30)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.18),
+          ),
+        ),
+        Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.34),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+            ),
+            child: PawLoadingIndicator(
+              message: 'Cargando video...',
+              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primaryDeep.withValues(alpha: 0.82),
+              compact: true,
+            ),
+          ),
         ),
       ],
     );
@@ -1041,6 +1061,7 @@ class _AssetClipVideoPlayer extends StatefulWidget {
     required this.assetPath,
     required this.isActive,
     required this.isMuted,
+    required this.playback,
     required this.loading,
     required this.fallback,
   });
@@ -1048,6 +1069,7 @@ class _AssetClipVideoPlayer extends StatefulWidget {
   final String assetPath;
   final bool isActive;
   final bool isMuted;
+  final ValueNotifier<_ClipPlaybackState> playback;
   final Widget loading;
   final Widget fallback;
 
@@ -1099,6 +1121,7 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
       await controller.setLooping(true);
       await controller.setVolume(widget.isMuted ? 0 : 1);
       await _syncPlayback();
+      _publishPlayback();
       if (!mounted) return;
       setState(() {});
     } catch (_) {
@@ -1113,10 +1136,34 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
     controller.removeListener(_onControllerChanged);
     controller.dispose();
     _controller = null;
+    widget.playback.value = const _ClipPlaybackState();
   }
 
   void _onControllerChanged() {
+    _publishPlayback();
     if (mounted) setState(() {});
+  }
+
+  void _publishPlayback() {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) {
+      widget.playback.value = const _ClipPlaybackState();
+      return;
+    }
+    final duration = controller.value.duration;
+    final position = controller.value.position;
+    final progress = duration.inMilliseconds <= 0
+        ? 0.0
+        : (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
+    widget.playback.value = _ClipPlaybackState(
+      progress: progress,
+      position: position,
+      duration: duration,
+      onSeek: (value) {
+        final target = duration * value;
+        controller.seekTo(target);
+      },
+    );
   }
 
   Future<void> _syncPlayback() async {
@@ -1159,6 +1206,7 @@ class _NetworkClipVideoPlayer extends StatefulWidget {
     required this.videoUrl,
     required this.isActive,
     required this.isMuted,
+    required this.playback,
     required this.loading,
     required this.fallback,
   });
@@ -1166,6 +1214,7 @@ class _NetworkClipVideoPlayer extends StatefulWidget {
   final String videoUrl;
   final bool isActive;
   final bool isMuted;
+  final ValueNotifier<_ClipPlaybackState> playback;
   final Widget loading;
   final Widget fallback;
 
@@ -1195,6 +1244,7 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
       }
       _controller = null;
       _hasError = false;
+      widget.playback.value = const _ClipPlaybackState();
       _initialize();
     } else if (oldWidget.isActive != widget.isActive) {
       _syncPlayback();
@@ -1211,6 +1261,7 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
       controller.removeListener(_onControllerChanged);
       controller.dispose();
     }
+    widget.playback.value = const _ClipPlaybackState();
     super.dispose();
   }
 
@@ -1225,6 +1276,7 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
       await controller.setLooping(true);
       await controller.setVolume(widget.isMuted ? 0 : 1);
       await _syncPlayback();
+      _publishPlayback();
       if (!mounted) return;
       setState(() {});
     } catch (_) {
@@ -1234,7 +1286,30 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
   }
 
   void _onControllerChanged() {
+    _publishPlayback();
     if (mounted) setState(() {});
+  }
+
+  void _publishPlayback() {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) {
+      widget.playback.value = const _ClipPlaybackState();
+      return;
+    }
+    final duration = controller.value.duration;
+    final position = controller.value.position;
+    final progress = duration.inMilliseconds <= 0
+        ? 0.0
+        : (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
+    widget.playback.value = _ClipPlaybackState(
+      progress: progress,
+      position: position,
+      duration: duration,
+      onSeek: (value) {
+        final target = duration * value;
+        controller.seekTo(target);
+      },
+    );
   }
 
   Future<void> _syncPlayback() async {
@@ -1279,125 +1354,81 @@ class _VideoPlayerFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final duration = controller.value.duration;
-    final position = controller.value.position;
-    final progress = duration.inMilliseconds <= 0
-        ? 0.0
-        : (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
-
-    return Column(
-      children: [
-        Expanded(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              if (controller.value.isPlaying) {
-                controller.pause();
-              } else {
-                controller.play();
-              }
-            },
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                ColoredBox(
-                  color: const Color(0xFF070B0D),
-                  child: Center(
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: SizedBox(
-                        width: controller.value.size.width,
-                        height: controller.value.size.height,
-                        child: VideoPlayer(controller),
-                      ),
-                    ),
-                  ),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        if (controller.value.isPlaying) {
+          controller.pause();
+        } else {
+          controller.play();
+        }
+      },
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ColoredBox(
+            color: const Color(0xFF070B0D),
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: SizedBox(
+                  width: controller.value.size.width,
+                  height: controller.value.size.height,
+                  child: VideoPlayer(controller),
                 ),
-                Center(
-                  child: AnimatedOpacity(
-                    opacity: controller.value.isPlaying ? 0 : 1,
-                    duration: const Duration(milliseconds: 180),
-                    child: Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.play_arrow_rounded,
-                        color: AppColors.primaryDeep,
-                        size: 38,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-        _ClipControlDock(
-          progress: progress,
-          position: position,
-          duration: duration,
-          onSeek: (value) {
-            final target = duration * value;
-            controller.seekTo(target);
-          },
-        ),
-      ],
+          Center(
+            child: AnimatedOpacity(
+              opacity: controller.value.isPlaying ? 0 : 1,
+              duration: const Duration(milliseconds: 180),
+              child: Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.play_arrow_rounded,
+                  color: AppColors.primaryDeep,
+                  size: 38,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _ClipControlDock extends StatelessWidget {
-  const _ClipControlDock({
-    required this.progress,
-    required this.position,
-    required this.duration,
-    required this.onSeek,
-  });
+class _ClipPlaybackHud extends StatelessWidget {
+  const _ClipPlaybackHud({required this.playback});
 
-  final double progress;
-  final Duration position;
-  final Duration duration;
-  final ValueChanged<double> onSeek;
+  final _ClipPlaybackState playback;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      key: const ValueKey('clip-video-seekbar-dock'),
-      height: _clipControlDockHeight,
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFF070B0D),
-        border: Border(
-          top: BorderSide(color: Colors.white.withValues(alpha: 0.16)),
-        ),
-      ),
-      child: Container(
-        key: const ValueKey('clip-video-controls-surface'),
-        padding: const EdgeInsets.fromLTRB(12, 7, 12, 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFF18232D),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.20)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.42),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _ClipTimeRow(position: position, duration: duration),
-            const SizedBox(height: 6),
-            ClipVideoSeekBar(progress: progress, height: 10, onSeek: onSeek),
-          ],
-        ),
+    final onSeek = playback.onSeek;
+    return SizedBox(
+      key: const ValueKey('clip-video-seekbar-hud'),
+      height: _clipPlaybackHudHeight,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _ClipTimeRow(
+            position: playback.position,
+            duration: playback.duration,
+          ),
+          const SizedBox(height: 5),
+          ClipVideoSeekBar(
+            progress: playback.progress,
+            height: 9,
+            onSeek: onSeek ?? (_) {},
+          ),
+        ],
       ),
     );
   }

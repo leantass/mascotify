@@ -45,7 +45,8 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.byKey(const ValueKey('clip-video-seekbar-dock')), findsWidgets);
+    expect(find.byKey(const ValueKey('clip-video-seekbar-hud')), findsWidgets);
+    expect(find.byKey(const ValueKey('clip-video-seekbar-dock')), findsNothing);
     expect(
       find.byKey(const ValueKey('clip-video-seekbar-overlay')),
       findsNothing,
@@ -222,10 +223,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('clip-video-seekbar')), findsWidgets);
-    expect(find.byKey(const ValueKey('clip-video-seekbar-dock')), findsWidgets);
+    expect(find.byKey(const ValueKey('clip-video-seekbar-hud')), findsWidgets);
+    expect(find.byKey(const ValueKey('clip-video-seekbar-dock')), findsNothing);
     expect(
       find.byKey(const ValueKey('clip-video-controls-surface')),
-      findsWidgets,
+      findsNothing,
     );
     expect(find.byKey(const ValueKey('clip-video-time-row')), findsWidgets);
     expect(find.byKey(const ValueKey('clip-video-current-time')), findsWidgets);
@@ -303,9 +305,7 @@ void main() {
     expect(thumbSize.width, greaterThan(trackSize.height));
   });
 
-  testWidgets('controles de reproductor quedan en primer plano', (
-    tester,
-  ) async {
+  testWidgets('seekbar queda como HUD sin recuadro inferior', (tester) async {
     setDesktopViewport(tester);
 
     await tester.pumpWidget(
@@ -318,17 +318,18 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final dockSize = tester.getSize(
-      find.byKey(const ValueKey('clip-video-seekbar-dock')).first,
-    );
-    final surfaceSize = tester.getSize(
-      find.byKey(const ValueKey('clip-video-controls-surface')).first,
+    final hudSize = tester.getSize(
+      find.byKey(const ValueKey('clip-video-seekbar-hud')).first,
     );
 
-    expect(dockSize.height, greaterThanOrEqualTo(80));
-    expect(surfaceSize.height, greaterThanOrEqualTo(54));
+    expect(hudSize.height, lessThanOrEqualTo(64));
     expect(
       find.byKey(const ValueKey('clip-video-seekbar-overlay')),
+      findsNothing,
+    );
+    expect(find.byKey(const ValueKey('clip-video-seekbar-dock')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('clip-video-controls-surface')),
       findsNothing,
     );
   });
@@ -406,7 +407,8 @@ void main() {
 
     expect(find.text('Mascotify'), findsWidgets);
     expect(find.text('Contenido oficial'), findsWidgets);
-    expect(find.byKey(const ValueKey('clip-video-seekbar-dock')), findsWidgets);
+    expect(find.byKey(const ValueKey('clip-video-seekbar-hud')), findsWidgets);
+    expect(find.byKey(const ValueKey('clip-video-seekbar-dock')), findsNothing);
     expect(
       find.byKey(const ValueKey('clip-video-seekbar-overlay')),
       findsNothing,
