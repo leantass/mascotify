@@ -223,6 +223,10 @@ void main() {
 
     expect(find.byKey(const ValueKey('clip-video-seekbar')), findsWidgets);
     expect(find.byKey(const ValueKey('clip-video-seekbar-dock')), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('clip-video-controls-surface')),
+      findsWidgets,
+    );
     expect(find.byKey(const ValueKey('clip-video-time-row')), findsWidgets);
     expect(find.byKey(const ValueKey('clip-video-current-time')), findsWidgets);
     expect(
@@ -295,8 +299,38 @@ void main() {
       find.byKey(const ValueKey('clip-video-seekbar-thumb')),
     );
 
-    expect(trackSize.height, greaterThanOrEqualTo(6));
+    expect(trackSize.height, greaterThanOrEqualTo(8));
     expect(thumbSize.width, greaterThan(trackSize.height));
+  });
+
+  testWidgets('controles de reproductor quedan en primer plano', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        ExploreClipViewerScreen(
+          clips: ClipsMockData.clips,
+          initialClipId: ClipsMockData.clips.first.id,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final dockSize = tester.getSize(
+      find.byKey(const ValueKey('clip-video-seekbar-dock')).first,
+    );
+    final surfaceSize = tester.getSize(
+      find.byKey(const ValueKey('clip-video-controls-surface')).first,
+    );
+
+    expect(dockSize.height, greaterThanOrEqualTo(80));
+    expect(surfaceSize.height, greaterThanOrEqualTo(54));
+    expect(
+      find.byKey(const ValueKey('clip-video-seekbar-overlay')),
+      findsNothing,
+    );
   });
 
   testWidgets('mobile mantiene visor de alto completo', (tester) async {

@@ -13,7 +13,7 @@ const double _clipViewerDesktopBreakpoint = 700;
 const double _clipViewerDesktopMaxWidth = 420;
 const double _clipViewerDesktopSideGutter = 48;
 const double _clipViewerDesktopVerticalGutter = 16;
-const double _clipControlDockHeight = 68;
+const double _clipControlDockHeight = 96;
 
 class ExploreClipViewerScreen extends StatefulWidget {
   const ExploreClipViewerScreen({
@@ -1368,20 +1368,36 @@ class _ClipControlDock extends StatelessWidget {
     return Container(
       key: const ValueKey('clip-video-seekbar-dock'),
       height: _clipControlDockHeight,
-      padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF111820),
+        color: const Color(0xFF070B0D),
         border: Border(
-          top: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.16)),
         ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _ClipTimeRow(position: position, duration: duration),
-          const SizedBox(height: 6),
-          ClipVideoSeekBar(progress: progress, height: 8, onSeek: onSeek),
-        ],
+      child: Container(
+        key: const ValueKey('clip-video-controls-surface'),
+        padding: const EdgeInsets.fromLTRB(12, 7, 12, 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF18232D),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.20)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.42),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _ClipTimeRow(position: position, duration: duration),
+            const SizedBox(height: 6),
+            ClipVideoSeekBar(progress: progress, height: 10, onSeek: onSeek),
+          ],
+        ),
       ),
     );
   }
@@ -1395,11 +1411,15 @@ class _ClipTimeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.labelSmall?.copyWith(
-      color: Colors.white.withValues(alpha: 0.88),
-      fontWeight: FontWeight.w800,
+    final style = Theme.of(context).textTheme.labelMedium?.copyWith(
+      color: Colors.white,
+      fontWeight: FontWeight.w900,
       fontFeatures: const [FontFeature.tabularFigures()],
       height: 1,
+      letterSpacing: 0,
+      shadows: [
+        Shadow(color: Colors.black.withValues(alpha: 0.32), blurRadius: 6),
+      ],
     );
 
     return Row(
@@ -1433,7 +1453,7 @@ class ClipVideoSeekBar extends StatelessWidget {
     super.key,
     required this.progress,
     required this.onSeek,
-    this.height = 6,
+    this.height = 10,
   });
 
   final double progress;
@@ -1456,7 +1476,7 @@ class ClipVideoSeekBar extends StatelessWidget {
           onHorizontalDragUpdate: (details) => seek(details.localPosition),
           child: Container(
             key: const ValueKey('clip-video-seekbar-control'),
-            height: 30,
+            height: 28,
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(horizontal: 4),
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(999)),
@@ -1467,8 +1487,12 @@ class ClipVideoSeekBar extends StatelessWidget {
                   key: const ValueKey('clip-video-seekbar-track'),
                   height: height,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.48),
+                    color: Colors.white.withValues(alpha: 0.72),
                     borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      width: 1,
+                    ),
                   ),
                 ),
                 FractionallySizedBox(
@@ -1481,9 +1505,9 @@ class ClipVideoSeekBar extends StatelessWidget {
                       borderRadius: BorderRadius.circular(999),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.accent.withValues(alpha: 0.28),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
+                          color: AppColors.accent.withValues(alpha: 0.42),
+                          blurRadius: 14,
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
@@ -1493,8 +1517,8 @@ class ClipVideoSeekBar extends StatelessWidget {
                   alignment: Alignment((progress.clamp(0.0, 1.0) * 2) - 1, 0),
                   child: Container(
                     key: const ValueKey('clip-video-seekbar-thumb'),
-                    width: height + 8,
-                    height: height + 8,
+                    width: height + 10,
+                    height: height + 10,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
