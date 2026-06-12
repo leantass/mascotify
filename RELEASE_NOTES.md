@@ -4,6 +4,17 @@ Fecha: 2026-06-12
 
 Esta beta interna esta pensada para validacion en telefono Android y web local antes de cualquier publicacion publica.
 
+## Version 1.0.0+2
+
+- APK debug interno preparado para pruebas directas en telefono.
+- Web review local preparada con cache busting.
+- Clips con viewer vertical, HUD mas limpio y seekbar inferior estilo TikTok.
+- Matching tipo swipe/card visible desde el inicio.
+- Ayuda centralizada/contextual disponible cuando aplica.
+- Profesionales pet visible como beta/proximamente, sin modulo real activo.
+- Documentacion inicial de terminos, privacidad, Data Safety, Play Console y
+  store listing agregada para preparacion de publicacion.
+
 ## Incluye
 
 - Experiencia principal orientada a familias y tutores.
@@ -22,8 +33,9 @@ Esta beta interna esta pensada para validacion en telefono Android y web local a
 
 ## Pendiente antes de publicar
 
-- Completar terminos y condiciones.
-- Completar Data Safety de Google Play.
+- Revisar terminos y politica con datos legales reales.
+- Completar Data Safety de Google Play con proveedores definitivos.
 - Confirmar ficha, iconos, capturas y textos de tienda.
 - Configurar firma release Android segura.
+- Generar AAB release firmado.
 - Configurar hosting web publico si se decide publicar web.

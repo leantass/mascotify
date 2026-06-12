@@ -1,0 +1,37 @@
+# Google Play Internal Testing - Mascotify
+
+Este documento prepara la subida manual o automatizada segura. No publica
+produccion.
+
+## Archivo a subir
+
+- Para Google Play se requiere AAB release firmado.
+- El APK debug interno sirve para pruebas directas en telefono, pero no para un
+  release Play Console.
+
+## Pasos manuales
+
+1. Crear app en Play Console.
+2. Completar ficha de tienda minima.
+3. Completar Politica de privacidad, Data Safety, Ads declaration, Content
+   rating y Target audience.
+4. Configurar App signing.
+5. Generar AAB release firmado localmente.
+6. Crear track Internal Testing.
+7. Agregar testers.
+8. Subir AAB.
+9. Cargar notas de release.
+10. Enviar a revision interna.
+
+## No hacer todavia
+
+- No pasar a produccion publica.
+- No activar rollout abierto.
+- No activar pagos reales.
+- No activar AdMob produccion.
+
+## Estado actual
+
+- Automatizacion Play: no detectada.
+- Service account segura: no detectada.
+- AAB release: bloqueado hasta configurar keystore/upload key.
