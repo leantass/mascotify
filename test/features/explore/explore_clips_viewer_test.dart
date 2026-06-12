@@ -229,11 +229,11 @@ void main() {
       find.byKey(const ValueKey('clip-video-controls-surface')),
       findsNothing,
     );
-    expect(find.byKey(const ValueKey('clip-video-time-row')), findsWidgets);
-    expect(find.byKey(const ValueKey('clip-video-current-time')), findsWidgets);
+    expect(find.byKey(const ValueKey('clip-video-time-row')), findsNothing);
+    expect(find.byKey(const ValueKey('clip-video-current-time')), findsNothing);
     expect(
       find.byKey(const ValueKey('clip-video-duration-time')),
-      findsWidgets,
+      findsNothing,
     );
     expect(
       find.byKey(const ValueKey('clip-video-seekbar-overlay')),
@@ -301,8 +301,47 @@ void main() {
       find.byKey(const ValueKey('clip-video-seekbar-thumb')),
     );
 
-    expect(trackSize.height, greaterThanOrEqualTo(8));
+    expect(trackSize.height, greaterThanOrEqualTo(2.5));
+    expect(trackSize.height, lessThanOrEqualTo(4));
     expect(thumbSize.width, greaterThan(trackSize.height));
+  });
+
+  testWidgets('tiempos aparecen solo al interactuar con la seekbar', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        ExploreClipViewerScreen(
+          clips: ClipsMockData.clips,
+          initialClipId: ClipsMockData.clips.first.id,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('clip-video-time-row')), findsNothing);
+
+    final bar = find.byKey(const ValueKey('clip-video-seekbar')).first;
+    final rect = tester.getRect(bar);
+    await tester.tapAt(Offset(rect.left + rect.width * 0.42, rect.center.dy));
+    await tester.pump(const Duration(milliseconds: 180));
+
+    expect(find.byKey(const ValueKey('clip-video-time-row')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('clip-video-current-time')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('clip-video-duration-time')),
+      findsOneWidget,
+    );
+
+    await tester.pump(const Duration(milliseconds: 950));
+    await tester.pump(const Duration(milliseconds: 180));
+
+    expect(find.byKey(const ValueKey('clip-video-time-row')), findsNothing);
   });
 
   testWidgets('seekbar queda como HUD sin recuadro inferior', (tester) async {

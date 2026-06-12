@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:video_player/video_player.dart';
@@ -13,8 +15,8 @@ const double _clipViewerDesktopBreakpoint = 700;
 const double _clipViewerDesktopMaxWidth = 420;
 const double _clipViewerDesktopSideGutter = 48;
 const double _clipViewerDesktopVerticalGutter = 16;
-const double _clipPlaybackHudHeight = 58;
-const double _clipPlaybackHudBottomMargin = 14;
+const double _clipPlaybackHudHeight = 46;
+const double _clipPlaybackHudBottomMargin = 10;
 const double _clipPlaybackHudReservedHeight =
     _clipPlaybackHudHeight + _clipPlaybackHudBottomMargin + 8;
 
@@ -673,22 +675,22 @@ class ClipViewerMetrics {
       frameWidth: size.width,
       frameHeight: size.height,
       scaleFactor: scale,
-      actionButtonSize: (44 * scale).clamp(42.0, 50.0),
-      actionIconSize: (23 * scale).clamp(22.0, 26.0),
-      actionLabelFontSize: (10.5 * scale).clamp(10.0, 12.0),
-      chipFontSize: (11.5 * scale).clamp(11.0, 13.0),
-      chipHeight: (30 * scale).clamp(28.0, 32.0),
-      bottomTitleSize: (19 * scale).clamp(18.0, 21.0),
-      bottomCaptionSize: (13 * scale).clamp(12.0, 14.0),
+      actionButtonSize: (42 * scale).clamp(40.0, 47.0),
+      actionIconSize: (22 * scale).clamp(21.0, 25.0),
+      actionLabelFontSize: (10 * scale).clamp(9.5, 11.5),
+      chipFontSize: (10.8 * scale).clamp(10.5, 12.0),
+      chipHeight: (27 * scale).clamp(25.0, 29.0),
+      bottomTitleSize: (18.5 * scale).clamp(17.5, 20.0),
+      bottomCaptionSize: (12.6 * scale).clamp(12.0, 13.6),
       bottomPadding:
-          _clipPlaybackHudReservedHeight + (20 * scale).clamp(18.0, 28.0),
-      sideRailSpacing: (7 * scale).clamp(5.0, 9.0),
-      seekBarHeight: (6 * scale).clamp(5.0, 7.0),
-      horizontalPadding: (16 * scale).clamp(14.0, 20.0),
-      topChipsOffset: (76 * scale).clamp(68.0, 86.0),
-      actionRailWidth: (62 * scale).clamp(58.0, 68.0),
+          _clipPlaybackHudReservedHeight + (16 * scale).clamp(14.0, 22.0),
+      sideRailSpacing: (9 * scale).clamp(8.0, 11.0),
+      seekBarHeight: (3 * scale).clamp(2.5, 4.0),
+      horizontalPadding: (17 * scale).clamp(15.0, 21.0),
+      topChipsOffset: (72 * scale).clamp(64.0, 80.0),
+      actionRailWidth: (58 * scale).clamp(54.0, 64.0),
       actionRailBottom:
-          _clipPlaybackHudReservedHeight + (48 * scale).clamp(44.0, 58.0),
+          _clipPlaybackHudReservedHeight + (54 * scale).clamp(50.0, 64.0),
     );
   }
 }
@@ -942,7 +944,7 @@ class _ClipBadgeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       key: const ValueKey('clip-badge-row'),
-      height: 36,
+      height: 31,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -950,7 +952,7 @@ class _ClipBadgeRow extends StatelessWidget {
           children: [
             for (var index = 0; index < badges.length; index++) ...[
               _ViewerBadge(label: badges[index], metrics: metrics),
-              if (index < badges.length - 1) const SizedBox(width: 7),
+              if (index < badges.length - 1) const SizedBox(width: 6),
             ],
           ],
         ),
@@ -982,40 +984,59 @@ class _ClipBottomInfo extends StatelessWidget {
         if (!hasVideo) _ViewerBadge(label: 'Clip demo local', metrics: metrics),
         if (!hasVideo) const SizedBox(height: 8),
         if (creator != null) ...[
-          Row(
-            children: [
-              Container(
-                width: 23,
-                height: 23,
-                decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.9),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.58),
+          Container(
+            key: const ValueKey('clip-official-identity'),
+            constraints: const BoxConstraints(minHeight: 28),
+            child: Row(
+              children: [
+                Container(
+                  width: 25,
+                  height: 25,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.92),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.50),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.28),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.pets_rounded,
+                    color: Colors.white,
+                    size: 13,
                   ),
                 ),
-                child: const Icon(
-                  Icons.pets_rounded,
-                  color: Colors.white,
-                  size: 13,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  creator,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.86),
-                    fontWeight: FontWeight.w800,
-                    fontSize: metrics.bottomCaptionSize - 1,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    creator,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.88),
+                      fontWeight: FontWeight.w700,
+                      fontSize: metrics.bottomCaptionSize - 0.7,
+                      letterSpacing: 0,
+                      height: 1.05,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.52),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(height: 7),
+          const SizedBox(height: 9),
         ],
         Text(
           clip.title,
@@ -1025,7 +1046,7 @@ class _ClipBottomInfo extends StatelessWidget {
             color: Colors.white,
             fontWeight: FontWeight.w800,
             fontSize: metrics.bottomTitleSize,
-            height: 1.05,
+            height: 1.08,
             shadows: [
               Shadow(
                 color: Colors.black.withValues(alpha: 0.65),
@@ -1034,7 +1055,7 @@ class _ClipBottomInfo extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 5),
+        const SizedBox(height: 6),
         Text(
           clip.description,
           maxLines: 2,
@@ -1042,7 +1063,7 @@ class _ClipBottomInfo extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: Colors.white.withValues(alpha: 0.9),
             fontSize: metrics.bottomCaptionSize,
-            height: 1.26,
+            height: 1.28,
             shadows: [
               Shadow(
                 color: Colors.black.withValues(alpha: 0.72),
@@ -1404,13 +1425,42 @@ class _VideoPlayerFrame extends StatelessWidget {
   }
 }
 
-class _ClipPlaybackHud extends StatelessWidget {
+class _ClipPlaybackHud extends StatefulWidget {
   const _ClipPlaybackHud({required this.playback});
 
   final _ClipPlaybackState playback;
 
   @override
+  State<_ClipPlaybackHud> createState() => _ClipPlaybackHudState();
+}
+
+class _ClipPlaybackHudState extends State<_ClipPlaybackHud> {
+  Timer? _hideTimer;
+  bool _showTime = false;
+
+  @override
+  void dispose() {
+    _hideTimer?.cancel();
+    super.dispose();
+  }
+
+  void _showTimeNow() {
+    _hideTimer?.cancel();
+    if (_showTime) return;
+    setState(() => _showTime = true);
+  }
+
+  void _hideTimeSoon() {
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(milliseconds: 900), () {
+      if (!mounted) return;
+      setState(() => _showTime = false);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final playback = widget.playback;
     final onSeek = playback.onSeek;
     return SizedBox(
       key: const ValueKey('clip-video-seekbar-hud'),
@@ -1418,15 +1468,27 @@ class _ClipPlaybackHud extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _ClipTimeRow(
-            position: playback.position,
-            duration: playback.duration,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 140),
+            reverseDuration: const Duration(milliseconds: 160),
+            child: _showTime
+                ? _ClipTimeRow(
+                    key: const ValueKey('clip-video-time-row-visible'),
+                    position: playback.position,
+                    duration: playback.duration,
+                  )
+                : const SizedBox(
+                    key: ValueKey('clip-video-time-row-hidden'),
+                    height: 0,
+                  ),
           ),
-          const SizedBox(height: 5),
+          SizedBox(height: _showTime ? 5 : 0),
           ClipVideoSeekBar(
             progress: playback.progress,
-            height: 9,
+            height: 3,
             onSeek: onSeek ?? (_) {},
+            onInteractionStart: _showTimeNow,
+            onInteractionEnd: _hideTimeSoon,
           ),
         ],
       ),
@@ -1435,7 +1497,11 @@ class _ClipPlaybackHud extends StatelessWidget {
 }
 
 class _ClipTimeRow extends StatelessWidget {
-  const _ClipTimeRow({required this.position, required this.duration});
+  const _ClipTimeRow({
+    super.key,
+    required this.position,
+    required this.duration,
+  });
 
   final Duration position;
   final Duration duration;
@@ -1484,12 +1550,16 @@ class ClipVideoSeekBar extends StatelessWidget {
     super.key,
     required this.progress,
     required this.onSeek,
-    this.height = 10,
+    this.height = 3,
+    this.onInteractionStart,
+    this.onInteractionEnd,
   });
 
   final double progress;
   final ValueChanged<double> onSeek;
   final double height;
+  final VoidCallback? onInteractionStart;
+  final VoidCallback? onInteractionEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -1503,13 +1573,20 @@ class ClipVideoSeekBar extends StatelessWidget {
         return GestureDetector(
           key: const ValueKey('clip-video-seekbar'),
           behavior: HitTestBehavior.opaque,
-          onTapDown: (details) => seek(details.localPosition),
+          onTapDown: (details) {
+            onInteractionStart?.call();
+            seek(details.localPosition);
+            onInteractionEnd?.call();
+          },
+          onHorizontalDragStart: (_) => onInteractionStart?.call(),
           onHorizontalDragUpdate: (details) => seek(details.localPosition),
+          onHorizontalDragEnd: (_) => onInteractionEnd?.call(),
+          onHorizontalDragCancel: () => onInteractionEnd?.call(),
           child: Container(
             key: const ValueKey('clip-video-seekbar-control'),
-            height: 28,
+            height: 24,
             alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(999)),
             child: Stack(
               alignment: Alignment.centerLeft,
@@ -1518,12 +1595,15 @@ class ClipVideoSeekBar extends StatelessWidget {
                   key: const ValueKey('clip-video-seekbar-track'),
                   height: height,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.72),
+                    color: Colors.white.withValues(alpha: 0.34),
                     borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.18),
-                      width: 1,
-                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.32),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                 ),
                 FractionallySizedBox(
@@ -1536,9 +1616,9 @@ class ClipVideoSeekBar extends StatelessWidget {
                       borderRadius: BorderRadius.circular(999),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.accent.withValues(alpha: 0.42),
-                          blurRadius: 14,
-                          offset: const Offset(0, 3),
+                          color: AppColors.accent.withValues(alpha: 0.28),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
@@ -1548,20 +1628,19 @@ class ClipVideoSeekBar extends StatelessWidget {
                   alignment: Alignment((progress.clamp(0.0, 1.0) * 2) - 1, 0),
                   child: Container(
                     key: const ValueKey('clip-video-seekbar-thumb'),
-                    width: height + 10,
-                    height: height + 10,
+                    width: height + 8,
+                    height: height + 8,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFF111820),
-                        width: 2,
+                        color: Colors.black.withValues(alpha: 0.32),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.42),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
+                          color: Colors.black.withValues(alpha: 0.38),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
@@ -1586,16 +1665,17 @@ class _ViewerBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: metrics?.chipHeight,
-      padding: const EdgeInsets.symmetric(horizontal: 9),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
+        color: Colors.black.withValues(alpha: 0.24),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -1603,9 +1683,10 @@ class _ViewerBadge extends StatelessWidget {
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
           color: Colors.white,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           fontSize: metrics?.chipFontSize ?? 11,
           height: 1,
+          letterSpacing: 0,
         ),
       ),
     );
@@ -1716,7 +1797,7 @@ class _ReelActionButton extends StatelessWidget {
     final iconColor = selected ? selectedColor : Colors.white;
     final backgroundColor = selected
         ? Colors.white.withValues(alpha: 0.94)
-        : Colors.black.withValues(alpha: 0.38);
+        : Colors.black.withValues(alpha: 0.30);
 
     return Padding(
       padding: EdgeInsets.zero,
@@ -1738,13 +1819,13 @@ class _ReelActionButton extends StatelessWidget {
                     color: backgroundColor,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.22),
+                      color: Colors.white.withValues(alpha: 0.16),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.22),
-                        blurRadius: 14,
-                        offset: const Offset(0, 7),
+                        color: Colors.black.withValues(alpha: 0.20),
+                        blurRadius: 11,
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
@@ -1762,9 +1843,10 @@ class _ReelActionButton extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: Colors.white,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w800,
                     fontSize: metrics.actionLabelFontSize,
                     height: 1.05,
+                    letterSpacing: 0,
                     shadows: [
                       Shadow(
                         color: Colors.black.withValues(alpha: 0.65),
