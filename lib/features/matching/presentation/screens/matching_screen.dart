@@ -132,55 +132,9 @@ class _MatchingScreenState extends State<MatchingScreen> {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(22, 0, 22, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    _PetAvatar(candidate: candidate, size: 64),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hicieron match!',
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.w900),
-                          ),
-                          Text(
-                            '${candidate.name} tambien mostro interes demo.',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'El contacto real sera mediado por Mascotify con privacidad, consentimiento y seguridad.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: null,
-                    icon: const Icon(Icons.lock_outline_rounded),
-                    label: const Text('Contacto seguro proximamente'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        return _MutualMatchSheet(candidate: candidate);
       },
     );
   }
@@ -777,6 +731,285 @@ class _EmptyDeckState extends StatelessWidget {
             label: const Text('Volver a buscar'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MutualMatchSheet extends StatefulWidget {
+  const _MutualMatchSheet({required this.candidate});
+
+  final PetMatchCandidate candidate;
+
+  @override
+  State<_MutualMatchSheet> createState() => _MutualMatchSheetState();
+}
+
+class _MutualMatchSheetState extends State<_MutualMatchSheet>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _pop;
+  late final Animation<double> _float;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 880),
+    );
+    _pop = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0, 0.58, curve: Curves.elasticOut),
+    );
+    _float = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.12, 1, curve: Curves.easeOutCubic),
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final candidate = widget.candidate;
+    final textTheme = Theme.of(context).textTheme;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+        child: Container(
+          key: const ValueKey('matching-mutual-sheet'),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.18),
+                blurRadius: 30,
+                offset: const Offset(0, 16),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.accentSoft.withValues(alpha: 0.88),
+                        AppColors.surface,
+                        AppColors.primarySoft.withValues(alpha: 0.82),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, _) {
+                      return Stack(
+                        children: [
+                          _FloatingMatchHeart(
+                            progress: _float.value,
+                            left: 34,
+                            top: 68,
+                            size: 18,
+                            opacity: 0.55,
+                          ),
+                          _FloatingMatchHeart(
+                            progress: _float.value,
+                            right: 44,
+                            top: 48,
+                            size: 22,
+                            opacity: 0.50,
+                          ),
+                          _FloatingMatchHeart(
+                            progress: _float.value,
+                            left: 74,
+                            bottom: 88,
+                            size: 14,
+                            opacity: 0.42,
+                            delay: 0.18,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedBuilder(
+                      animation: _pop,
+                      builder: (context, child) {
+                        final scale = 0.72 + (_pop.value * 0.28);
+                        return Opacity(
+                          opacity: _controller.value.clamp(0.0, 1.0),
+                          child: Transform.scale(scale: scale, child: child),
+                        );
+                      },
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          _PetAvatar(candidate: candidate, size: 88),
+                          Positioned(
+                            right: -6,
+                            bottom: -2,
+                            child: Container(
+                              key: const ValueKey('matching-heart-pop'),
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: AppColors.accentDeep,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 3,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.accentDeep.withValues(
+                                      alpha: 0.30,
+                                    ),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.favorite_rounded,
+                                color: Colors.white,
+                                size: 23,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Container(
+                      key: const ValueKey('matching-match-badge'),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.78),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: AppColors.accentDeep.withValues(alpha: 0.16),
+                        ),
+                      ),
+                      child: Text(
+                        'Match demo',
+                        style: textTheme.labelMedium?.copyWith(
+                          color: AppColors.accentDeep,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Hicieron match!',
+                      textAlign: TextAlign.center,
+                      style: textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${candidate.name} tambien mostro interes demo.',
+                      textAlign: TextAlign.center,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'El contacto real sera mediado por Mascotify con privacidad y seguridad.',
+                      textAlign: TextAlign.center,
+                      style: textTheme.bodyMedium?.copyWith(height: 1.35),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: null,
+                        icon: const Icon(Icons.lock_outline_rounded),
+                        label: const Text('Contacto seguro proximamente'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FloatingMatchHeart extends StatelessWidget {
+  const _FloatingMatchHeart({
+    required this.progress,
+    required this.size,
+    required this.opacity,
+    this.left,
+    this.right,
+    this.top,
+    this.bottom,
+    this.delay = 0,
+  });
+
+  final double progress;
+  final double size;
+  final double opacity;
+  final double? left;
+  final double? right;
+  final double? top;
+  final double? bottom;
+  final double delay;
+
+  @override
+  Widget build(BuildContext context) {
+    final adjusted = ((progress - delay) / (1 - delay)).clamp(0.0, 1.0);
+    final fade = math.sin(adjusted * math.pi).clamp(0.0, 1.0);
+    return Positioned(
+      left: left,
+      right: right,
+      top: top == null ? null : top! - (adjusted * 22),
+      bottom: bottom == null ? null : bottom! + (adjusted * 18),
+      child: Opacity(
+        opacity: opacity * fade,
+        child: Transform.rotate(
+          angle: (adjusted - 0.5) * math.pi / 18,
+          child: Icon(
+            Icons.favorite_rounded,
+            key: const ValueKey('matching-floating-heart'),
+            color: AppColors.accentDeep,
+            size: size,
+          ),
+        ),
       ),
     );
   }

@@ -69,9 +69,14 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('matching-like-button')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 260));
 
     expect(find.text('Hicieron match!'), findsOneWidget);
+    expect(find.byKey(const ValueKey('matching-mutual-sheet')), findsOneWidget);
+    expect(find.byKey(const ValueKey('matching-heart-pop')), findsOneWidget);
+    expect(find.byKey(const ValueKey('matching-floating-heart')), findsWidgets);
+    expect(find.text('Contacto seguro proximamente'), findsOneWidget);
     expect(find.textContaining('mediado por Mascotify'), findsOneWidget);
     expect(find.textContaining('@'), findsNothing);
     expect(find.textContaining('+54'), findsNothing);
