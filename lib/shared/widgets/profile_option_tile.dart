@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
+import '../../theme/app_theme.dart';
 import '../models/profile_option_item.dart';
 
 class ProfileOptionTile extends StatelessWidget {
@@ -10,6 +10,8 @@ class ProfileOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final palette = MascotifyPalette.of(context);
     return Card(
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(
@@ -20,10 +22,11 @@ class ProfileOptionTile extends StatelessWidget {
           width: 46,
           height: 46,
           decoration: BoxDecoration(
-            color: AppColors.surfaceTint,
+            color: palette.surfaceTint,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
-          child: Icon(_mapIcon(item.iconKey), color: AppColors.primaryDeep),
+          child: Icon(_mapIcon(item.iconKey), color: colorScheme.primary),
         ),
         title: Text(item.title, style: Theme.of(context).textTheme.titleMedium),
         subtitle: Padding(
@@ -34,12 +37,13 @@ class ProfileOptionTile extends StatelessWidget {
           width: 34,
           height: 34,
           decoration: BoxDecoration(
-            color: AppColors.surfaceAlt,
+            color: palette.surfaceAlt,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.chevron_right_rounded,
-            color: AppColors.textSecondary,
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
       ),

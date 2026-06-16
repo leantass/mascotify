@@ -15,6 +15,7 @@ import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/pet_card.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
 import '../../../profile/presentation/screens/help_screen.dart';
 import '../../../profile/presentation/widgets/contextual_help_link.dart';
 import 'notifications_screen.dart';
@@ -338,21 +339,34 @@ class _HomeHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    final palette = MascotifyPalette.of(context);
+    final heroGradient = _isDarkMode(context)
+        ? LinearGradient(
+            colors: [
+              palette.primarySoft,
+              colorScheme.surface,
+              palette.surfaceAlt,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )
+        : const LinearGradient(
+            colors: [
+              AppColors.primarySoft,
+              AppColors.surface,
+              AppColors.accentSoft,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          );
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            AppColors.primarySoft,
-            AppColors.surface,
-            AppColors.accentSoft,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: heroGradient,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: _homeBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -365,7 +379,9 @@ class _HomeHero extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.dark,
+                  color: _isDarkMode(context)
+                      ? _homeSurfaceTint(context)
+                      : AppColors.dark,
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
@@ -393,7 +409,7 @@ class _HomeHero extends StatelessWidget {
           Text(
             '$householdName usa Mascotify como una base para mascotas, QR, social, mensajería y comunidad experta desde $city.',
             style: textTheme.bodyLarge?.copyWith(
-              color: AppColors.textSecondary,
+              color: _homeSecondaryText(context),
             ),
           ),
           const SizedBox(height: 16),
@@ -401,11 +417,19 @@ class _HomeHero extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _HeroPill(label: roleLabel, color: Colors.white),
-              _HeroPill(label: planName, color: AppColors.supportSoft),
+              _HeroPill(
+                label: roleLabel,
+                color: _isDarkMode(context)
+                    ? _homeSurfaceTint(context)
+                    : Colors.white,
+              ),
+              _HeroPill(
+                label: planName,
+                color: _darkAwareTone(context, AppColors.supportSoft),
+              ),
               _HeroPill(
                 label: '$activeAttentionCount focos activos',
-                color: AppColors.accentSoft,
+                color: _darkAwareTone(context, AppColors.accentSoft),
               ),
             ],
           ),
@@ -416,7 +440,7 @@ class _HomeHero extends StatelessWidget {
                 child: _HeroMetric(
                   value: '$petCount',
                   label: 'Mascotas activas',
-                  tone: AppColors.surface,
+                  tone: _darkAwareTone(context, AppColors.surface),
                 ),
               ),
               const SizedBox(width: 12),
@@ -424,7 +448,7 @@ class _HomeHero extends StatelessWidget {
                 child: _HeroMetric(
                   value: '$activeAttentionCount',
                   label: 'Puntos de atención',
-                  tone: AppColors.supportSoft,
+                  tone: _darkAwareTone(context, AppColors.supportSoft),
                 ),
               ),
             ],
@@ -477,28 +501,28 @@ class _EcosystemOverview extends StatelessWidget {
         title: 'QR activo',
         value: '$activeQrCount listos',
         description: '$pendingQrCount perfiles todavía esperan activación.',
-        color: AppColors.supportSoft,
+        color: _darkAwareTone(context, AppColors.supportSoft),
         icon: Icons.qr_code_2_rounded,
       ),
       _OverviewTile(
         title: 'Mensajes',
         value: '$unreadMessageCount chats',
         description: '$awaitingReplyCount conversaciones esperan tu lectura.',
-        color: AppColors.accentSoft,
+        color: _darkAwareTone(context, AppColors.accentSoft),
         icon: Icons.chat_bubble_outline_rounded,
       ),
       _OverviewTile(
         title: 'Matching',
         value: '$socialPendingCount señales',
         description: 'Intereses, afinidades y conexiones con más contexto.',
-        color: AppColors.primarySoft,
+        color: _darkAwareTone(context, AppColors.primarySoft),
         icon: Icons.favorite_border_rounded,
       ),
       _OverviewTile(
         title: 'Guardados',
         value: '$savedProfilesCount perfiles',
         description: 'Perfiles listos para retomar y comparar mejor.',
-        color: AppColors.surface,
+        color: _homeSurfaceAlt(context),
         icon: Icons.bookmark_outline_rounded,
       ),
     ];
@@ -507,9 +531,9 @@ class _EcosystemOverview extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: _homeSurface(context),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: _homeBorder(context)),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -520,7 +544,7 @@ class _EcosystemOverview extends StatelessWidget {
               children: [
                 for (var index = 0; index < metrics.length; index++) ...[
                   if (index > 0)
-                    const Divider(height: 18, color: AppColors.border),
+                    Divider(height: 18, color: _homeBorder(context)),
                   metrics[index],
                 ],
               ],
@@ -535,7 +559,7 @@ class _EcosystemOverview extends StatelessWidget {
                     width: 1,
                     height: 70,
                     margin: const EdgeInsets.symmetric(horizontal: 14),
-                    color: AppColors.border,
+                    color: _homeBorder(context),
                   ),
                 Expanded(child: metrics[index]),
               ],
@@ -571,7 +595,7 @@ class _PrimaryAccessGrid extends StatelessWidget {
             ? 'Agrega tu primera mascota desde la sección Mascotas para destrabar identidad, QR, matching y ficha completa.'
             : 'Entrá a identidad, salud, matching y ficha completa desde una sola base.',
         icon: Icons.pets_rounded,
-        tone: AppColors.primarySoft,
+        tone: _darkAwareTone(context, AppColors.primarySoft),
         onTap: primaryPet == null
             ? null
             : () => Navigator.of(context).push(
@@ -589,7 +613,7 @@ class _PrimaryAccessGrid extends StatelessWidget {
             ? 'Se habilita cuando tengas al menos una mascota cargada en la base local.'
             : 'Historial, contacto protegido y trazabilidad ya visible dentro del producto.',
         icon: Icons.qr_code_2_rounded,
-        tone: AppColors.supportSoft,
+        tone: _darkAwareTone(context, AppColors.supportSoft),
         onTap: onOpenQr,
         highlight: qrFocusPet == null
             ? 'La cuenta nueva ya no hereda QR ajenos.'
@@ -600,7 +624,7 @@ class _PrimaryAccessGrid extends StatelessWidget {
         subtitle:
             'Intereses, perfiles guardados y afinidades mejor explicadas.',
         icon: Icons.favorite_border_rounded,
-        tone: AppColors.primarySoft,
+        tone: _darkAwareTone(context, AppColors.primarySoft),
         onTap: onOpenSocial,
       ),
       _PrimaryAccessCard(
@@ -608,7 +632,7 @@ class _PrimaryAccessGrid extends StatelessWidget {
         subtitle:
             'La comunidad experta ya suma voces, confianza y base para futuros servicios dentro del ecosistema.',
         icon: Icons.workspace_premium_outlined,
-        tone: AppColors.accentSoft,
+        tone: _darkAwareTone(context, AppColors.accentSoft),
         onTap: onOpenProfessionals,
         highlight:
             'Una entrada más rica para contenido, confianza y futuros servicios.',
@@ -749,7 +773,7 @@ class _PriorityCard extends StatelessWidget {
                 description:
                     'Hay $socialPendingCount afinidades o intereses que conviene revisar dentro de la bandeja social.',
                 pill: 'Social activo',
-                tone: AppColors.accentSoft,
+                tone: _darkAwareTone(context, AppColors.accentSoft),
                 icon: Icons.favorite_border_rounded,
               ),
             const SizedBox(height: 16),
@@ -796,7 +820,7 @@ class _HomeEmptyStateCard extends StatelessWidget {
             Text(
               description,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textPrimary,
+                color: _homeText(context),
                 height: 1.45,
               ),
             ),
@@ -829,13 +853,13 @@ class _AccountStatusCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surfaceAlt,
+              color: _homeSurfaceAlt(context),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               account.baseSummary,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textPrimary,
+                color: _homeText(context),
                 height: 1.45,
               ),
             ),
@@ -846,8 +870,10 @@ class _AccountStatusCard extends StatelessWidget {
             runSpacing: 10,
             children: familyProfile.capabilities
                 .map(
-                  (item) =>
-                      _HeroPill(label: item, color: AppColors.primarySoft),
+                  (item) => _HeroPill(
+                    label: item,
+                    color: _darkAwareTone(context, AppColors.primarySoft),
+                  ),
                 )
                 .toList(),
           ),
@@ -856,13 +882,13 @@ class _AccountStatusCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.accentSoft,
+              color: _darkAwareTone(context, AppColors.accentSoft),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               account.linkedProfilesSummary,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textPrimary,
+                color: _homeText(context),
                 height: 1.45,
               ),
             ),
@@ -888,8 +914,9 @@ class _IconButtonBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: _homeSurface(context),
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _homeBorder(context)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -952,7 +979,7 @@ class _HeroPill extends StatelessWidget {
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: _homeText(context),
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -986,14 +1013,14 @@ class _HeroMetric extends StatelessWidget {
             value,
             style: Theme.of(
               context,
-            ).textTheme.titleLarge?.copyWith(color: AppColors.textPrimary),
+            ).textTheme.titleLarge?.copyWith(color: _homeText(context)),
           ),
           const SizedBox(height: 6),
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: _homeSecondaryText(context),
+            ),
           ),
         ],
       ),
@@ -1026,7 +1053,7 @@ class _PriorityRow extends StatelessWidget {
           color: tone,
           borderRadius: BorderRadius.circular(14),
         ),
-        child: Icon(icon, color: AppColors.textPrimary),
+        child: Icon(icon, color: _homeText(context)),
       );
     }
 
@@ -1039,7 +1066,7 @@ class _PriorityRow extends StatelessWidget {
           Text(
             description,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
+              color: _homeText(context),
               height: 1.45,
             ),
           ),
@@ -1051,13 +1078,16 @@ class _PriorityRow extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _isDarkMode(context)
+              ? _homeSurfaceTint(context)
+              : Colors.white,
           borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: _homeBorder(context)),
         ),
         child: Text(
           pill,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppColors.textPrimary,
+            color: _homeText(context),
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -1068,9 +1098,9 @@ class _PriorityRow extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: _homeSurfaceAlt(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: _homeBorder(context)),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -1122,14 +1152,14 @@ class _InlineActionChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: AppColors.surfaceAlt,
+          color: _homeSurfaceAlt(context),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: _homeBorder(context)),
         ),
         child: Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppColors.textPrimary,
+            color: _homeText(context),
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -1159,9 +1189,9 @@ class _EcosystemFeedTile extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: _homeSurfaceAlt(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: _homeBorder(context)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1185,14 +1215,14 @@ class _EcosystemFeedTile extends StatelessWidget {
                 Text(
                   subtitle,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: _homeSecondaryText(context),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   description,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: _homeText(context),
                     height: 1.45,
                   ),
                 ),
@@ -1235,9 +1265,9 @@ class _OverviewTile extends StatelessWidget {
             decoration: BoxDecoration(
               color: color,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: _homeBorder(context)),
             ),
-            child: Icon(icon, size: 20, color: AppColors.textPrimary),
+            child: Icon(icon, size: 20, color: _homeText(context)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -1250,7 +1280,7 @@ class _OverviewTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: _homeSecondaryText(context),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1260,7 +1290,7 @@ class _OverviewTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: textTheme.titleMedium?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: _homeText(context),
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -1270,7 +1300,7 @@ class _OverviewTile extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: textTheme.bodySmall?.copyWith(
-                    color: AppColors.textMuted,
+                    color: MascotifyPalette.of(context).textMuted,
                     height: 1.25,
                   ),
                 ),
@@ -1306,12 +1336,14 @@ class _PrimaryAccessCard extends StatelessWidget {
 
     return Card(
       elevation: 2.5,
-      shadowColor: AppColors.primary.withValues(alpha: 0.16),
-      color: AppColors.surface,
+      shadowColor: _isDarkMode(context)
+          ? Colors.black.withValues(alpha: 0.22)
+          : AppColors.primary.withValues(alpha: 0.16),
+      color: _homeSurface(context),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(22),
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: _homeBorder(context)),
       ),
       child: InkWell(
         onTap: onTap,
@@ -1328,8 +1360,11 @@ class _PrimaryAccessCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: tone,
                     borderRadius: BorderRadius.circular(16),
+                    border: _isDarkMode(context)
+                        ? Border.all(color: _homeBorder(context))
+                        : null,
                   ),
-                  child: Icon(icon, color: AppColors.textPrimary),
+                  child: Icon(icon, color: _homeText(context)),
                 ),
                 const SizedBox(height: 14),
                 Text(title, style: textTheme.titleMedium),
@@ -1338,7 +1373,7 @@ class _PrimaryAccessCard extends StatelessWidget {
                   child: Text(
                     subtitle,
                     style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: _homeSecondaryText(context),
                       height: 1.4,
                     ),
                   ),
@@ -1350,7 +1385,7 @@ class _PrimaryAccessCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
+                      color: _homeText(context),
                       fontWeight: FontWeight.w600,
                       height: 1.35,
                     ),
@@ -1364,3 +1399,41 @@ class _PrimaryAccessCard extends StatelessWidget {
     );
   }
 }
+
+bool _isDarkMode(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark;
+
+Color _darkAwareTone(BuildContext context, Color lightTone) {
+  if (!_isDarkMode(context)) return lightTone;
+
+  final palette = MascotifyPalette.of(context);
+  if (lightTone == AppColors.primarySoft) return palette.primarySoft;
+  if (lightTone == AppColors.accentSoft) return palette.accentSoft;
+  if (lightTone == AppColors.supportSoft) return palette.supportSoft;
+  if (lightTone == AppColors.surface || lightTone == AppColors.surfaceAlt) {
+    return palette.surfaceAlt;
+  }
+
+  return Color.alphaBlend(
+    lightTone.withValues(alpha: 0.22),
+    palette.surfaceAlt,
+  );
+}
+
+Color _homeSurface(BuildContext context) =>
+    Theme.of(context).colorScheme.surface;
+
+Color _homeSurfaceAlt(BuildContext context) =>
+    MascotifyPalette.of(context).surfaceAlt;
+
+Color _homeSurfaceTint(BuildContext context) =>
+    MascotifyPalette.of(context).surfaceTint;
+
+Color _homeBorder(BuildContext context) =>
+    Theme.of(context).colorScheme.outlineVariant;
+
+Color _homeText(BuildContext context) =>
+    Theme.of(context).colorScheme.onSurface;
+
+Color _homeSecondaryText(BuildContext context) =>
+    Theme.of(context).colorScheme.onSurfaceVariant;

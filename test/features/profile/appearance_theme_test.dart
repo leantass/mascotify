@@ -3,11 +3,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mascotify/core/theme/app_theme_controller.dart';
 import 'package:mascotify/features/auth/data/local_auth_models.dart';
 import 'package:mascotify/features/profile/presentation/screens/profile_screen.dart';
+import 'package:mascotify/theme/app_colors.dart';
+import 'package:mascotify/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../test_helpers.dart';
 
 void main() {
+  test('dark theme keeps cards and secondary surfaces in dark slate tones', () {
+    final theme = AppTheme.dark();
+    final palette = theme.extension<MascotifyPalette>()!;
+
+    expect(theme.cardTheme.color, isNot(AppColors.surface));
+    expect(theme.cardTheme.color!.computeLuminance(), lessThan(0.08));
+    expect(palette.surfaceAlt.computeLuminance(), lessThan(0.12));
+    expect(palette.primarySoft.computeLuminance(), lessThan(0.08));
+    expect(palette.accentSoft.computeLuminance(), lessThan(0.08));
+    expect(palette.supportSoft.computeLuminance(), lessThan(0.08));
+  });
+
   test('theme controller persists the selected mode locally', () async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final preferences = await SharedPreferences.getInstance();
