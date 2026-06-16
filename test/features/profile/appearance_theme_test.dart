@@ -183,6 +183,30 @@ void main() {
     expect(find.text('Contenidos'), findsOneWidget);
     expect(find.byType(Card), findsWidgets);
   });
+
+  testWidgets('Rail principal adapta la capsula Modo familia al modo oscuro', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    final session = await buildPersistentTestAppSession();
+    await session.controller.login(
+      email: LocalAuthSeedData.familyEmail,
+      password: LocalAuthSeedData.demoPassword,
+    );
+    await session.themeController.setMode(MascotifyThemeMode.dark);
+
+    await tester.pumpWidget(session.buildApp());
+    await tester.pumpAndSettle();
+
+    final identityCard = tester.widget<Container>(
+      find.byKey(const ValueKey('main-nav-rail-identity-card')),
+    );
+    final decoration = identityCard.decoration! as BoxDecoration;
+
+    expect(find.text('Modo familia'), findsWidgets);
+    expect(decoration.color, isNotNull);
+    expect(decoration.color!.computeLuminance(), lessThan(0.12));
+  });
 }
 
 Future<void> _pumpProfileScreen(

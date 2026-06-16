@@ -9,6 +9,7 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/professional/presentation/screens/professional_dashboard_screen.dart';
 import '../../shared/models/account_identity_models.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_theme.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({
@@ -181,16 +182,27 @@ class _RailHeader extends StatelessWidget {
     final roleLabel = experience == AccountExperience.family
         ? 'Modo familia'
         : 'Beta profesional';
+    final isDark = mascotifyIsDark(context);
+    final cardColor = mascotifySurfaceAlt(context);
+    final borderColor = mascotifyBorder(context);
+    final iconBackground = isDark
+        ? mascotifySurfaceTint(context)
+        : AppColors.dark;
+    final iconColor = isDark
+        ? Theme.of(context).colorScheme.primary
+        : Colors.white;
+    final subtitleColor = mascotifySecondaryText(context);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
       child: isExtended
           ? Container(
+              key: const ValueKey('main-nav-rail-identity-card'),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               decoration: BoxDecoration(
-                color: AppColors.surfaceAlt,
+                color: cardColor,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: borderColor),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -199,10 +211,11 @@ class _RailHeader extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppColors.dark,
+                      color: iconBackground,
                       borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: borderColor),
                     ),
-                    child: const Icon(Icons.pets_rounded, color: Colors.white),
+                    child: Icon(Icons.pets_rounded, color: iconColor),
                   ),
                   const SizedBox(width: 12),
                   Flexible(
@@ -217,7 +230,7 @@ class _RailHeader extends StatelessWidget {
                         Text(
                           roleLabel,
                           style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: AppColors.textSecondary),
+                              ?.copyWith(color: subtitleColor),
                         ),
                       ],
                     ),
@@ -229,10 +242,11 @@ class _RailHeader extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.dark,
+                color: iconBackground,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderColor),
               ),
-              child: const Icon(Icons.pets_rounded, color: Colors.white),
+              child: Icon(Icons.pets_rounded, color: iconColor),
             ),
     );
   }
