@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mascotify/core/theme/app_theme_controller.dart';
 import 'package:mascotify/features/auth/data/local_auth_models.dart';
+import 'package:mascotify/features/explore/presentation/screens/explore_screen.dart';
 import 'package:mascotify/features/home/presentation/screens/home_screen.dart';
 import 'package:mascotify/features/profile/presentation/screens/profile_screen.dart';
 import 'package:mascotify/theme/app_colors.dart';
@@ -143,6 +144,43 @@ void main() {
     expect(find.text('Mascotas activas'), findsOneWidget);
     expect(find.textContaining('Puntos de atenci'), findsOneWidget);
     expect(find.textContaining('requiere atenci'), findsOneWidget);
+    expect(find.byType(Card), findsWidgets);
+  });
+
+  testWidgets('Explorar renderiza tabs, hero y cards sociales en modo oscuro', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    final session = await buildPersistentTestAppSession();
+    await session.controller.login(
+      email: LocalAuthSeedData.familyEmail,
+      password: LocalAuthSeedData.demoPassword,
+    );
+    await session.themeController.setMode(MascotifyThemeMode.dark);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        const ExploreScreen(),
+        controller: session.controller,
+        localeController: session.localeController,
+        themeController: session.themeController,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ecosistema'), findsOneWidget);
+    expect(find.text('Clips'), findsOneWidget);
+    expect(find.text('Ecosistema social'), findsOneWidget);
+    expect(find.text('Matching futuro'), findsOneWidget);
+    expect(find.text('Perfiles visibles'), findsOneWidget);
+    expect(find.text('Conexiones seguras'), findsOneWidget);
+    expect(find.text('Voces expertas'), findsOneWidget);
+    expect(find.text('Bandeja social'), findsOneWidget);
+    expect(find.text('Profesionales pet'), findsOneWidget);
+    expect(find.text('Recibidos'), findsOneWidget);
+    expect(find.text('Enviados'), findsOneWidget);
+    expect(find.text('Profesionales'), findsOneWidget);
+    expect(find.text('Contenidos'), findsOneWidget);
     expect(find.byType(Card), findsWidgets);
   });
 }
