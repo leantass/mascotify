@@ -10,6 +10,7 @@ import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/pet_card.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
 import '../../../lost_pets/presentation/screens/lost_pets_screen.dart';
 import '../../../profile/presentation/screens/help_screen.dart';
 import '../../../profile/presentation/widgets/contextual_help_link.dart';
@@ -42,9 +43,9 @@ class _PetsScreenState extends State<PetsScreen> {
               Container(
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: mascotifySurface(context),
                   borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: mascotifyBorder(context)),
                 ),
                 child: Column(
                   children: [
@@ -72,8 +73,9 @@ class _PetsScreenState extends State<PetsScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceAlt,
+                        color: mascotifySurfaceAlt(context),
                         borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: mascotifyBorder(context)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +86,7 @@ class _PetsScreenState extends State<PetsScreen> {
                                 : '${AppData.lostPets.where((item) => !item.isFound).length} reportes activos de mascotas perdidas para esta cuenta.',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: AppColors.textPrimary,
+                                  color: mascotifyPrimaryText(context),
                                   fontWeight: FontWeight.w600,
                                 ),
                           ),
@@ -95,7 +97,7 @@ class _PetsScreenState extends State<PetsScreen> {
                                 : 'Solo se muestra zona general.',
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: mascotifySecondaryText(context),
                                   fontWeight: FontWeight.w600,
                                 ),
                           ),
@@ -240,9 +242,9 @@ class _PetsSectionSelector extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: mascotifySurface(context),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: mascotifyBorder(context)),
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -301,10 +303,14 @@ class _PetsSectionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = selected ? Colors.white : AppColors.textPrimary;
+    final foreground = selected
+        ? Theme.of(context).colorScheme.onPrimary
+        : mascotifyPrimaryText(context);
 
     return Material(
-      color: selected ? AppColors.primaryDeep : Colors.transparent,
+      color: selected
+          ? Theme.of(context).colorScheme.primary
+          : Colors.transparent,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         key: ValueKey('pets-section-$label'),
@@ -404,9 +410,9 @@ class _PetsEmptyState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -419,7 +425,7 @@ class _PetsEmptyState extends StatelessWidget {
           Text(
             'En browser conviene dejar clara la base operativa desde el primer paso: cuando agregues tu primera mascota, esta vista va a crecer con identidad, QR, matching y seguimiento persistido.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
+              color: mascotifyPrimaryText(context),
               height: 1.45,
             ),
           ),

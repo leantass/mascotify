@@ -180,8 +180,18 @@ class AppTheme {
           onSecondary: Colors.white,
           tertiary: AppColors.support,
           onTertiary: const Color(0xFF2A2100),
+          primaryContainer: primarySoft,
+          onPrimaryContainer: textPrimary,
+          secondaryContainer: accentSoft,
+          onSecondaryContainer: textPrimary,
+          tertiaryContainer: supportSoft,
+          onTertiaryContainer: textPrimary,
           surface: surface,
           onSurface: textPrimary,
+          surfaceContainerLowest: background,
+          surfaceContainerLow: surface,
+          surfaceContainer: surface,
+          surfaceContainerHigh: surfaceAlt,
           surfaceContainerHighest: surfaceAlt,
           outline: border,
           outlineVariant: border,
@@ -343,6 +353,10 @@ class AppTheme {
               ? accentSoft
               : surfaceAlt;
         }),
+      ),
+      badgeTheme: const BadgeThemeData(
+        backgroundColor: accentSoft,
+        textColor: textPrimary,
       ),
       snackBarTheme: const SnackBarThemeData(
         backgroundColor: surfaceAlt,

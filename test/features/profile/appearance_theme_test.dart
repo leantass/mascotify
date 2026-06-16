@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mascotify/core/theme/app_theme_controller.dart';
 import 'package:mascotify/features/auth/data/local_auth_models.dart';
+import 'package:mascotify/features/home/presentation/screens/home_screen.dart';
 import 'package:mascotify/features/profile/presentation/screens/profile_screen.dart';
 import 'package:mascotify/theme/app_colors.dart';
 import 'package:mascotify/theme/app_theme.dart';
@@ -114,6 +115,35 @@ void main() {
       tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
       ThemeMode.light,
     );
+  });
+
+  testWidgets('Home renderiza chips y cards principales en modo oscuro', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    final session = await buildPersistentTestAppSession();
+    await session.controller.login(
+      email: LocalAuthSeedData.familyEmail,
+      password: LocalAuthSeedData.demoPassword,
+    );
+    await session.themeController.setMode(MascotifyThemeMode.dark);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        const HomeScreen(),
+        controller: session.controller,
+        localeController: session.localeController,
+        themeController: session.themeController,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Modo familia'), findsOneWidget);
+    expect(find.textContaining('focos activos'), findsOneWidget);
+    expect(find.text('Mascotas activas'), findsOneWidget);
+    expect(find.textContaining('Puntos de atenci'), findsOneWidget);
+    expect(find.textContaining('requiere atenci'), findsOneWidget);
+    expect(find.byType(Card), findsWidgets);
   });
 }
 

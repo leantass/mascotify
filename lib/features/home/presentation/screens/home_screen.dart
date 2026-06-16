@@ -383,11 +383,16 @@ class _HomeHero extends StatelessWidget {
                       ? _homeSurfaceTint(context)
                       : AppColors.dark,
                   borderRadius: BorderRadius.circular(999),
+                  border: _isDarkMode(context)
+                      ? Border.all(color: _homeBorder(context))
+                      : null,
                 ),
                 child: Text(
                   'Hola, $firstName',
                   style: textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
+                    color: _isDarkMode(context)
+                        ? _homeText(context)
+                        : Colors.white,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -942,7 +947,7 @@ class _IconButtonBadge extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: AppColors.accent,
                         borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: Colors.white),
+                        border: Border.all(color: _homeSurface(context)),
                       ),
                       child: Text(
                         '$badgeCount',
@@ -973,8 +978,9 @@ class _HeroPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color,
+        color: _darkAwareTone(context, color),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: _homeBorder(context)),
       ),
       child: Text(
         label,
@@ -1003,8 +1009,9 @@ class _HeroMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: tone,
+        color: _darkAwareTone(context, tone),
         borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: _homeBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1045,13 +1052,16 @@ class _PriorityRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final darkTone = _darkAwareTone(context, tone);
+
     Widget buildIcon() {
       return Container(
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: tone,
+          color: darkTone,
           borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: _homeBorder(context)),
         ),
         child: Icon(icon, color: _homeText(context)),
       );
@@ -1185,6 +1195,8 @@ class _EcosystemFeedTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final darkTone = _darkAwareTone(context, tone);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -1200,10 +1212,11 @@ class _EcosystemFeedTile extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: tone,
+              color: darkTone,
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _homeBorder(context)),
             ),
-            child: Icon(icon, color: AppColors.dark),
+            child: Icon(icon, color: _homeText(context)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -1404,20 +1417,7 @@ bool _isDarkMode(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark;
 
 Color _darkAwareTone(BuildContext context, Color lightTone) {
-  if (!_isDarkMode(context)) return lightTone;
-
-  final palette = MascotifyPalette.of(context);
-  if (lightTone == AppColors.primarySoft) return palette.primarySoft;
-  if (lightTone == AppColors.accentSoft) return palette.accentSoft;
-  if (lightTone == AppColors.supportSoft) return palette.supportSoft;
-  if (lightTone == AppColors.surface || lightTone == AppColors.surfaceAlt) {
-    return palette.surfaceAlt;
-  }
-
-  return Color.alphaBlend(
-    lightTone.withValues(alpha: 0.22),
-    palette.surfaceAlt,
-  );
+  return mascotifyTone(context, lightTone);
 }
 
 Color _homeSurface(BuildContext context) =>

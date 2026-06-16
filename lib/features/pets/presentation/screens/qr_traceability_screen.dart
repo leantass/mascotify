@@ -5,6 +5,7 @@ import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/report_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
 import '../../../profile/presentation/screens/help_screen.dart';
 import '../../../profile/presentation/widgets/contextual_help_link.dart';
 import 'qr_scan_event_detail_screen.dart';
@@ -48,15 +49,15 @@ class _QrTraceabilityScreenState extends State<QrTraceabilityScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Color(currentPet.colorHex),
-                      AppColors.surface,
-                      AppColors.primarySoft,
+                      mascotifyTone(context, Color(currentPet.colorHex)),
+                      mascotifySurface(context),
+                      mascotifyTone(context, AppColors.primarySoft),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(32),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: mascotifyBorder(context)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,13 +68,14 @@ class _QrTraceabilityScreenState extends State<QrTraceabilityScreen> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.dark,
+                        color: mascotifySurfaceTint(context),
                         borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: mascotifyBorder(context)),
                       ),
                       child: Text(
                         'Trazabilidad QR',
                         style: textTheme.bodyMedium?.copyWith(
-                          color: Colors.white,
+                          color: mascotifyPrimaryText(context),
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -87,7 +89,7 @@ class _QrTraceabilityScreenState extends State<QrTraceabilityScreen> {
                     Text(
                       'Escaneos, contacto protegido y eventos recientes.',
                       style: textTheme.bodyLarge?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: mascotifySecondaryText(context),
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -246,13 +248,14 @@ class _EmptyTimelineState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         'Todavia no hay escaneos ni reportes para este QR.',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           height: 1.45,
         ),
       ),
@@ -269,8 +272,9 @@ class _EmptyScanEventsState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         'Todavía no hay avisos enviados desde el QR físico.',
@@ -300,9 +304,9 @@ class _QrScanEventTile extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surfaceAlt,
+          color: mascotifySurfaceAlt(context),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: mascotifyBorder(context)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,12 +315,19 @@ class _QrScanEventTile extends StatelessWidget {
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: event.possibleLostPetSighting
-                    ? AppColors.supportSoft
-                    : AppColors.primarySoft,
+                color: mascotifyTone(
+                  context,
+                  event.possibleLostPetSighting
+                      ? AppColors.supportSoft
+                      : AppColors.primarySoft,
+                ),
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: mascotifyBorder(context)),
               ),
-              child: const Icon(Icons.location_on_outlined),
+              child: Icon(
+                Icons.location_on_outlined,
+                color: mascotifyPrimaryText(context),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -333,7 +344,7 @@ class _QrScanEventTile extends StatelessWidget {
                   Text(
                     event.locationSummary,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
+                      color: mascotifyPrimaryText(context),
                       height: 1.4,
                     ),
                   ),
@@ -341,7 +352,7 @@ class _QrScanEventTile extends StatelessWidget {
                   Text(
                     event.sourceLabel,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: mascotifySecondaryText(context),
                     ),
                   ),
                 ],
@@ -366,17 +377,18 @@ class _MetricTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.72),
+        color: mascotifyTone(context, Colors.white.withValues(alpha: 0.72)),
         borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: MascotifyPalette.of(context).textMuted,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
@@ -403,23 +415,24 @@ class _InfoTile extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: MascotifyPalette.of(context).textMuted,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             value,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
+              color: mascotifyPrimaryText(context),
               fontWeight: FontWeight.w600,
               height: 1.4,
             ),
@@ -441,9 +454,9 @@ class _TimelineEntry extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,10 +465,14 @@ class _TimelineEntry extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: Color(entry.accentColorHex),
+              color: mascotifyTone(context, Color(entry.accentColorHex)),
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: mascotifyBorder(context)),
             ),
-            child: Icon(_iconFor(entry.iconKey), color: AppColors.textPrimary),
+            child: Icon(
+              _iconFor(entry.iconKey),
+              color: mascotifyPrimaryText(context),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -479,7 +496,7 @@ class _TimelineEntry extends StatelessWidget {
                 Text(
                   entry.detail,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: mascotifyPrimaryText(context),
                     height: 1.45,
                   ),
                 ),
@@ -520,13 +537,14 @@ class _Pill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: mascotifySurfaceTint(context),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           fontWeight: FontWeight.w700,
         ),
       ),
