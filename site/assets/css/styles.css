@@ -133,7 +133,8 @@ textarea {
 
 .brand img {
   width: auto;
-  height: 3.25rem;
+  height: clamp(4.25rem, 8vw, 5.25rem);
+  object-fit: contain;
 }
 
 .nav-toggle {
@@ -447,21 +448,13 @@ textarea:focus-visible {
 .mockup-brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  color: var(--text);
-  font-weight: 800;
+  min-height: 2rem;
 }
 
-.mockup-paw {
-  width: 1.9rem;
-  height: 1.9rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(102, 204, 204, 0.25), rgba(221, 246, 246, 0.92));
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--primary-deep);
-  font-size: 1rem;
+.mockup-logo {
+  width: auto;
+  height: 2.25rem;
+  object-fit: contain;
 }
 
 .mockup-chip {
@@ -852,8 +845,9 @@ textarea:focus-visible {
 
 .footer-brand img {
   width: auto;
-  height: 3rem;
-  padding: 0.55rem 0.8rem;
+  height: clamp(4rem, 10vw, 5rem);
+  object-fit: contain;
+  padding: 0.8rem 1.05rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.95);
 }
@@ -924,6 +918,10 @@ textarea:focus-visible {
 }
 
 @media (max-width: 760px) {
+  .brand img {
+    height: 3.6rem;
+  }
+
   .hero,
   .legal-hero {
     padding: 4.5rem 0 3.2rem;
@@ -957,6 +955,10 @@ textarea:focus-visible {
 
   .mockup-card {
     width: 100%;
+  }
+
+  .mockup-logo {
+    height: 1.9rem;
   }
 
   .floating-tags {
