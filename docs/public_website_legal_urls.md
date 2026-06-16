@@ -3,6 +3,17 @@
 ## URL principal
 [URL_PUBLICA_MASCOTIFY]
 
+## URL de la app
+[URL_APP_MASCOTIFY]
+
+Uso:
+- Botón "Ir a la app" en header
+- CTA principal del hero
+- Link en footer
+
+Pendiente:
+- Reemplazar `[URL_APP_MASCOTIFY]` por la URL final cuando la app esté publicada o cuando exista una URL web funcional definitiva.
+
 ## URLs legales
 - Política de privacidad: [URL_PUBLICA_MASCOTIFY]/privacidad.html
 - Términos y condiciones: [URL_PUBLICA_MASCOTIFY]/terminos.html

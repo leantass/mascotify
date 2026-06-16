@@ -1,0 +1,17 @@
+<svg width="320" height="88" viewBox="0 0 320 88" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="logo-title logo-desc">
+  <title id="logo-title">Mascotify</title>
+  <desc id="logo-desc">Logo de Mascotify con isotipo de huella y nombre de marca.</desc>
+  <rect x="8" y="10" width="62" height="62" rx="22" fill="url(#logo-bg)"/>
+  <circle cx="28" cy="30" r="6" fill="#F8FFFC"/>
+  <circle cx="41.5" cy="24.5" r="5.5" fill="#F8FFFC"/>
+  <circle cx="54" cy="31" r="5" fill="#F8FFFC"/>
+  <circle cx="33.5" cy="42.5" r="5.5" fill="#F8FFFC"/>
+  <path d="M29 57.5C29 49.8 35.3 43.5 43 43.5C50.7 43.5 57 49.8 57 57.5V58C57 60.2 55.2 62 53 62H33C30.8 62 29 60.2 29 58V57.5Z" fill="#F8FFFC"/>
+  <text x="86" y="49" fill="#17332B" font-family="Avenir Next, Segoe UI, Arial, sans-serif" font-size="34" font-weight="800" letter-spacing="-0.03em">Mascotify</text>
+  <defs>
+    <linearGradient id="logo-bg" x1="8" y1="10" x2="70" y2="72" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14BC8D"/>
+      <stop offset="1" stop-color="#0B7F65"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -1,11 +1,24 @@
 (function () {
+  var appUrl = "[URL_APP_MASCOTIFY]";
   var navToggle = document.querySelector(".nav-toggle");
   var siteNav = document.querySelector(".site-nav");
+  var appLinks = document.querySelectorAll("[data-app-link]");
+
+  appLinks.forEach(function (link) {
+    link.setAttribute("href", appUrl);
+  });
 
   if (navToggle && siteNav) {
     navToggle.addEventListener("click", function () {
       var isOpen = siteNav.classList.toggle("is-open");
       navToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    siteNav.querySelectorAll("a").forEach(function (link) {
+      link.addEventListener("click", function () {
+        siteNav.classList.remove("is-open");
+        navToggle.setAttribute("aria-expanded", "false");
+      });
     });
   }
 
@@ -21,22 +34,22 @@
       var confirmed = (document.getElementById("confirmacion") || {}).checked;
 
       if (!confirmed) {
-        window.alert("Necesitás confirmar la solicitud antes de preparar el email.");
+        window.alert("Necesitas confirmar la solicitud antes de preparar el email.");
         return;
       }
 
       var supportEmail = "[COMPLETAR EMAIL DE SOPORTE]";
-      var subject = "Solicitud de eliminación de cuenta - Mascotify";
+      var subject = "Solicitud de eliminacion de cuenta - Mascotify";
       var body = [
         "Hola,",
         "",
-        "Quiero solicitar la eliminación de mi cuenta y datos asociados en Mascotify.",
+        "Quiero solicitar la eliminacion de mi cuenta y datos asociados en Mascotify.",
         "",
         "Nombre: " + name,
         "Email de cuenta: " + email,
         "Motivo opcional: " + reason,
         "",
-        "Confirmo que solicito la eliminación de mi cuenta y datos asociados.",
+        "Confirmo que solicito la eliminacion de mi cuenta y datos asociados.",
         "",
         "Gracias."
       ].join("\n");

@@ -20,6 +20,22 @@ Mientras no se confirme el dominio final, usar este placeholder único:
 
 Debe reemplazarse antes de publicar en Play Console, App Store Connect o enlazarlo desde la app.
 
+## URL de la app
+
+URL actual:
+
+- `[URL_APP_MASCOTIFY]`
+
+Uso:
+
+- Botón "Ir a la app" en header
+- CTA principal del hero
+- Link en footer
+
+Pendiente:
+
+- Reemplazar `[URL_APP_MASCOTIFY]` por la URL final cuando la app esté publicada o cuando exista una URL web funcional definitiva.
+
 ## URLs legales
 
 - `[URL_PUBLICA_MASCOTIFY]/privacidad.html`
