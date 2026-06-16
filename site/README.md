@@ -12,6 +12,22 @@ necesarias para futura publicación en stores y web.
 - `soporte.html`
 - `legal.html`
 
+## URL pública principal
+
+Mientras no se confirme el dominio final, usar este placeholder único:
+
+- `[URL_PUBLICA_MASCOTIFY]`
+
+Debe reemplazarse antes de publicar en Play Console, App Store Connect o enlazarlo desde la app.
+
+## URLs legales
+
+- `[URL_PUBLICA_MASCOTIFY]/privacidad.html`
+- `[URL_PUBLICA_MASCOTIFY]/terminos.html`
+- `[URL_PUBLICA_MASCOTIFY]/eliminacion-de-cuenta.html`
+- `[URL_PUBLICA_MASCOTIFY]/soporte.html`
+- `[URL_PUBLICA_MASCOTIFY]/legal.html`
+
 ## Cómo abrir localmente
 
 Opción simple:
@@ -34,20 +50,14 @@ Luego abrir:
 
 - `http://localhost:8088/index.html`
 
-## URLs futuras esperadas
-
-- `https://[DOMINIO]/privacidad`
-- `https://[DOMINIO]/terminos`
-- `https://[DOMINIO]/eliminacion-de-cuenta`
-- `https://[DOMINIO]/soporte`
-
 ## Pendientes antes de publicar
 
+- Confirmar dominio final.
 - Completar responsable legal.
 - Completar email de soporte.
-- Completar dominio.
 - Hacer revisión legal.
 - Revisar textos finales según funciones reales activas.
+- Verificar que todas las URLs respondan públicamente.
 - Conectar formularios si se desea.
 
 ## Estado de esta fase
