@@ -53,3 +53,5 @@ key.properties
 /android/app/upload-keystore.jks
 *.jks
 *.keystore
+mascotify_private_release_keys/
+mascotify_functional_builds/

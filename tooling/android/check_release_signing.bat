@@ -36,7 +36,12 @@ if not defined KEY_ALIAS_SET (
   exit /b 1
 )
 
-set "KEYSTORE=%ROOT%\android\%STORE_FILE%"
+if "%STORE_FILE:~1,1%"==":" (
+  set "KEYSTORE=%STORE_FILE%"
+) else (
+  set "KEYSTORE=%ROOT%\android\%STORE_FILE%"
+)
+
 if not exist "%KEYSTORE%" (
   echo [release_signing] NO: no existe el keystore declarado.
   exit /b 1

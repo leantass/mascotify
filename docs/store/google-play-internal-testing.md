@@ -8,6 +8,10 @@ produccion.
 - Para Google Play se requiere AAB release firmado.
 - El APK debug interno sirve para pruebas directas en telefono, pero no para un
   release Play Console.
+- Paquete local preparado:
+  `C:\Users\PC\Desktop\Proyecto\mascotify_functional_builds\play-upload`
+- AAB local esperado:
+  `mascotify-android-release-latest.aab`
 
 ## Pasos manuales
 
@@ -34,4 +38,5 @@ produccion.
 
 - Automatizacion Play: no detectada.
 - Service account segura: no detectada.
-- AAB release: bloqueado hasta configurar keystore/upload key.
+- AAB release: generado localmente con firma release.
+- Subida Play: pendiente de ejecucion manual o configuracion segura de credenciales.

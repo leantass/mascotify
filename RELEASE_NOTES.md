@@ -6,6 +6,8 @@ Esta beta interna esta pensada para validacion en telefono Android y web local a
 
 ## Version 1.0.0+2
 
+- AAB release firmado generado localmente para Google Play Internal Testing.
+- Paquete local `play-upload` preparado con AAB, hash SHA256 y documentacion de tienda.
 - APK debug interno preparado para pruebas directas en telefono.
 - Web review local preparada con cache busting.
 - Clips con viewer vertical, HUD mas limpio y seekbar inferior estilo TikTok.
@@ -14,6 +16,14 @@ Esta beta interna esta pensada para validacion en telefono Android y web local a
 - Profesionales pet visible como beta/proximamente, sin modulo real activo.
 - Documentacion inicial de terminos, privacidad, Data Safety, Play Console y
   store listing agregada para preparacion de publicacion.
+
+## Android Internal Testing
+
+- AAB local: `C:\Users\PC\Desktop\Proyecto\mascotify_functional_builds\release\mascotify-android-release-latest.aab`
+- Paquete para Play Console: `C:\Users\PC\Desktop\Proyecto\mascotify_functional_builds\play-upload`
+- Firma release: configurada localmente con keystore fuera del repo.
+- Secretos: `android/key.properties` y la keystore local no se commitean.
+- Publicacion Play: pendiente de subida manual a Internal Testing.
 
 ## Incluye
 
@@ -36,6 +46,5 @@ Esta beta interna esta pensada para validacion en telefono Android y web local a
 - Revisar terminos y politica con datos legales reales.
 - Completar Data Safety de Google Play con proveedores definitivos.
 - Confirmar ficha, iconos, capturas y textos de tienda.
-- Configurar firma release Android segura.
-- Generar AAB release firmado.
+- Completar subida manual a Google Play Internal Testing.
 - Configurar hosting web publico si se decide publicar web.
