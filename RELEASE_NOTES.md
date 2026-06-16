@@ -4,6 +4,17 @@ Fecha: 2026-06-12
 
 Esta beta interna esta pensada para validacion en telefono Android y web local antes de cualquier publicacion publica.
 
+## Version 1.0.0+3
+
+- Modo oscuro agregado con selector de Apariencia en Configuracion.
+- Opciones de tema: usar sistema, modo claro y modo oscuro.
+- Preferencia de tema guardada localmente y aplicada al abrir la app.
+- Temas claro/oscuro preparados para pantallas principales, ayuda, clips,
+  matching, modales, cards, chips, botones, loaders y navegacion.
+- Help actualizado con el tema "Apariencia y modo oscuro".
+- APK debug interno, AAB release firmado, paquete `play-upload` y web review
+  deben regenerarse con este build antes de subir a Internal Testing.
+
 ## Version 1.0.0+2
 
 - AAB release firmado generado localmente para Google Play Internal Testing.

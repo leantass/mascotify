@@ -29,6 +29,7 @@ void main() {
     expect(find.text('Comunidad'), findsWidgets);
     expect(find.text('Actividad'), findsWidgets);
     expect(find.text('Perfil y configuracion'), findsWidgets);
+    expect(find.text('Apariencia y modo oscuro'), findsWidgets);
     expect(find.text('Privacidad y seguridad'), findsWidgets);
     expect(find.text('Profesionales pet beta'), findsWidgets);
     expect(find.text('Planes Free / Plus / Pro'), findsWidgets);

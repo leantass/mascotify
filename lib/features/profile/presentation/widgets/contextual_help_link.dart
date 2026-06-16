@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../theme/app_colors.dart';
 import '../screens/help_screen.dart';
 
 class ContextualHelpLink extends StatelessWidget {
@@ -17,6 +16,7 @@ class ContextualHelpLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final button = TextButton.icon(
       key: ValueKey('contextual-help-${topic.name}'),
       onPressed: () => Navigator.of(context).push(
@@ -27,7 +27,7 @@ class ContextualHelpLink extends StatelessWidget {
       icon: const Icon(Icons.help_outline_rounded, size: 18),
       label: Text(label),
       style: TextButton.styleFrom(
-        foregroundColor: AppColors.primaryDeep,
+        foregroundColor: colorScheme.primary,
         textStyle: Theme.of(
           context,
         ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -40,9 +40,9 @@ class ContextualHelpLink extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Align(alignment: Alignment.centerLeft, child: button),
     );

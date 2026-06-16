@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
-
 class PawLoadingIndicator extends StatefulWidget {
   const PawLoadingIndicator({
     super.key,
@@ -41,9 +39,12 @@ class _PawLoadingIndicatorState extends State<PawLoadingIndicator>
 
   @override
   Widget build(BuildContext context) {
-    final foreground = widget.foregroundColor ?? AppColors.primaryDeep;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = widget.foregroundColor ?? colorScheme.primary;
     final background =
-        widget.backgroundColor ?? Colors.white.withValues(alpha: 0.92);
+        widget.backgroundColor ??
+        colorScheme.surface.withValues(alpha: isDark ? 0.9 : 0.92);
     final size = widget.compact ? 44.0 : 58.0;
     final iconSize = widget.compact ? 25.0 : 34.0;
     final message = widget.message;

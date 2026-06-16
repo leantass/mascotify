@@ -12,6 +12,7 @@ produccion.
   `C:\Users\PC\Desktop\Proyecto\mascotify_functional_builds\play-upload`
 - AAB local esperado:
   `mascotify-android-release-latest.aab`
+- Version/build actual para el paquete nuevo: `1.0.0+3`.
 
 ## Pasos manuales
 
@@ -40,3 +41,5 @@ produccion.
 - Service account segura: no detectada.
 - AAB release: generado localmente con firma release.
 - Subida Play: pendiente de ejecucion manual o configuracion segura de credenciales.
+- El paquete `1.0.0+3` debe reemplazar al build interno anterior antes de
+  enviarlo a testers.

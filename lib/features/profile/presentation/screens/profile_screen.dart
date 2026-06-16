@@ -4,6 +4,7 @@ import '../../../../features/auth/presentation/auth_session_controller.dart';
 import '../../../../core/app_environment.dart';
 import '../../../../core/localization/app_locale_controller.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/theme/app_theme_controller.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../shared/models/app_user.dart';
@@ -11,6 +12,7 @@ import '../../../../shared/models/plan_entitlements.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
 import 'help_screen.dart';
 import 'support_contacts_screen.dart';
 import '../widgets/contextual_help_link.dart';
@@ -529,6 +531,7 @@ class _PreferencesAndPlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return DefaultTabController(
       length: 3,
       child: Card(
@@ -545,9 +548,9 @@ class _PreferencesAndPlanCard extends StatelessWidget {
                     controller: tabController,
                     isScrollable: true,
                     tabAlignment: TabAlignment.start,
-                    labelColor: AppColors.primaryDeep,
-                    unselectedLabelColor: AppColors.textSecondary,
-                    indicatorColor: AppColors.primary,
+                    labelColor: colorScheme.primary,
+                    unselectedLabelColor: colorScheme.onSurfaceVariant,
+                    indicatorColor: colorScheme.primary,
                     tabs: const [
                       Tab(text: 'Suscripción'),
                       Tab(text: 'Notificaciones'),
@@ -884,6 +887,7 @@ class _ConfigurationTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localeController = AppLocaleScope.maybeOf(context);
+    final themeController = AppThemeScope.maybeOf(context);
     final localizations = AppLocalizations.of(context);
     final languageOptions = <String>[
       localizations.automaticLanguage,
@@ -930,6 +934,27 @@ class _ConfigurationTab extends StatelessWidget {
               ) ??
               localizations.automaticLanguage,
           icon: Icons.translate_rounded,
+        ),
+        const SizedBox(height: 14),
+        _SettingsDropdown(
+          fieldKey: const ValueKey('appearance-theme-dropdown'),
+          title: 'Apariencia',
+          subtitle: 'Elegí cómo querés ver Mascotify.',
+          icon: Icons.dark_mode_outlined,
+          value: themeController?.mode.label ?? MascotifyThemeMode.system.label,
+          options: MascotifyThemeMode.values
+              .map((mode) => mode.label)
+              .toList(growable: false),
+          onChanged: isBusy || themeController == null
+              ? null
+              : (value) async {
+                  final mode = MascotifyThemeMode.fromLabel(value);
+                  await themeController.setMode(mode);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Tema actualizado: ${mode.label}.')),
+                  );
+                },
         ),
         const SizedBox(height: 14),
         _SettingsDropdown(
@@ -1061,7 +1086,7 @@ class _SettingsDropdown extends StatelessWidget {
           key: fieldKey,
           initialValue: options.contains(value) ? value : options.first,
           isExpanded: true,
-          decoration: _fieldDecoration(),
+          decoration: _fieldDecoration(context),
           items: options
               .map(
                 (option) => DropdownMenuItem<String>(
@@ -1102,6 +1127,8 @@ class _SettingsSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final palette = MascotifyPalette.of(context);
     return _SettingsShell(
       title: title,
       subtitle: subtitle,
@@ -1110,8 +1137,8 @@ class _SettingsSwitch extends StatelessWidget {
         key: switchKey,
         value: value,
         onChanged: onChanged,
-        activeThumbColor: AppColors.accent,
-        activeTrackColor: AppColors.accentSoft,
+        activeThumbColor: colorScheme.secondary,
+        activeTrackColor: palette.accentSoft,
       ),
     );
   }
@@ -1130,13 +1157,14 @@ class _SettingsInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return _SettingsShell(
       title: title,
       subtitle: subtitle,
       icon: icon,
-      trailing: const Icon(
+      trailing: Icon(
         Icons.check_circle_outline_rounded,
-        color: AppColors.primaryDeep,
+        color: colorScheme.primary,
       ),
     );
   }
@@ -1189,13 +1217,15 @@ class _SettingsShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final palette = MascotifyPalette.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: palette.surfaceAlt,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -1206,10 +1236,10 @@ class _SettingsShell extends StatelessWidget {
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceTint,
+                  color: palette.surfaceTint,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(icon, color: AppColors.primaryDeep),
+                child: Icon(icon, color: colorScheme.primary),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -1221,7 +1251,7 @@ class _SettingsShell extends StatelessWidget {
                     Text(
                       subtitle,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: colorScheme.onSurfaceVariant,
                         height: 1.35,
                       ),
                     ),
@@ -1255,17 +1285,23 @@ class _SettingsShell extends StatelessWidget {
   }
 }
 
-InputDecoration _fieldDecoration() {
+InputDecoration _fieldDecoration(BuildContext context) {
+  final theme = Theme.of(context);
+  final colorScheme = theme.colorScheme;
   return InputDecoration(
     filled: true,
-    fillColor: AppColors.surface,
+    fillColor: theme.inputDecorationTheme.fillColor ?? colorScheme.surface,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(16),
-      borderSide: const BorderSide(color: AppColors.border),
+      borderSide: BorderSide(color: colorScheme.outlineVariant),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(16),
-      borderSide: const BorderSide(color: AppColors.border),
+      borderSide: BorderSide(color: colorScheme.outlineVariant),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: colorScheme.primary),
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
   );
@@ -1279,12 +1315,15 @@ class _AccountInfoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final palette = MascotifyPalette.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: palette.surfaceAlt,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1293,13 +1332,13 @@ class _AccountInfoTile extends StatelessWidget {
             label,
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            ).textTheme.bodyMedium?.copyWith(color: palette.textMuted),
           ),
           const SizedBox(height: 6),
           Text(
             value,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w600,
               height: 1.45,
             ),
@@ -1323,20 +1362,26 @@ class _ModeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final palette = MascotifyPalette.of(context);
     return InkWell(
       borderRadius: BorderRadius.circular(999),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.accentSoft : AppColors.surfaceAlt,
+          color: isActive ? palette.accentSoft : palette.surfaceAlt,
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(
+            color: isActive
+                ? colorScheme.secondary
+                : colorScheme.outlineVariant,
+          ),
         ),
         child: Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppColors.textPrimary,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w700,
           ),
         ),

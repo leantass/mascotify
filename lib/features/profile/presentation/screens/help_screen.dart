@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/responsive_page_body.dart';
-import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
 
 enum HelpTopic {
   gettingStarted,
@@ -18,6 +18,7 @@ enum HelpTopic {
   community,
   activity,
   profileSettings,
+  appearance,
   privacySecurity,
   professionals,
   plans,
@@ -192,6 +193,18 @@ class HelpScreen extends StatelessWidget {
           'Cambios de cuenta sensibles siguen preparados para una etapa posterior.',
     ),
     HelpSection(
+      topic: HelpTopic.appearance,
+      title: 'Apariencia y modo oscuro',
+      icon: Icons.dark_mode_outlined,
+      what: 'Preferencia local para elegir como se ve Mascotify.',
+      how:
+          'En Configuracion abre Apariencia y elige usar sistema, modo claro o modo oscuro.',
+      data:
+          'Guarda solo la preferencia de tema en el dispositivo para restaurarla al abrir.',
+      note:
+          'Usar sistema acompana el tema del telefono o computadora cuando Flutter lo informa.',
+    ),
+    HelpSection(
       topic: HelpTopic.privacySecurity,
       title: 'Privacidad y seguridad',
       icon: Icons.shield_outlined,
@@ -254,6 +267,7 @@ class HelpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final orderedSections = _orderedSections();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Ayuda')),
@@ -289,7 +303,7 @@ class HelpScreen extends StatelessWidget {
                   child: ExpansionTile(
                     key: ValueKey('help-topic-${section.topic.name}'),
                     initiallyExpanded: section.topic == initialTopic,
-                    leading: Icon(section.icon, color: AppColors.primaryDeep),
+                    leading: Icon(section.icon, color: colorScheme.primary),
                     title: Text(section.title),
                     childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
                     children: [_HelpSectionBody(section: section)],
@@ -323,6 +337,8 @@ class _HelpHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final palette = MascotifyPalette.of(context);
     String? selectedTitle;
     for (final section in HelpScreen.sections) {
       if (section.topic == initialTopic) {
@@ -334,9 +350,9 @@ class _HelpHero extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
@@ -344,13 +360,10 @@ class _HelpHero extends StatelessWidget {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: AppColors.primarySoft,
+              color: palette.primarySoft,
               borderRadius: BorderRadius.circular(18),
             ),
-            child: const Icon(
-              Icons.help_outline_rounded,
-              color: AppColors.primaryDeep,
-            ),
+            child: Icon(Icons.help_outline_rounded, color: colorScheme.primary),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -367,7 +380,7 @@ class _HelpHero extends StatelessWidget {
                       ? 'Guias cortas organizadas por seccion.'
                       : 'Tema abierto: $selectedTitle.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -406,6 +419,7 @@ class _HelpLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: Column(
@@ -414,7 +428,7 @@ class _HelpLine extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: AppColors.primaryDeep,
+              color: colorScheme.primary,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -422,7 +436,7 @@ class _HelpLine extends StatelessWidget {
           Text(
             text,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
+              color: colorScheme.onSurfaceVariant,
               height: 1.35,
             ),
           ),

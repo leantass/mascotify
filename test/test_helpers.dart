@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mascotify/core/app.dart';
 import 'package:mascotify/core/localization/app_locale_controller.dart';
 import 'package:mascotify/core/localization/app_localizations.dart';
+import 'package:mascotify/core/theme/app_theme_controller.dart';
 import 'package:mascotify/features/auth/data/google_auth_service.dart';
 import 'package:mascotify/features/auth/data/local_auth_repository.dart';
 import 'package:mascotify/features/auth/presentation/auth_session_controller.dart';
@@ -17,16 +18,19 @@ class TestAppSession {
     required this.preferences,
     required this.controller,
     required this.localeController,
+    required this.themeController,
   });
 
   final SharedPreferences preferences;
   final AuthSessionController controller;
   final AppLocaleController localeController;
+  final AppThemeController themeController;
 
   Widget buildApp() {
     return MascotifyApp(
       sessionController: controller,
       localeController: localeController,
+      themeController: themeController,
     );
   }
 }
@@ -74,6 +78,7 @@ Future<TestAppSession> buildPersistentTestAppSession({
     sessionController: controller,
   );
   final localeController = AppLocaleController(preferences: preferences);
+  final themeController = AppThemeController(preferences: preferences);
   await controller.initialize();
   await AppData.syncCurrentUserState();
 
@@ -81,6 +86,7 @@ Future<TestAppSession> buildPersistentTestAppSession({
     preferences: preferences,
     controller: controller,
     localeController: localeController,
+    themeController: themeController,
   );
 }
 
@@ -141,19 +147,33 @@ Widget buildTestApp(
   Widget child, {
   AuthSessionController? controller,
   AppLocaleController? localeController,
+  AppThemeController? themeController,
 }) {
-  Widget app = MaterialApp(
-    theme: AppTheme.light(),
-    locale: localeController?.materialLocale,
-    supportedLocales: AppLocalizations.supportedLocales,
-    localizationsDelegates: const [
-      AppLocalizations.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
-    home: child,
-  );
+  Widget buildMaterialApp() {
+    return MaterialApp(
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: themeController?.materialThemeMode ?? ThemeMode.light,
+      locale: localeController?.materialLocale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home: child,
+    );
+  }
+
+  Widget app = buildMaterialApp();
+  final listenables = [?localeController, ?themeController];
+  if (listenables.isNotEmpty) {
+    app = AnimatedBuilder(
+      animation: Listenable.merge(listenables),
+      builder: (context, _) => buildMaterialApp(),
+    );
+  }
 
   if (controller == null) {
     return app;
@@ -162,6 +182,9 @@ Widget buildTestApp(
   app = AuthScope(controller: controller, child: app);
   if (localeController != null) {
     app = AppLocaleScope(controller: localeController, child: app);
+  }
+  if (themeController != null) {
+    app = AppThemeScope(controller: themeController, child: app);
   }
   return app;
 }
