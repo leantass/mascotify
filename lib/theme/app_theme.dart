@@ -377,6 +377,55 @@ class AppTheme {
   }
 }
 
+bool mascotifyIsDark(BuildContext context) {
+  return Theme.of(context).brightness == Brightness.dark;
+}
+
+Color mascotifySurface(BuildContext context) {
+  return Theme.of(context).colorScheme.surface;
+}
+
+Color mascotifySurfaceAlt(BuildContext context) {
+  return MascotifyPalette.of(context).surfaceAlt;
+}
+
+Color mascotifySurfaceTint(BuildContext context) {
+  return MascotifyPalette.of(context).surfaceTint;
+}
+
+Color mascotifyBorder(BuildContext context) {
+  return Theme.of(context).colorScheme.outlineVariant;
+}
+
+Color mascotifyPrimaryText(BuildContext context) {
+  return Theme.of(context).colorScheme.onSurface;
+}
+
+Color mascotifySecondaryText(BuildContext context) {
+  return Theme.of(context).colorScheme.onSurfaceVariant;
+}
+
+Color mascotifyTone(BuildContext context, Color lightTone) {
+  if (!mascotifyIsDark(context)) return lightTone;
+
+  final palette = MascotifyPalette.of(context);
+  if (lightTone == AppColors.primarySoft) return palette.primarySoft;
+  if (lightTone == AppColors.accentSoft) return palette.accentSoft;
+  if (lightTone == AppColors.supportSoft) return palette.supportSoft;
+  if (lightTone == AppColors.surfaceTint) return palette.surfaceTint;
+  if (lightTone == AppColors.surface || lightTone == AppColors.surfaceAlt) {
+    return palette.surfaceAlt;
+  }
+  if (lightTone == Colors.white || lightTone.computeLuminance() > 0.45) {
+    return palette.surfaceAlt;
+  }
+
+  return Color.alphaBlend(
+    lightTone.withValues(alpha: 0.24),
+    palette.surfaceAlt,
+  );
+}
+
 @immutable
 class MascotifyPalette extends ThemeExtension<MascotifyPalette> {
   const MascotifyPalette({

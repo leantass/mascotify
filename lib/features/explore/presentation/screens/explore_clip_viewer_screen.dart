@@ -8,6 +8,7 @@ import '../../../../shared/models/social_models.dart';
 import '../../../../shared/widgets/paw_loading_indicator.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
 import '../../../profile/presentation/screens/help_screen.dart';
 
 const double _clipViewerAspectRatio = 480 / 854;
@@ -256,8 +257,9 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: mascotifySurface(context),
               borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: mascotifyBorder(context)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -267,12 +269,12 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: AppColors.accentSoft,
+                    color: mascotifyTone(context, AppColors.accentSoft),
                     borderRadius: BorderRadius.circular(18),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.play_disabled_rounded,
-                    color: AppColors.accentDeep,
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -284,7 +286,7 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
                 Text(
                   'No pudimos encontrar ese clip local. Podes volver a Explorar y abrir otro desde la lista.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: mascotifySecondaryText(context),
                     height: 1.45,
                   ),
                 ),
@@ -704,9 +706,12 @@ class _ViewerPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.accentSoft, AppColors.primarySoft],
+          colors: [
+            mascotifyTone(context, AppColors.accentSoft),
+            mascotifyTone(context, AppColors.primarySoft),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -734,13 +739,17 @@ class _ViewerPlaceholder extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.86),
+                    color: mascotifyTone(
+                      context,
+                      Colors.white.withValues(alpha: 0.86),
+                    ),
                     borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: mascotifyBorder(context)),
                   ),
                   child: Text(
                     message ?? 'Vista demo segura',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
+                      color: mascotifyPrimaryText(context),
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -812,7 +821,7 @@ class _ClipVideoSurface extends StatelessWidget {
         isMuted: isMuted,
         playback: playback,
         loading: _buildLoadingSurface(context),
-        fallback: _buildFallback('No pudimos cargar este clip'),
+        fallback: _buildFallback(context, 'No pudimos cargar este clip'),
       );
     }
 
@@ -823,14 +832,14 @@ class _ClipVideoSurface extends StatelessWidget {
         isMuted: isMuted,
         playback: playback,
         loading: _buildLoadingSurface(context),
-        fallback: _buildFallback('No pudimos cargar este clip'),
+        fallback: _buildFallback(context, 'No pudimos cargar este clip'),
       );
     }
 
-    return _buildFallback('Fallback demo animado');
+    return _buildFallback(context, 'Fallback demo animado');
   }
 
-  Widget _buildFallback(String message) {
+  Widget _buildFallback(BuildContext context, String message) {
     if (thumbnail == null) {
       return _ViewerPlaceholder(message: message);
     }
@@ -843,13 +852,17 @@ class _ClipVideoSurface extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.86),
+              color: mascotifyTone(
+                context,
+                Colors.white.withValues(alpha: 0.86),
+              ),
               borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: mascotifyBorder(context)),
             ),
             child: Text(
               message,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: mascotifyPrimaryText(context),
                 fontWeight: FontWeight.w900,
               ),
             ),

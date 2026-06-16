@@ -15,6 +15,7 @@ import '../../../../shared/models/professional_models.dart';
 import '../../../../shared/models/social_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -364,17 +365,17 @@ class _NotificationsHero extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [
-            AppColors.accentSoft,
-            AppColors.surface,
-            AppColors.supportSoft,
+            mascotifyTone(context, AppColors.accentSoft),
+            mascotifySurface(context),
+            mascotifyTone(context, AppColors.supportSoft),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -382,13 +383,13 @@ class _NotificationsHero extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.dark,
+              color: mascotifySurfaceTint(context),
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
               'Actividad transversal',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white,
+                color: mascotifyPrimaryText(context),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -401,9 +402,9 @@ class _NotificationsHero extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'El feed ahora prioriza lo sin leer, separa mejor lo urgente de lo informativo y permite acciones rápidas sin volverse un panel pesado.',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: mascotifySecondaryText(context),
+            ),
           ),
           const SizedBox(height: 18),
           ResponsiveWrapGrid(
@@ -419,13 +420,17 @@ class _NotificationsHero extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.72),
+              color: mascotifyTone(
+                context,
+                Colors.white.withValues(alpha: 0.72),
+              ),
               borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: mascotifyBorder(context)),
             ),
             child: Text(
               '$actionableCount eventos todavía tienen un camino de acción útil dentro de Mascotify.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textPrimary,
+                color: mascotifyPrimaryText(context),
                 height: 1.45,
               ),
             ),
@@ -464,9 +469,9 @@ class _NotificationsSection extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           subtitle,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: mascotifySecondaryText(context),
+          ),
         ),
         const SizedBox(height: 12),
         if (notifications.isEmpty)
@@ -474,14 +479,15 @@ class _NotificationsSection extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surfaceAlt,
+              color: mascotifySurfaceAlt(context),
               borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: mascotifyBorder(context)),
             ),
             child: Text(
               subtitle,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textPrimary),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: mascotifyPrimaryText(context),
+              ),
             ),
           )
         else
@@ -526,12 +532,12 @@ class _NotificationCard extends StatelessWidget {
     final iconData = _iconForType(notification.type);
     final typeLabel = _labelForType(notification.type);
     final priorityLabel = _labelForPriority(notification.priority);
-    final tone = Color(notification.accentColorHex);
+    final tone = mascotifyTone(context, Color(notification.accentColorHex));
     final borderColor =
         isUnread &&
             notification.priority == EcosystemNotificationPriority.attention
-        ? AppColors.accent
-        : AppColors.border;
+        ? Theme.of(context).colorScheme.secondary
+        : mascotifyBorder(context);
 
     return Material(
       color: Colors.transparent,
@@ -542,7 +548,9 @@ class _NotificationCard extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: isUnread ? Colors.white : AppColors.surfaceAlt,
+            color: isUnread
+                ? mascotifySurface(context)
+                : mascotifySurfaceAlt(context),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(color: borderColor, width: isUnread ? 1.5 : 1),
           ),
@@ -558,7 +566,7 @@ class _NotificationCard extends StatelessWidget {
                       color: tone,
                       borderRadius: BorderRadius.circular(18),
                     ),
-                    child: Icon(iconData, color: AppColors.textPrimary),
+                    child: Icon(iconData, color: mascotifyPrimaryText(context)),
                   );
                   final content = Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -569,18 +577,22 @@ class _NotificationCard extends StatelessWidget {
                         children: [
                           _TypePill(
                             label: typeLabel,
-                            backgroundColor: AppColors.surfaceAlt,
+                            backgroundColor: mascotifySurfaceTint(context),
                           ),
                           _TypePill(
                             label: priorityLabel,
                             backgroundColor: _priorityColor(
+                              context,
                               notification.priority,
                             ),
                           ),
                           if (isUnread)
-                            const _TypePill(
+                            _TypePill(
                               label: 'Sin leer',
-                              backgroundColor: AppColors.supportSoft,
+                              backgroundColor: mascotifyTone(
+                                context,
+                                AppColors.supportSoft,
+                              ),
                             ),
                         ],
                       ),
@@ -595,7 +607,7 @@ class _NotificationCard extends StatelessWidget {
                           notification.timeLabel,
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
-                                color: AppColors.textSecondary,
+                                color: mascotifySecondaryText(context),
                                 fontWeight: FontWeight.w600,
                               ),
                         ),
@@ -620,14 +632,14 @@ class _NotificationCard extends StatelessWidget {
                       Text(
                         notification.timeLabel,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
+                          color: mascotifySecondaryText(context),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(
+                      Icon(
                         Icons.chevron_right_rounded,
-                        color: AppColors.textMuted,
+                        color: MascotifyPalette.of(context).textMuted,
                       ),
                     ],
                   );
@@ -637,7 +649,7 @@ class _NotificationCard extends StatelessWidget {
               Text(
                 notification.description,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textPrimary,
+                  color: mascotifyPrimaryText(context),
                   height: 1.45,
                 ),
               ),
@@ -711,14 +723,17 @@ class _NotificationCard extends StatelessWidget {
     }
   }
 
-  Color _priorityColor(EcosystemNotificationPriority priority) {
+  Color _priorityColor(
+    BuildContext context,
+    EcosystemNotificationPriority priority,
+  ) {
     switch (priority) {
       case EcosystemNotificationPriority.attention:
-        return AppColors.accentSoft;
+        return mascotifyTone(context, AppColors.accentSoft);
       case EcosystemNotificationPriority.useful:
-        return AppColors.primarySoft;
+        return mascotifyTone(context, AppColors.primarySoft);
       case EcosystemNotificationPriority.info:
-        return Colors.white;
+        return mascotifySurfaceTint(context);
     }
   }
 }
@@ -734,17 +749,18 @@ class _HeroMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.72),
+        color: mascotifyTone(context, Colors.white.withValues(alpha: 0.72)),
         borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: MascotifyPalette.of(context).textMuted,
+            ),
           ),
           const SizedBox(height: 6),
           Text(value, style: Theme.of(context).textTheme.titleMedium),
@@ -767,11 +783,12 @@ class _TypePill extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -793,14 +810,16 @@ class _ActionChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: onTap == null ? AppColors.surfaceAlt : Colors.white,
+          color: onTap == null
+              ? mascotifySurfaceAlt(context)
+              : mascotifySurfaceTint(context),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: mascotifyBorder(context)),
         ),
         child: Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppColors.textPrimary,
+            color: mascotifyPrimaryText(context),
             fontWeight: FontWeight.w700,
           ),
         ),

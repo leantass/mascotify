@@ -49,11 +49,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: isFamily
-                        ? const [AppColors.surface, AppColors.primarySoft]
-                        : const [
-                            AppColors.accentSoft,
-                            AppColors.surface,
-                            Color(0xFFEAFBFF),
+                        ? [
+                            mascotifySurface(context),
+                            mascotifyTone(context, AppColors.primarySoft),
+                          ]
+                        : [
+                            mascotifyTone(context, AppColors.accentSoft),
+                            mascotifySurface(context),
+                            mascotifyTone(context, const Color(0xFFEAFBFF)),
                           ],
                     begin: isFamily ? Alignment.topLeft : Alignment.centerLeft,
                     end: isFamily
@@ -63,8 +66,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   borderRadius: BorderRadius.circular(32),
                   border: Border.all(
                     color: isFamily
-                        ? AppColors.border
-                        : const Color(0xFFCFEFF5),
+                        ? mascotifyBorder(context)
+                        : mascotifyTone(context, const Color(0xFFCFEFF5)),
                   ),
                 ),
                 child: LayoutBuilder(
@@ -73,7 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       width: 74,
                       height: 74,
                       decoration: BoxDecoration(
-                        color: AppColors.dark,
+                        color: mascotifySurfaceTint(context),
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Icon(
@@ -105,8 +108,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.accentSoft,
+                            color: mascotifyTone(context, AppColors.accentSoft),
                             borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: mascotifyBorder(context)),
                           ),
                           child: Text(
                             isFamily
@@ -116,7 +120,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: AppColors.accentDeep,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.secondary,
                                   fontWeight: FontWeight.w700,
                                 ),
                           ),
@@ -292,13 +298,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.supportSoft,
+                    color: mascotifyTone(context, AppColors.supportSoft),
                     borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: mascotifyBorder(context)),
                   ),
                   child: Text(
                     user.planName,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
+                      color: mascotifyPrimaryText(context),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -448,12 +455,12 @@ class _RuntimeModeNotice extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: AppColors.supportSoft,
+                color: mascotifyTone(context, AppColors.supportSoft),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.info_outline_rounded,
-                color: AppColors.primaryDeep,
+                color: Theme.of(context).colorScheme.primary,
               ),
             );
             final text = Column(
@@ -467,7 +474,7 @@ class _RuntimeModeNotice extends StatelessWidget {
                 Text(
                   '${AppEnvironment.runtimeShortDescription} ${AppEnvironment.productionReadinessLabel}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: mascotifySecondaryText(context),
                     height: 1.4,
                   ),
                 ),
@@ -702,10 +709,12 @@ class _PlanCatalogCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
-    final borderColor = isCurrent ? AppColors.primary : AppColors.border;
+    final borderColor = isCurrent
+        ? Theme.of(context).colorScheme.primary
+        : mascotifyBorder(context);
     final backgroundColor = isCurrent
-        ? AppColors.primarySoft
-        : AppColors.surfaceAlt;
+        ? mascotifyTone(context, AppColors.primarySoft)
+        : mascotifySurfaceAlt(context);
 
     return Container(
       key: ValueKey('plan-card-${entitlement.shortName.toLowerCase()}'),
@@ -725,7 +734,7 @@ class _PlanCatalogCard extends StatelessWidget {
                 child: Text(
                   entitlement.shortName,
                   style: theme.titleMedium?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: mascotifyPrimaryText(context),
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -737,13 +746,13 @@ class _PlanCatalogCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
                     'Actual',
                     style: theme.labelSmall?.copyWith(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onPrimary,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -754,7 +763,7 @@ class _PlanCatalogCard extends StatelessWidget {
           Text(
             entitlement.priceLabel,
             style: theme.titleMedium?.copyWith(
-              color: AppColors.primaryDeep,
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -762,7 +771,7 @@ class _PlanCatalogCard extends StatelessWidget {
           Text(
             entitlement.petLimitDisplayLabel,
             style: theme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
+              color: mascotifyPrimaryText(context),
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -770,7 +779,7 @@ class _PlanCatalogCard extends StatelessWidget {
           Text(
             entitlement.positioningLabel,
             style: theme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
+              color: mascotifySecondaryText(context),
               height: 1.35,
             ),
           ),
@@ -778,7 +787,7 @@ class _PlanCatalogCard extends StatelessWidget {
           Text(
             entitlement.adsLabel,
             style: theme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
+              color: mascotifySecondaryText(context),
               height: 1.35,
             ),
           ),

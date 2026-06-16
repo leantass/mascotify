@@ -22,6 +22,35 @@ void main() {
     expect(palette.supportSoft.computeLuminance(), lessThan(0.08));
   });
 
+  testWidgets('dark theme maps light accent surfaces to slate-friendly tones', (
+    tester,
+  ) async {
+    late Color mappedWhite;
+    late Color mappedPrimary;
+    late Color mappedAccent;
+    late Color mappedSupport;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark(),
+        home: Builder(
+          builder: (context) {
+            mappedWhite = mascotifyTone(context, Colors.white);
+            mappedPrimary = mascotifyTone(context, AppColors.primarySoft);
+            mappedAccent = mascotifyTone(context, AppColors.accentSoft);
+            mappedSupport = mascotifyTone(context, AppColors.supportSoft);
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+
+    expect(mappedWhite.computeLuminance(), lessThan(0.12));
+    expect(mappedPrimary.computeLuminance(), lessThan(0.08));
+    expect(mappedAccent.computeLuminance(), lessThan(0.08));
+    expect(mappedSupport.computeLuminance(), lessThan(0.08));
+  });
+
   test('theme controller persists the selected mode locally', () async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final preferences = await SharedPreferences.getInstance();

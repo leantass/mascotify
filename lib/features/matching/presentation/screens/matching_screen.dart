@@ -7,6 +7,7 @@ import '../../../../shared/models/pet.dart';
 import '../../../../shared/widgets/paw_loading_indicator.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
 import '../../../profile/presentation/screens/help_screen.dart';
 import '../../../profile/presentation/widgets/contextual_help_link.dart';
 import '../../data/pet_matching_models.dart';
@@ -191,12 +192,12 @@ class _Header extends StatelessWidget {
           width: compact ? 38 : 46,
           height: compact ? 38 : 46,
           decoration: BoxDecoration(
-            color: AppColors.accentSoft,
+            color: mascotifyTone(context, AppColors.accentSoft),
             borderRadius: BorderRadius.circular(compact ? 14 : 16),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.favorite_rounded,
-            color: AppColors.accentDeep,
+            color: Theme.of(context).colorScheme.secondary,
           ),
         ),
         const SizedBox(width: 12),
@@ -216,7 +217,7 @@ class _Header extends StatelessWidget {
                 Text(
                   'Desliza y encontra compatibles cerca.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: mascotifySecondaryText(context),
                   ),
                 ),
             ],
@@ -307,9 +308,9 @@ class _CompactControls extends StatelessWidget {
             height: 38,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: mascotifySurface(context),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: mascotifyBorder(context)),
             ),
             child: selector,
           ),
@@ -412,7 +413,7 @@ class _SwipeDeck extends StatelessWidget {
                 _RoundActionButton(
                   key: const ValueKey('matching-pass-button'),
                   icon: Icons.close_rounded,
-                  foreground: AppColors.accentDeep,
+                  foreground: Theme.of(context).colorScheme.secondary,
                   compact: deckCompact,
                   onPressed: () => onPass(current),
                 ),
@@ -420,7 +421,7 @@ class _SwipeDeck extends StatelessWidget {
                 _RoundActionButton(
                   key: const ValueKey('matching-like-button'),
                   icon: Icons.favorite_rounded,
-                  foreground: AppColors.primaryDeep,
+                  foreground: Theme.of(context).colorScheme.primary,
                   compact: deckCompact,
                   onPressed: () => onLike(current),
                 ),
@@ -492,7 +493,7 @@ class _SwipeableMatchCardState extends State<_SwipeableMatchCard> {
                   left: widget.compact ? 16 : 22,
                   child: _SwipeFeedbackBadge(
                     label: 'Me gusta',
-                    color: AppColors.primaryDeep,
+                    color: Theme.of(context).colorScheme.primary,
                     opacity: progress.clamp(0.0, 1.0),
                   ),
                 ),
@@ -501,7 +502,7 @@ class _SwipeableMatchCardState extends State<_SwipeableMatchCard> {
                   right: widget.compact ? 16 : 22,
                   child: _SwipeFeedbackBadge(
                     label: 'Pasar',
-                    color: AppColors.accentDeep,
+                    color: Theme.of(context).colorScheme.secondary,
                     opacity: (-progress).clamp(0.0, 1.0),
                   ),
                 ),
@@ -535,9 +536,9 @@ class _MatchSwipeCard extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 460),
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: mascotifySurface(context),
           borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: mascotifyBorder(context)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isPreview ? 0.08 : 0.18),
@@ -578,7 +579,7 @@ class _MatchSwipeCard extends StatelessWidget {
                       ),
                       _InfoPill(
                         label: '${score.percent}%',
-                        color: AppColors.accentSoft,
+                        color: mascotifyTone(context, AppColors.accentSoft),
                       ),
                     ],
                   ),
@@ -588,7 +589,7 @@ class _MatchSwipeCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: mascotifySecondaryText(context),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -599,16 +600,16 @@ class _MatchSwipeCard extends StatelessWidget {
                     children: [
                       _InfoPill(
                         label: candidate.zone,
-                        color: AppColors.primarySoft,
+                        color: mascotifyTone(context, AppColors.primarySoft),
                       ),
                       if (!compact)
                         _InfoPill(
                           label: candidate.sizeLabel,
-                          color: AppColors.surfaceAlt,
+                          color: mascotifySurfaceAlt(context),
                         ),
                       _InfoPill(
                         label: candidate.energyLabel,
-                        color: AppColors.supportSoft,
+                        color: mascotifyTone(context, AppColors.supportSoft),
                       ),
                     ],
                   ),
@@ -632,7 +633,7 @@ class _MatchSwipeCard extends StatelessWidget {
                         .map(
                           (reason) => _InfoPill(
                             label: reason,
-                            color: AppColors.surfaceTint,
+                            color: mascotifySurfaceTint(context),
                           ),
                         )
                         .toList(growable: false),
@@ -666,9 +667,9 @@ class _CardHero extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(candidate.colorHex),
-            AppColors.surface,
-            AppColors.primarySoft,
+            mascotifyTone(context, Color(candidate.colorHex)),
+            mascotifySurface(context),
+            mascotifyTone(context, AppColors.primarySoft),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -691,14 +692,17 @@ class _CardHero extends StatelessWidget {
           Positioned(
             left: compact ? 14 : 18,
             top: compact ? 14 : 18,
-            child: _InfoPill(label: score.label, color: Colors.white),
+            child: _InfoPill(
+              label: score.label,
+              color: mascotifySurfaceTint(context),
+            ),
           ),
           Positioned(
             right: compact ? 14 : 18,
             bottom: compact ? 14 : 18,
             child: _InfoPill(
               label: candidate.distanceLabel,
-              color: AppColors.supportSoft,
+              color: mascotifyTone(context, AppColors.supportSoft),
             ),
           ),
         ],
@@ -721,7 +725,12 @@ class _PetAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         color: Color(candidate.colorHex),
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 5),
+        border: Border.all(
+          color: mascotifyIsDark(context)
+              ? mascotifySurfaceTint(context)
+              : Colors.white,
+          width: 5,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.18),
@@ -735,7 +744,7 @@ class _PetAvatar extends StatelessWidget {
             ? Icons.cruelty_free_rounded
             : Icons.pets_rounded,
         size: size * 0.48,
-        color: AppColors.primaryDeep,
+        color: Theme.of(context).colorScheme.primary,
       ),
     );
   }
@@ -761,7 +770,7 @@ class _SwipeFeedbackBadge extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.9),
+            color: mascotifySurface(context),
             borderRadius: BorderRadius.circular(999),
             border: Border.all(color: color, width: 2),
           ),
@@ -802,8 +811,8 @@ class _RoundActionButton extends StatelessWidget {
         icon: Icon(icon, size: compact ? 27 : 30),
         style: IconButton.styleFrom(
           foregroundColor: foreground,
-          backgroundColor: Colors.white,
-          side: const BorderSide(color: AppColors.border),
+          backgroundColor: mascotifySurfaceTint(context),
+          side: BorderSide(color: mascotifyBorder(context)),
           shadowColor: Colors.black.withValues(alpha: 0.18),
           elevation: 4,
         ),
@@ -825,16 +834,16 @@ class _EmptyDeckState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: mascotifySurface(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         children: [
-          const Icon(
+          Icon(
             Icons.favorite_border_rounded,
             size: 52,
-            color: AppColors.primaryDeep,
+            color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: 12),
           Text(
@@ -845,9 +854,9 @@ class _EmptyDeckState extends StatelessWidget {
           Text(
             'Probemos de nuevo para ${selectedPet.name}.',
             textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: mascotifySecondaryText(context),
+            ),
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
@@ -911,9 +920,9 @@ class _MutualMatchSheetState extends State<_MutualMatchSheet>
         child: Container(
           key: const ValueKey('matching-mutual-sheet'),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: mascotifySurface(context),
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: mascotifyBorder(context)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.18),
@@ -930,9 +939,9 @@ class _MutualMatchSheetState extends State<_MutualMatchSheet>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.accentSoft.withValues(alpha: 0.88),
-                        AppColors.surface,
-                        AppColors.primarySoft.withValues(alpha: 0.82),
+                        mascotifyTone(context, AppColors.accentSoft),
+                        mascotifySurface(context),
+                        mascotifyTone(context, AppColors.primarySoft),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -1005,7 +1014,7 @@ class _MutualMatchSheetState extends State<_MutualMatchSheet>
                                 color: AppColors.accentDeep,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.white,
+                                  color: mascotifySurface(context),
                                   width: 3,
                                 ),
                                 boxShadow: [
@@ -1036,16 +1045,21 @@ class _MutualMatchSheetState extends State<_MutualMatchSheet>
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.78),
+                        color: mascotifyTone(
+                          context,
+                          Colors.white.withValues(alpha: 0.78),
+                        ),
                         borderRadius: BorderRadius.circular(999),
                         border: Border.all(
-                          color: AppColors.accentDeep.withValues(alpha: 0.16),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.secondary.withValues(alpha: 0.36),
                         ),
                       ),
                       child: Text(
                         'Match demo',
                         style: textTheme.labelMedium?.copyWith(
-                          color: AppColors.accentDeep,
+                          color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -1056,7 +1070,7 @@ class _MutualMatchSheetState extends State<_MutualMatchSheet>
                       textAlign: TextAlign.center,
                       style: textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w900,
-                        color: AppColors.textPrimary,
+                        color: mascotifyPrimaryText(context),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -1064,7 +1078,7 @@ class _MutualMatchSheetState extends State<_MutualMatchSheet>
                       '${candidate.name} tambien mostro interes demo.',
                       textAlign: TextAlign.center,
                       style: textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: mascotifySecondaryText(context),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -1149,9 +1163,9 @@ class _EmptyPetsState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: mascotifySurface(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: const Text('Agrega una mascota para buscar matches compatibles.'),
     );
@@ -1169,13 +1183,14 @@ class _InfoPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color,
+        color: mascotifyTone(context, color),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           fontWeight: FontWeight.w800,
         ),
       ),

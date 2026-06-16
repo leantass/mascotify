@@ -4,6 +4,7 @@ import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/professional_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
 import '../../../profile/presentation/screens/help_screen.dart';
 import '../../../profile/presentation/widgets/contextual_help_link.dart';
 
@@ -65,17 +66,17 @@ class _BetaHero extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [
-            AppColors.supportSoft,
-            AppColors.surface,
-            AppColors.accentSoft,
+            mascotifyTone(context, AppColors.supportSoft),
+            mascotifySurface(context),
+            mascotifyTone(context, AppColors.accentSoft),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,13 +89,14 @@ class _BetaHero extends StatelessWidget {
                   vertical: 7,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.dark,
+                  color: mascotifySurfaceTint(context),
                   borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: mascotifyBorder(context)),
                 ),
                 child: Text(
                   'Beta',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
+                    color: mascotifyPrimaryText(context),
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -103,7 +105,7 @@ class _BetaHero extends StatelessWidget {
               Text(
                 'Preview read-only',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: mascotifySecondaryText(context),
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -118,7 +120,7 @@ class _BetaHero extends StatelessWidget {
           Text(
             'Estamos preparando herramientas para veterinarias, paseadores, cuidadores y servicios pet. Hoy Mascotify esta enfocada en familias y tutores.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.textSecondary,
+              color: mascotifySecondaryText(context),
               height: 1.35,
             ),
           ),
@@ -162,9 +164,9 @@ class _PreviewSection extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               subtitle,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: mascotifySecondaryText(context),
+              ),
             ),
             const SizedBox(height: 14),
             ...children.map(
@@ -236,9 +238,9 @@ class _PreviewTile extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,10 +249,10 @@ class _PreviewTile extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: color,
+              color: mascotifyTone(context, color),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon, color: AppColors.dark),
+            child: Icon(icon, color: mascotifyPrimaryText(context)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -262,7 +264,7 @@ class _PreviewTile extends StatelessWidget {
                 Text(
                   subtitle,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: mascotifySecondaryText(context),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -271,7 +273,7 @@ class _PreviewTile extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: mascotifyPrimaryText(context),
                     height: 1.35,
                   ),
                 ),
@@ -290,7 +292,7 @@ class _LockedActionsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: AppColors.surface,
+      color: mascotifySurface(context),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
@@ -304,7 +306,7 @@ class _LockedActionsCard extends StatelessWidget {
             Text(
               'No se pueden cargar datos profesionales, crear turnos, publicar servicios, recibir pagos ni contactar desde esta beta.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
+                color: mascotifySecondaryText(context),
                 height: 1.35,
               ),
             ),
@@ -325,14 +327,14 @@ class _StatusPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.76),
+        color: mascotifyTone(context, Colors.white.withValues(alpha: 0.76)),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           fontWeight: FontWeight.w700,
         ),
       ),
