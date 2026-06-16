@@ -31,6 +31,7 @@ class AppTheme {
     );
 
     return base.copyWith(
+      canvasColor: AppColors.surface,
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
@@ -135,6 +136,55 @@ class AppTheme {
           ),
         ),
       ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.surfaceAlt,
+        labelStyle: const TextStyle(color: AppColors.textSecondary),
+        hintStyle: const TextStyle(color: AppColors.textMuted),
+        helperStyle: const TextStyle(color: AppColors.textSecondary),
+        errorStyle: const TextStyle(color: AppColors.accentDeep),
+        floatingLabelStyle: const TextStyle(color: AppColors.primaryDeep),
+        prefixIconColor: AppColors.textSecondary,
+        suffixIconColor: AppColors.textSecondary,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.primaryDeep),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.accentDeep),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.accentDeep),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
+        ),
+      ),
+      menuTheme: MenuThemeData(
+        style: MenuStyle(
+          backgroundColor: const WidgetStatePropertyAll(AppColors.surface),
+          surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+          shadowColor: WidgetStatePropertyAll(
+            AppColors.primary.withValues(alpha: 0.10),
+          ),
+        ),
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: AppColors.primaryDeep,
+        selectionColor: AppColors.primary.withValues(alpha: 0.24),
+        selectionHandleColor: AppColors.primaryDeep,
+      ),
       chipTheme: base.chipTheme.copyWith(
         backgroundColor: AppColors.surfaceAlt,
         side: const BorderSide(color: AppColors.border),
@@ -206,6 +256,7 @@ class AppTheme {
     );
 
     return base.copyWith(
+      canvasColor: surfaceAlt,
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: textPrimary,
@@ -316,7 +367,14 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surface,
+        fillColor: surfaceAlt,
+        labelStyle: const TextStyle(color: textSecondary),
+        hintStyle: const TextStyle(color: textMuted),
+        helperStyle: const TextStyle(color: textSecondary),
+        errorStyle: const TextStyle(color: Color(0xFFFFB4B4)),
+        floatingLabelStyle: const TextStyle(color: primary),
+        prefixIconColor: textSecondary,
+        suffixIconColor: textSecondary,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: border),
@@ -329,10 +387,42 @@ class AppTheme {
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: primary),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFFF8A8A)),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFFFB4B4)),
+        ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 12,
-          vertical: 10,
+          vertical: 12,
         ),
+      ),
+      menuTheme: const MenuThemeData(
+        style: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(surfaceAlt),
+          surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
+          shadowColor: WidgetStatePropertyAll(Colors.black54),
+        ),
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: primary,
+        selectionColor: primary.withValues(alpha: 0.28),
+        selectionHandleColor: primary,
+      ),
+      checkboxTheme: CheckboxThemeData(
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.selected) ? primary : surfaceAlt;
+        }),
+        checkColor: const WidgetStatePropertyAll(Color(0xFF062A2D)),
+        side: const BorderSide(color: border),
+      ),
+      radioTheme: RadioThemeData(
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.selected) ? primary : textMuted;
+        }),
       ),
       chipTheme: base.chipTheme.copyWith(
         backgroundColor: surfaceAlt,

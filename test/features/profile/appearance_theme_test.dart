@@ -207,6 +207,41 @@ void main() {
     expect(decoration.color, isNotNull);
     expect(decoration.color!.computeLuminance(), lessThan(0.12));
   });
+
+  testWidgets('Alta de mascota usa campos y selects dark-friendly', (
+    tester,
+  ) async {
+    setDesktopViewport(tester);
+    final session = await buildPersistentTestAppSession();
+    await session.controller.login(
+      email: LocalAuthSeedData.familyEmail,
+      password: LocalAuthSeedData.demoPassword,
+    );
+    await session.themeController.setMode(MascotifyThemeMode.dark);
+
+    await tester.pumpWidget(session.buildApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Mascotas'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Agregar'));
+    await tester.pumpAndSettle();
+
+    final nameField = tester.widget<TextField>(
+      find.byKey(const ValueKey('pet-name-field')),
+    );
+    final speciesDropdown = tester.widget<DropdownButtonFormField<String>>(
+      find.byKey(const ValueKey('pet-species-dropdown')),
+    );
+
+    expect(nameField.decoration?.fillColor, isNotNull);
+    expect(nameField.decoration!.fillColor!.computeLuminance(), lessThan(0.12));
+    expect(speciesDropdown.decoration.fillColor, isNotNull);
+    expect(
+      speciesDropdown.decoration.fillColor!.computeLuminance(),
+      lessThan(0.12),
+    );
+  });
 }
 
 Future<void> _pumpProfileScreen(

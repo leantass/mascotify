@@ -2177,11 +2177,6 @@ InputDecoration _lostPetFieldDecoration(
     hintText: hintText,
     prefixIcon: prefixIcon,
     filled: true,
-    fillColor: AppColors.surfaceAlt,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
-      borderSide: BorderSide.none,
-    ),
   );
 }
 

@@ -1551,19 +1551,7 @@ class _HistoryLine extends StatelessWidget {
 }
 
 InputDecoration _inputDecoration(String label) {
-  return InputDecoration(
-    labelText: label,
-    filled: true,
-    fillColor: AppColors.surface,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-      borderSide: const BorderSide(color: AppColors.border),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-      borderSide: const BorderSide(color: AppColors.border),
-    ),
-  );
+  return InputDecoration(labelText: label, filled: true);
 }
 
 DateTime? _parseDate(String value) {

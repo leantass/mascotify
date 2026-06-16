@@ -4,6 +4,18 @@ Fecha: 2026-06-12
 
 Esta beta interna esta pensada para validacion en telefono Android y web local antes de cualquier publicacion publica.
 
+## Version 1.0.0+4
+
+- Formularios alineados al modo oscuro: campos de texto, selects/dropdowns,
+  buscadores y campos en sheets/dialogs usan superficies slate/blue-gray,
+  bordes sutiles, focus visible, placeholders legibles y estados de error
+  coherentes.
+- Alta/edicion de mascota, salud/vacunas, mascotas perdidas, QR seguro,
+  login demo y contactos de soporte heredan el sistema visual dark-friendly.
+- Modo claro conserva su comportamiento y contraste.
+- APK debug interno, AAB release firmado, paquete `play-upload` y web review
+  deben regenerarse con este build antes de subir a Internal Testing.
+
 ## Version 1.0.0+3
 
 - Modo oscuro agregado con selector de Apariencia en Configuracion.

@@ -571,7 +571,7 @@ class _PetFormDialogState extends State<_PetFormDialog> {
                 key: const ValueKey('pet-species-dropdown'),
                 initialValue: _selectedSpecies,
                 isExpanded: true,
-                decoration: _petFieldDecoration('Tipo de animal'),
+                decoration: _petFieldDecoration(context, 'Tipo de animal'),
                 items: PetSpeciesCatalog.species
                     .map(
                       (species) => DropdownMenuItem<String>(
@@ -596,7 +596,7 @@ class _PetFormDialogState extends State<_PetFormDialog> {
                 key: const ValueKey('pet-breed-dropdown'),
                 initialValue: _selectedBreed,
                 isExpanded: true,
-                decoration: _petFieldDecoration('Raza / tipo'),
+                decoration: _petFieldDecoration(context, 'Raza / tipo'),
                 items:
                     PetSpeciesCatalog.breedOptionsForSpecies(_selectedSpecies)
                         .map(
@@ -647,7 +647,7 @@ class _PetFormDialogState extends State<_PetFormDialog> {
               DropdownButtonFormField<String>(
                 initialValue: _selectedSex,
                 isExpanded: true,
-                decoration: _petFieldDecoration('Sexo'),
+                decoration: _petFieldDecoration(context, 'Sexo'),
                 items: const [
                   DropdownMenuItem(value: 'Macho', child: Text('Macho')),
                   DropdownMenuItem(value: 'Hembra', child: Text('Hembra')),
@@ -1024,7 +1024,7 @@ class _LocationFields extends StatelessWidget {
           key: const ValueKey('pet-country-dropdown'),
           initialValue: selectedCountry,
           isExpanded: true,
-          decoration: _petFieldDecoration('País'),
+          decoration: _petFieldDecoration(context, 'País'),
           items: LocationCatalog.countries
               .map(
                 (country) => DropdownMenuItem<String>(
@@ -1050,7 +1050,10 @@ class _LocationFields extends StatelessWidget {
             key: const ValueKey('pet-region-dropdown'),
             initialValue: selectedRegion,
             isExpanded: true,
-            decoration: _petFieldDecoration('Provincia / Estado / Región'),
+            decoration: _petFieldDecoration(
+              context,
+              'Provincia / Estado / Región',
+            ),
             items: regions
                 .map(
                   (region) => DropdownMenuItem<String>(
@@ -1078,7 +1081,7 @@ class _LocationFields extends StatelessWidget {
                 ? selectedCity
                 : (cities.isEmpty ? null : cities.first),
             isExpanded: true,
-            decoration: _petFieldDecoration('Ciudad / localidad'),
+            decoration: _petFieldDecoration(context, 'Ciudad / localidad'),
             items: cities
                 .map(
                   (city) =>
@@ -1130,20 +1133,33 @@ class _PetField extends StatelessWidget {
       maxLines: maxLines,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
-      decoration: _petFieldDecoration(label, hintText: hintText),
+      decoration: _petFieldDecoration(context, label, hintText: hintText),
     );
   }
 }
 
-InputDecoration _petFieldDecoration(String label, {String? hintText}) {
+InputDecoration _petFieldDecoration(
+  BuildContext context,
+  String label, {
+  String? hintText,
+}) {
+  final theme = Theme.of(context);
   return InputDecoration(
     labelText: label,
     hintText: hintText,
     filled: true,
-    fillColor: AppColors.surfaceAlt,
+    fillColor: theme.inputDecorationTheme.fillColor,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(18),
-      borderSide: BorderSide.none,
+      borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+      borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+      borderSide: BorderSide(color: theme.colorScheme.primary),
     ),
   );
 }

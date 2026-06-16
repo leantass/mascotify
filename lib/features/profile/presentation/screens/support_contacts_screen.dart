@@ -149,7 +149,7 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
               key: const ValueKey('support-report-type-field'),
               initialValue: _problemType,
               isExpanded: true,
-              decoration: _fieldDecoration('Tipo de problema'),
+              decoration: _fieldDecoration(context, 'Tipo de problema'),
               items: const [
                 DropdownMenuItem(
                   value: 'Error en la app',
@@ -175,7 +175,7 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
               controller: _descriptionController,
               minLines: 4,
               maxLines: 8,
-              decoration: _fieldDecoration('Descripción'),
+              decoration: _fieldDecoration(context, 'Descripción'),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'La descripción es requerida.';
@@ -188,7 +188,7 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
               key: const ValueKey('support-report-contact-field'),
               controller: _contactController,
               keyboardType: TextInputType.emailAddress,
-              decoration: _fieldDecoration('Email/contacto opcional'),
+              decoration: _fieldDecoration(context, 'Email/contacto opcional'),
             ),
             const SizedBox(height: 16),
             FilledButton.icon(
@@ -604,18 +604,23 @@ class _TitleSubtitle extends StatelessWidget {
   }
 }
 
-InputDecoration _fieldDecoration(String label) {
+InputDecoration _fieldDecoration(BuildContext context, String label) {
+  final theme = Theme.of(context);
   return InputDecoration(
     labelText: label,
     filled: true,
-    fillColor: AppColors.surface,
+    fillColor: theme.inputDecorationTheme.fillColor,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(16),
-      borderSide: const BorderSide(color: AppColors.border),
+      borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(16),
-      borderSide: const BorderSide(color: AppColors.border),
+      borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: theme.colorScheme.primary),
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
   );
