@@ -1,7 +1,7 @@
 # Mascotify Public Website
 
-Este micrositio estático reúne una landing pública de Mascotify y las páginas legales mínimas
-necesarias para futura publicación en stores y web.
+Este micrositio estatico reune una landing publica de Mascotify y las paginas
+legales minimas necesarias para futura publicacion en stores y web.
 
 ## Rutas disponibles
 
@@ -12,29 +12,34 @@ necesarias para futura publicación en stores y web.
 - `soporte.html`
 - `legal.html`
 
-## URL pública principal
+## URL publica principal
 
-Mientras no se confirme el dominio final, usar este placeholder único:
+Mientras no se confirme el dominio final, usar este placeholder unico:
 
 - `[URL_PUBLICA_MASCOTIFY]`
 
-Debe reemplazarse antes de publicar en Play Console, App Store Connect o enlazarlo desde la app.
+Debe reemplazarse antes de publicar en Play Console, App Store Connect o
+enlazarlo desde la app.
 
-## URL de la app
+## Acceso a Mascotify
 
-URL actual:
+La seccion `#usar-mascotify` concentra los accesos a la app:
 
-- `[URL_APP_MASCOTIFY]`
+- Mascotify Web: `[URL_APP_WEB_MASCOTIFY]`
+- App Store: `[URL_APP_STORE_MASCOTIFY]`
 
 Uso:
 
-- Botón "Ir a la app" en header
+- Boton "Ir a la app" en header
 - CTA principal del hero
 - Link en footer
+- Seccion comercial "Usa Mascotify" dentro de `index.html`
 
-Pendiente:
+Pendientes:
 
-- Reemplazar `[URL_APP_MASCOTIFY]` por la URL final cuando la app esté publicada o cuando exista una URL web funcional definitiva.
+- Reemplazar `[URL_APP_WEB_MASCOTIFY]` cuando exista la URL final de la app web.
+- Reemplazar `[URL_APP_STORE_MASCOTIFY]` cuando la app este publicada en App Store.
+- Si todavia no existe link real, mantener el estado "Proximamente".
 
 ## URLs legales
 
@@ -44,19 +49,19 @@ Pendiente:
 - `[URL_PUBLICA_MASCOTIFY]/soporte.html`
 - `[URL_PUBLICA_MASCOTIFY]/legal.html`
 
-## Cómo abrir localmente
+## Como abrir localmente
 
-Opción simple:
+Opcion simple:
 
 - Abrir `index.html` directamente en el navegador.
 
-Opción servidor:
+Opcion servidor:
 
 ```bash
 python -m http.server 8088
 ```
 
-Alternativa en Windows si `python` no está disponible:
+Alternativa en Windows si `python` no esta disponible:
 
 ```bash
 py -m http.server 8088
@@ -71,11 +76,12 @@ Luego abrir:
 - Confirmar dominio final.
 - Completar responsable legal.
 - Completar email de soporte.
-- Hacer revisión legal.
-- Revisar textos finales según funciones reales activas.
-- Verificar que todas las URLs respondan públicamente.
+- Hacer revision legal.
+- Revisar textos finales segun funciones reales activas.
+- Verificar que todas las URLs respondan publicamente.
 - Conectar formularios si se desea.
 
 ## Estado de esta fase
 
-No hay deploy en esta fase. El objetivo es dejar la base visual, legal y técnica lista para una publicación futura.
+No hay deploy en esta fase. El objetivo es dejar la base visual, legal y
+tecnica lista para una publicacion futura.

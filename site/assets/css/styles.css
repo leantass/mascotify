@@ -246,6 +246,21 @@ textarea:focus-visible {
   transform: translateY(-1px);
 }
 
+.button.is-disabled,
+.button[aria-disabled="true"] {
+  cursor: not-allowed;
+  pointer-events: auto;
+  box-shadow: none;
+  opacity: 0.68;
+}
+
+.button.is-disabled:hover,
+.button.is-disabled:focus-visible,
+.button[aria-disabled="true"]:hover,
+.button[aria-disabled="true"]:focus-visible {
+  transform: none;
+}
+
 .button-primary {
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
   color: #f8fffc;
@@ -690,6 +705,89 @@ textarea:focus-visible {
   text-decoration: none;
 }
 
+.app-entry-section {
+  position: relative;
+}
+
+.app-entry-section::before {
+  content: "";
+  position: absolute;
+  inset: 1rem 0 2rem;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, rgba(255, 225, 234, 0.5), rgba(221, 246, 246, 0.88));
+  z-index: -1;
+}
+
+.app-entry-shell {
+  padding: 1.9rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(215, 232, 233, 1);
+  background:
+    radial-gradient(circle at top right, rgba(255, 225, 234, 0.64), transparent 26%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(243, 247, 248, 0.98) 100%);
+  box-shadow: var(--shadow-lg);
+}
+
+.app-entry-heading {
+  margin-bottom: 0;
+}
+
+.app-entry-grid {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1.8rem;
+}
+
+.app-entry-card {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.6rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(215, 232, 233, 1);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: var(--shadow-md);
+}
+
+.app-entry-card h3,
+.entry-status {
+  margin: 0;
+}
+
+.entry-badge {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-deep);
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.entry-badge-store {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.entry-status {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.entry-button {
+  width: fit-content;
+}
+
+.app-entry-card-store .entry-button {
+  border-color: rgba(215, 232, 233, 1);
+  background: rgba(255, 255, 255, 0.9);
+}
+
 .safety-layout,
 .legal-layout {
   display: grid;
@@ -897,6 +995,7 @@ textarea:focus-visible {
 @media (min-width: 700px) {
   .feature-strip,
   .cards-grid,
+  .app-entry-grid,
   .support-grid,
   .legal-index-grid,
   .split-grid {
@@ -948,12 +1047,17 @@ textarea:focus-visible {
 
   .feature-card,
   .info-card,
+  .app-entry-shell,
   .legal-index-card,
   .footer-shell {
     padding: 1.3rem;
   }
 
   .mockup-card {
+    width: 100%;
+  }
+
+  .entry-button {
     width: 100%;
   }
 

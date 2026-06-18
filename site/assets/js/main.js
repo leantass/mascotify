@@ -1,11 +1,49 @@
 (function () {
-  var appUrl = "[URL_APP_MASCOTIFY]";
+  var appWebUrl = "[URL_APP_WEB_MASCOTIFY]";
+  var appStoreUrl = "[URL_APP_STORE_MASCOTIFY]";
   var navToggle = document.querySelector(".nav-toggle");
   var siteNav = document.querySelector(".site-nav");
-  var appLinks = document.querySelectorAll("[data-app-link]");
+  var appEntryLinks = document.querySelectorAll("[data-app-entry-link]");
+  var isIndexPage = /(?:^|\/)(index\.html)?$/.test(window.location.pathname);
+  var appEntryTarget = isIndexPage ? "#usar-mascotify" : "index.html#usar-mascotify";
 
-  appLinks.forEach(function (link) {
-    link.setAttribute("href", appUrl);
+  function isPlaceholder(value) {
+    return /^\[[A-Z0-9_]+\]$/.test(value);
+  }
+
+  appEntryLinks.forEach(function (link) {
+    link.setAttribute("href", appEntryTarget);
+  });
+
+  function configureExternalLinks(selector, url) {
+    document.querySelectorAll(selector).forEach(function (link) {
+      if (isPlaceholder(url)) {
+        link.setAttribute("href", "#");
+        link.setAttribute("aria-disabled", "true");
+        link.classList.add("is-disabled");
+        link.removeAttribute("target");
+        link.removeAttribute("rel");
+        return;
+      }
+
+      link.setAttribute("href", url);
+      link.classList.remove("is-disabled");
+      link.removeAttribute("aria-disabled");
+
+      if (/^https?:/i.test(url)) {
+        link.setAttribute("target", "_blank");
+        link.setAttribute("rel", "noreferrer");
+      }
+    });
+  }
+
+  configureExternalLinks("[data-web-app-link]", appWebUrl);
+  configureExternalLinks("[data-app-store-link]", appStoreUrl);
+
+  document.querySelectorAll("[aria-disabled='true']").forEach(function (link) {
+    link.addEventListener("click", function (event) {
+      event.preventDefault();
+    });
   });
 
   if (navToggle && siteNav) {
