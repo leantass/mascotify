@@ -6,6 +6,7 @@ import '../../../shared/data/account_identity_mock_data.dart';
 import '../../../shared/models/account_identity_models.dart';
 import 'google_auth_service.dart';
 import 'local_auth_models.dart';
+import 'local_password_hasher.dart';
 
 class AuthOperationResult {
   const AuthOperationResult.success({
@@ -94,7 +95,6 @@ class LocalAuthRepository {
     required String password,
   }) async {
     final normalizedEmail = normalizeEmail(email);
-    final hashedPassword = hashPassword(password);
     final users = _loadUsers();
 
     final account = users
@@ -106,8 +106,24 @@ class LocalAuthRepository {
       );
     }
 
-    if (account.passwordHash != hashedPassword) {
+    if (!LocalPasswordHasher.verifyPassword(
+      rawPassword: password,
+      salt: account.email,
+      storedHash: account.passwordHash,
+    )) {
       return const AuthOperationResult.failure('La contraseña no coincide.');
+    }
+
+    if (LocalPasswordHasher.needsRehash(account.passwordHash)) {
+      final accountIndex = users.indexOf(account);
+      final upgradedUsers = [...users]
+        ..[accountIndex] = account.copyWith(
+          passwordHash: LocalPasswordHasher.hashPassword(
+            password,
+            salt: account.email,
+          ),
+        );
+      await _saveUsers(upgradedUsers);
     }
 
     final session = StoredAuthSession(
@@ -162,7 +178,10 @@ class LocalAuthRepository {
       id: 'local-${DateTime.now().microsecondsSinceEpoch}',
       ownerName: trimmedName,
       email: normalizedEmail,
-      passwordHash: hashPassword(trimmedPassword),
+      passwordHash: LocalPasswordHasher.hashPassword(
+        trimmedPassword,
+        salt: normalizedEmail,
+      ),
       planName: effectiveExperience == AccountExperience.family
           ? 'Mascotify Plus'
           : 'Mascotify Pro',
@@ -258,7 +277,10 @@ class LocalAuthRepository {
       id: _googleAccountId(profile.uid),
       ownerName: ownerName,
       email: normalizedEmail,
-      passwordHash: hashPassword('firebase-google:${profile.uid}'),
+      passwordHash: LocalPasswordHasher.hashPassword(
+        'firebase-google:${profile.uid}',
+        salt: normalizedEmail,
+      ),
       planName: experience == AccountExperience.family
           ? 'Mascotify Plus'
           : 'Mascotify Pro',
@@ -399,7 +421,10 @@ class LocalAuthRepository {
       id: account.id,
       ownerName: account.ownerName,
       email: normalizeEmail(account.email),
-      passwordHash: hashPassword(password),
+      passwordHash: LocalPasswordHasher.hashPassword(
+        password,
+        salt: normalizeEmail(account.email),
+      ),
       planName: account.planName,
       city: account.city,
       memberSince: account.memberSince,

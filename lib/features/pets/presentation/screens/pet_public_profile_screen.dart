@@ -21,277 +21,277 @@ class PetPublicProfileScreen extends StatelessWidget {
       body: SafeArea(
         child: ResponsivePageBody(
           child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color(pet.colorHex),
-                    AppColors.surface,
-                    AppColors.accentSoft,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color(pet.colorHex),
+                      AppColors.surface,
+                      AppColors.accentSoft,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(32),
+                  border: Border.all(color: AppColors.border),
                 ),
-                borderRadius: BorderRadius.circular(32),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 82,
-                        height: 82,
-                        decoration: BoxDecoration(
-                          color: AppColors.dark,
-                          borderRadius: BorderRadius.circular(26),
-                        ),
-                        child: const Icon(
-                          Icons.pets_rounded,
-                          color: Colors.white,
-                          size: 38,
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        constraints: const BoxConstraints(maxWidth: 170),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primarySoft,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          pet.socialProfileStatus,
-                          textAlign: TextAlign.center,
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: AppColors.primaryDeep,
-                            fontWeight: FontWeight.w700,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 82,
+                          height: 82,
+                          decoration: BoxDecoration(
+                            color: AppColors.dark,
+                            borderRadius: BorderRadius.circular(26),
+                          ),
+                          child: const Icon(
+                            Icons.pets_rounded,
+                            color: Colors.white,
+                            size: 38,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  Text(pet.name, style: textTheme.headlineLarge),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${pet.species} • ${pet.breed}',
-                    style: textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    pet.location,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  ResponsiveWrapGrid(
-                    minItemWidth: 180,
-                    children: [
-                      _PublicStat(label: 'Sexo', value: pet.sex),
-                      _PublicStat(
-                        label: 'Busca cría',
-                        value: pet.seekingBreeding ? 'Sí' : 'No',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Cómo podría encajar mejor',
-                      style: textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      pet.matchingPreferences.matchSummary,
-                      style: textTheme.bodyMedium?.copyWith(height: 1.45),
-                    ),
-                    const SizedBox(height: 16),
-                    ResponsiveWrapGrid(
-                      minItemWidth: 180,
-                      children: [
-                        _PublicStat(
-                          label: 'Ritmo',
-                          value: pet.matchingPreferences.rhythmLabel,
-                        ),
-                        _PublicStat(
-                          label: 'Radio',
-                          value: pet.matchingPreferences.locationRadiusLabel,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Text('Señales de afinidad', style: textTheme.titleMedium),
-                    const SizedBox(height: 10),
-                    ...pet.matchingPreferences.compatibilitySignals.map(
-                      (signal) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _PublicMatchingSignal(text: signal),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Compatibilidades clave',
-                      style: textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: pet.matchingPreferences.desiredCompatibilities
-                          .map((item) => _SocialChip(label: item))
-                          .toList(),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceAlt,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        pet.matchingPreferences.suggestedApproach,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textPrimary,
-                          height: 1.45,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: pet.matchingPreferences.softLimits
-                          .map((item) => _SoftLimitBadge(label: item))
-                          .toList(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Sobre ${pet.name}', style: textTheme.titleLarge),
-                    const SizedBox(height: 8),
-                    Text(pet.biography, style: textTheme.bodyLarge),
-                    const SizedBox(height: 16),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceAlt,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        pet.socialInterest,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textPrimary,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Personalidad', style: textTheme.titleLarge),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: pet.personalityTags
-                          .map((tag) => _SocialChip(label: tag))
-                          .toList(),
-                    ),
-                    const SizedBox(height: 18),
-                    Text('Momentos destacados', style: textTheme.titleMedium),
-                    const SizedBox(height: 12),
-                    ResponsiveWrapGrid(
-                      minItemWidth: 220,
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: pet.featuredMoments
-                          .map((moment) => _FeaturedMomentTile(label: moment))
-                          .toList(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Afinidad social', style: textTheme.titleLarge),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Este perfil está pensado para descubrimiento, afinidad y futuras conexiones seguras dentro de Mascotify.',
-                      style: textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 16),
-                    ResponsiveWrapGrid(
-                      minItemWidth: 180,
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => ExpressInterestScreen(pet: pet),
+                        const Spacer(),
+                        Container(
+                          constraints: const BoxConstraints(maxWidth: 170),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primarySoft,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            pet.socialProfileStatus,
+                            textAlign: TextAlign.center,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: AppColors.primaryDeep,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                          child: const Text('Me interesa'),
                         ),
-                        OutlinedButton(
-                          onPressed: () => _showSavedProfileDialog(context),
-                          child: const Text('Guardar perfil'),
-                        ),
-                        OutlinedButton(
-                          onPressed: () => _showShareProfileDialog(context),
-                          child: const Text('Compartir'),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Text(pet.name, style: textTheme.headlineLarge),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${pet.species} • ${pet.breed}',
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      pet.location,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    ResponsiveWrapGrid(
+                      minItemWidth: 180,
+                      children: [
+                        _PublicStat(label: 'Sexo', value: pet.sex),
+                        _PublicStat(
+                          label: 'Busca cría',
+                          value: pet.seekingBreeding ? 'Sí' : 'No',
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Cómo podría encajar mejor',
+                        style: textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        pet.matchingPreferences.matchSummary,
+                        style: textTheme.bodyMedium?.copyWith(height: 1.45),
+                      ),
+                      const SizedBox(height: 16),
+                      ResponsiveWrapGrid(
+                        minItemWidth: 180,
+                        children: [
+                          _PublicStat(
+                            label: 'Ritmo',
+                            value: pet.matchingPreferences.rhythmLabel,
+                          ),
+                          _PublicStat(
+                            label: 'Radio',
+                            value: pet.matchingPreferences.locationRadiusLabel,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Text('Señales de afinidad', style: textTheme.titleMedium),
+                      const SizedBox(height: 10),
+                      ...pet.matchingPreferences.compatibilitySignals.map(
+                        (signal) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _PublicMatchingSignal(text: signal),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Compatibilidades clave',
+                        style: textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: pet.matchingPreferences.desiredCompatibilities
+                            .map((item) => _SocialChip(label: item))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceAlt,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          pet.matchingPreferences.suggestedApproach,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textPrimary,
+                            height: 1.45,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: pet.matchingPreferences.softLimits
+                            .map((item) => _SoftLimitBadge(label: item))
+                            .toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Sobre ${pet.name}', style: textTheme.titleLarge),
+                      const SizedBox(height: 8),
+                      Text(pet.biography, style: textTheme.bodyLarge),
+                      const SizedBox(height: 16),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceAlt,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          pet.socialInterest,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textPrimary,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Personalidad', style: textTheme.titleLarge),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: pet.personalityTags
+                            .map((tag) => _SocialChip(label: tag))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 18),
+                      Text('Momentos destacados', style: textTheme.titleMedium),
+                      const SizedBox(height: 12),
+                      ResponsiveWrapGrid(
+                        minItemWidth: 220,
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: pet.featuredMoments
+                            .map((moment) => _FeaturedMomentTile(label: moment))
+                            .toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Afinidad social', style: textTheme.titleLarge),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Este perfil está pensado para descubrimiento, afinidad y futuras conexiones seguras dentro de Mascotify.',
+                        style: textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      ResponsiveWrapGrid(
+                        minItemWidth: 180,
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ExpressInterestScreen(pet: pet),
+                              ),
+                            ),
+                            child: const Text('Me interesa'),
+                          ),
+                          OutlinedButton(
+                            onPressed: () => _showSavedProfileDialog(context),
+                            child: const Text('Guardar perfil'),
+                          ),
+                          OutlinedButton(
+                            onPressed: () => _showShareProfileDialog(context),
+                            child: const Text('Compartir'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

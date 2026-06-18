@@ -4,6 +4,20 @@ Fecha: 2026-06-12
 
 Esta beta interna esta pensada para validacion en telefono Android y web local antes de cualquier publicacion publica.
 
+## Version 1.0.0+6
+
+- Hardening defensivo local/controlado: auditoria de secretos, hardcodes,
+  dependencias, storage local, permisos, QR, matching y web/backend.
+- Auth local de demo migra de hash FNV casero a PBKDF2-HMAC-SHA256 versionado,
+  con compatibilidad de lectura para hashes previos.
+- Backend local/API suma headers defensivos, limite JSON explicito y
+  dependencias auditadas sin vulnerabilidades npm conocidas tras la actualizacion.
+- ZIPs historicos de entrega removidos del repo y reglas de ignore reforzadas
+  para evitar commitear artefactos de release.
+- Reportes de seguridad y pentest seguro agregados sin incluir secretos.
+- Requiere regenerar AAB/APK/web review para este build antes de subir a
+  testing interno.
+
 ## Version 1.0.0+5
 
 - Preparacion iOS/TestFlight agregada sin publicar en App Store Connect.
