@@ -1,0 +1,48 @@
+name: iOS build check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ios:
+    name: iOS simulator check
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.1"
+          channel: stable
+          cache: true
+
+      - name: Show Flutter version
+        run: flutter --version
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Analyze Flutter project
+        run: flutter analyze
+
+      - name: Run Flutter tests
+        run: flutter test
+
+      - name: Build iOS simulator app
+        run: flutter build ios --simulator --debug
+
+      - name: Write summary
+        if: always()
+        run: |
+          {
+            echo "# Mascotify iOS build check"
+            echo ""
+            echo "- Manual workflow only."
+            echo "- Runs on macOS."
+            echo "- Does not sign an App Store archive."
+            echo "- Does not upload to TestFlight."
+            echo "- Does not use secrets."
+          } >> "$GITHUB_STEP_SUMMARY"

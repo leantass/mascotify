@@ -4,6 +4,18 @@ Fecha: 2026-06-12
 
 Esta beta interna esta pensada para validacion en telefono Android y web local antes de cualquier publicacion publica.
 
+## Version 1.0.0+5
+
+- Preparacion iOS/TestFlight agregada sin publicar en App Store Connect.
+- Privacy manifest iOS incluido para Runner con declaracion de UserDefaults y
+  sin tracking.
+- Documentacion iOS creada para signing, TestFlight, App Store listing, privacy
+  manifest y opciones de CI macOS.
+- Workflow manual macOS agregado para validar build iOS simulator sin secretos
+  y sin upload a TestFlight.
+- Requiere Mac/Xcode o CI macOS seguro para generar Archive/IPA y subir a
+  TestFlight.
+
 ## Version 1.0.0+4
 
 - Formularios alineados al modo oscuro: campos de texto, selects/dropdowns,
