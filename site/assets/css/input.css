@@ -792,8 +792,9 @@ textarea:focus-visible {
 }
 
 .entry-badge-store {
-  background: var(--accent-soft);
-  color: var(--accent-strong);
+  background: rgba(221, 246, 246, 0.92);
+  color: var(--primary-deep);
+  border: 1px solid rgba(102, 204, 204, 0.28);
 }
 
 .entry-badge-android {
