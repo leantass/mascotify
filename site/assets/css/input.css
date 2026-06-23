@@ -797,8 +797,9 @@ textarea:focus-visible {
 }
 
 .entry-badge-android {
-  background: var(--support-soft);
-  color: #8a5a00;
+  background: rgba(221, 246, 246, 0.92);
+  color: var(--primary-deep);
+  border: 1px solid rgba(102, 204, 204, 0.28);
 }
 
 .entry-status {
@@ -818,12 +819,14 @@ textarea:focus-visible {
 
 .app-entry-card-android {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 242, 198, 0.64));
+    radial-gradient(circle at top right, rgba(102, 204, 204, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(239, 248, 248, 0.92));
+  border-color: rgba(102, 204, 204, 0.16);
 }
 
 .app-entry-card-android .entry-button {
-  border-color: rgba(255, 204, 51, 0.32);
-  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(215, 232, 233, 1);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .safety-layout,
