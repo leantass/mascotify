@@ -2,112 +2,108 @@
 
 declare(strict_types=1);
 
-$heroCards = [
+$benefits = [
     [
-        'badge' => 'QR seguro',
-        'title' => 'Identificacion lista para actuar',
-        'text' => 'Un QR visible ayuda en extravios sin exponer telefono o email publicamente.',
-        'className' => 'floating-card--qr',
+        'kicker' => 'Perfil claro',
+        'title' => 'Una identidad visible para cada mascota',
+        'text' => 'Nombre, especie, rasgos y contexto reunidos en un solo lugar.',
     ],
     [
-        'badge' => 'Salud',
-        'title' => 'Vacunas y controles a mano',
-        'text' => 'La informacion importante vive ordenada dentro de un perfil facil de consultar.',
-        'className' => 'floating-card--health',
+        'kicker' => 'Contacto prudente',
+        'title' => 'QR seguro y datos menos expuestos',
+        'text' => 'La experiencia busca ayudar en extravios sin publicar telefono o email como dato abierto.',
     ],
     [
-        'badge' => 'Comunidad',
-        'title' => 'Clips, ayuda y contexto pet',
-        'text' => 'Mascotify prepara una capa social enfocada en cuidado, comunidad y crecimiento.',
-        'className' => 'floating-card--community',
+        'kicker' => 'Base institucional',
+        'title' => 'Web, soporte y legales listos para enlazar',
+        'text' => 'Una URL preparada para app, stores y futuras publicaciones oficiales.',
     ],
 ];
 
-$trustCards = [
+$storyPanels = [
+    [
+        'icon' => 'CU',
+        'tag' => 'Cuidar',
+        'title' => 'Informacion util para el dia a dia',
+        'text' => 'Salud, vacunas, recordatorios y rasgos importantes se ordenan para volver mas facil el seguimiento.',
+        'className' => 'story-panel story-panel--care',
+    ],
     [
         'icon' => 'PR',
-        'title' => 'Privacidad cuidada desde el diseno',
-        'text' => 'La experiencia prioriza compartir menos, ordenar mejor y dejar claros los limites de exposicion.',
-        'items' => [
-            'Ubicacion aproximada en lugar de direccion exacta.',
-            'Contacto futuro mediado por Mascotify cuando la funcion lo requiera.',
-            'Base legal enlazable para stores y dentro de la app.',
-        ],
+        'tag' => 'Proteger',
+        'title' => 'Privacidad con criterio desde la base',
+        'text' => 'Ubicacion aproximada, contacto mediado y menos exposicion de datos sensibles cuando mas importa.',
+        'className' => 'story-panel story-panel--protect',
     ],
     [
-        'icon' => 'DT',
-        'title' => 'Datos utiles, no ruido',
-        'text' => 'Perfiles claros, salud orientativa, QR seguro y pasos concretos para soporte o eliminacion de cuenta.',
-        'items' => [
-            'Perfiles de mascotas con informacion visible y ordenada.',
-            'Salud y vacunas con foco practico para el dia a dia.',
-            'Canal documentado para soporte y baja manual de cuenta/datos.',
-        ],
-    ],
-    [
-        'icon' => 'CM',
-        'title' => 'Comunidad pet con mas contexto',
-        'text' => 'Clips, publicaciones y matching futuro pensados para crecer sobre una base mas responsable.',
-        'items' => [
-            'Funciones sociales en evolucion, no expuestas como promesa vacia.',
-            'Mayor contexto antes de cualquier contacto entre personas.',
-            'Preparado para sumar servicios pet en futuras etapas.',
-        ],
+        'icon' => 'CO',
+        'tag' => 'Conectar',
+        'title' => 'Comunidad y matching con mas contexto',
+        'text' => 'Clips, publicaciones y funciones futuras pensadas para crecer sin perder foco pet friendly.',
+        'className' => 'story-panel story-panel--connect',
     ],
 ];
 
-$functionCards = [
+$functionPanels = [
     [
-        'title' => 'Perfil vivo de cada mascota',
-        'text' => 'Nombre, especie, raza, edad aproximada, rasgos y datos esenciales en una ficha clara y lista para consultar rapido.',
         'icon' => 'PF',
-        'eyebrow' => 'Identidad',
-        'meta' => 'Base central de la experiencia.',
-        'className' => 'feature-card feature-card--large feature-card--teal',
+        'tag' => 'Identidad',
+        'title' => 'Perfil vivo de cada mascota',
+        'text' => 'Ficha central con nombre, especie, raza, edad aproximada, tamano y rasgos distintivos.',
+        'meta' => 'La base de Mascotify arranca en una ficha clara y lista para consultar rapido.',
+        'className' => 'feature-panel feature-panel--hero',
     ],
     [
-        'title' => 'QR seguro para actuar mejor',
-        'text' => 'Identificacion visible pensada para ayudar en extravios sin publicar datos personales de forma abierta.',
         'icon' => 'QR',
-        'eyebrow' => 'Seguridad',
-        'className' => 'feature-card feature-card--compact',
+        'tag' => 'QR seguro',
+        'title' => 'Identificacion visible para actuar mejor',
+        'text' => 'Un QR ayuda en extravios sin exponer telefono ni email publicamente.',
+        'className' => 'feature-panel feature-panel--teal',
     ],
     [
-        'title' => 'Salud y vacunas con orden',
-        'text' => 'Registro orientativo para seguir vacunas, controles y recordatorios futuros con mas contexto.',
         'icon' => 'SV',
-        'eyebrow' => 'Salud',
-        'className' => 'feature-card feature-card--compact feature-card--support',
+        'tag' => 'Salud',
+        'title' => 'Vacunas y controles con mas orden',
+        'text' => 'Registro orientativo para facilitar seguimiento, controles y recordatorios futuros.',
+        'className' => 'feature-panel feature-panel--support',
     ],
     [
-        'title' => 'Mascotas perdidas y ayuda comunitaria',
-        'text' => 'Herramientas pensadas para circular informacion importante de forma prudente y con mejor soporte visual.',
-        'icon' => 'SOS',
-        'eyebrow' => 'Ayuda',
-        'className' => 'feature-card feature-card--wide',
+        'icon' => 'SO',
+        'tag' => 'Mascotas perdidas',
+        'title' => 'Contexto mas rapido cuando una mascota falta',
+        'text' => 'Herramientas pensadas para compartir informacion relevante y mejorar el circuito de ayuda comunitaria.',
+        'className' => 'feature-panel feature-panel--wide',
     ],
     [
-        'title' => 'Comunidad y clips con foco pet',
-        'text' => 'Espacios sociales en evolucion para publicaciones, clips y participacion de la comunidad sin perder tono de marca.',
         'icon' => 'CL',
-        'eyebrow' => 'Contenido',
-        'className' => 'feature-card feature-card--compact feature-card--accent',
+        'tag' => 'Clips',
+        'title' => 'Contenido y comunidad con tono pet',
+        'text' => 'Espacios sociales en evolucion para publicaciones, clips y participacion responsable.',
+        'className' => 'feature-panel feature-panel--rose',
     ],
     [
-        'title' => 'Matching y profesionales pet futuros',
-        'text' => 'Base preparada para conexiones futuras y servicios especializados con mas privacidad y criterio.',
         'icon' => 'MX',
-        'eyebrow' => 'Roadmap',
-        'meta' => 'Incluye soporte para crecimiento comercial y legal.',
-        'className' => 'feature-card feature-card--tall',
+        'tag' => 'Matching',
+        'title' => 'Conexiones futuras con mas privacidad',
+        'text' => 'Base preparada para matching local mediado por la app y con mas control del contexto.',
+        'meta' => 'Tambien deja espacio para profesionales pet y servicios de terceros en proximas etapas.',
         'linkLabel' => 'Ver base legal',
         'linkHref' => '/legal',
+        'className' => 'feature-panel feature-panel--tall',
+    ],
+    [
+        'icon' => 'PR',
+        'tag' => 'Roadmap',
+        'title' => 'Mascotify crece sobre una base institucional real',
+        'text' => 'Landing, soporte, terminos y eliminacion de cuenta listos para integrarse con stores y con la app.',
+        'className' => 'feature-panel feature-panel--ink',
     ],
 ];
 
 $appEntries = [
     [
         'badge' => 'Web',
+        'cardClass' => 'app-entry-card-web',
         'title' => 'Mascotify Web',
         'text' => 'Entra desde el navegador para probar Mascotify sin instalar nada.',
         'status' => is_placeholder_url(APP_WEB_URL) ? 'Estado actual: URL pendiente.' : 'Disponible ahora.',
@@ -146,164 +142,196 @@ $appEntries = [
 ];
 ?>
 <section id="inicio" class="hero">
-  <div class="container hero-layout">
-    <div class="hero-copy">
-      <p class="eyebrow">Producto en desarrollo para familias, tutores y comunidad pet</p>
-      <div class="hero-badge-row" aria-label="Highlights de Mascotify">
-        <span class="hero-badge">QR seguro</span>
-        <span class="hero-badge">Salud</span>
-        <span class="hero-badge">Clips</span>
-        <span class="hero-badge">Matching futuro</span>
+  <div class="container">
+    <div class="hero-board">
+      <aside class="hero-passport" aria-label="Tarjeta de mascota destacada">
+        <span class="hero-passport__kicker">Mascota destacada</span>
+        <div class="hero-passport__brand">
+          <img src="<?= e(asset('images/mascotify-logo-real.png')); ?>" alt="Mascotify" width="869" height="467">
+        </div>
+        <div class="hero-passport__card">
+          <p class="hero-passport__label">Perfil activo</p>
+          <h2>Milo</h2>
+          <p>QR listo, rasgos visibles y contacto mediado por la app.</p>
+          <div class="hero-passport__chips">
+            <span>QR seguro</span>
+            <span>Salud</span>
+            <span>Comunidad</span>
+          </div>
+        </div>
+      </aside>
+
+      <div class="hero-manifesto">
+        <p class="eyebrow">Producto en desarrollo para familias, tutores y comunidad pet</p>
+        <h1>Mascotify: una marca pensada para cuidar, conectar y proteger a tus mascotas</h1>
+        <p class="lead">
+          Mascotify reune perfiles de mascotas, QR seguro, salud, comunidad, clips y herramientas
+          futuras para mascotas perdidas, matching y servicios pet desde una experiencia clara y confiable.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" data-app-entry-link href="/#usar-mascotify">Ir a la app</a>
+          <a class="button button-secondary" href="/#funciones">Conocer funciones</a>
+        </div>
+        <div class="hero-rail" aria-label="Claves de Mascotify">
+          <article class="hero-rail__item">
+            <strong>QR seguro</strong>
+            <span>Identificacion visible para ayudar sin exponer datos sensibles.</span>
+          </article>
+          <article class="hero-rail__item">
+            <strong>Base legal lista</strong>
+            <span>Soporte, terminos y privacidad enlazables desde una URL institucional.</span>
+          </article>
+        </div>
       </div>
-      <h1>La presencia digital de tu mascota, pensada para cuidar mejor y conectar con criterio.</h1>
-      <p class="lead">
-        Mascotify reune perfiles de mascotas, QR seguro, salud, comunidad, clips y herramientas
-        futuras para mascotas perdidas, matching y servicios pet desde una experiencia clara, moderna y confiable.
-      </p>
-      <div class="hero-actions">
-        <a class="button button-primary" data-app-entry-link href="/#usar-mascotify">Ir a la app</a>
-        <a class="button button-secondary" href="/#funciones">Conocer funciones</a>
-      </div>
-      <div class="hero-kpis" aria-label="Senales de producto">
-        <article class="hero-kpi">
-          <strong>Privacidad cuidada</strong>
-          <span>Datos sensibles menos expuestos y contacto mas prudente.</span>
+
+      <aside class="hero-console" aria-label="Panel de experiencia Mascotify">
+        <article class="hero-console__panel">
+          <span class="hero-console__tag">Ahora</span>
+          <h3>Un mismo ecosistema para identidad, salud y soporte.</h3>
+          <ul class="hero-console__list">
+            <li>Perfiles claros para cada mascota.</li>
+            <li>Salud y vacunas con seguimiento orientativo.</li>
+            <li>Comunidad, clips y matching futuro con mas contexto.</li>
+          </ul>
         </article>
-        <article class="hero-kpi">
-          <strong>Base lista para stores</strong>
-          <span>Landing, soporte, terminos y eliminacion preparados para enlazar.</span>
+        <article class="hero-console__panel hero-console__panel--accent">
+          <span class="hero-console__tag">Criterio</span>
+          <p>Ubicacion aproximada, contacto prudente y una base preparada para crecer hacia web, stores y funciones futuras.</p>
         </article>
-      </div>
+      </aside>
     </div>
 
-    <aside class="hero-stage" aria-label="Vista conceptual de Mascotify">
-      <div class="hero-stage__halo hero-stage__halo--teal"></div>
-      <div class="hero-stage__halo hero-stage__halo--rose"></div>
-      <div class="device-shell">
-        <div class="device-shell__top">
-          <span class="mockup-brand">
-            <img class="mockup-logo" src="<?= e(asset('images/mascotify-logo-real.png')); ?>" alt="Mascotify" width="869" height="467">
-          </span>
-          <span class="device-status">Beta privada</span>
-        </div>
-        <div class="device-profile">
-          <p>Perfil activo</p>
-          <h2>Milo · QR listo</h2>
-          <small>Contacto seguro mediado por la app</small>
-        </div>
-        <div class="device-grid">
-          <article class="device-stat">
-            <strong>Salud</strong>
-            <span>Vacunas y controles mas faciles de ordenar.</span>
-          </article>
-          <article class="device-stat">
-            <strong>Perdidas</strong>
-            <span>Contexto rapido cuando importa actuar.</span>
-          </article>
-          <article class="device-stat">
-            <strong>Comunidad</strong>
-            <span>Clips y publicaciones con tono pet.</span>
-          </article>
-          <article class="device-stat">
-            <strong>Legal</strong>
-            <span>URLs listas para app y stores.</span>
-          </article>
-        </div>
-      </div>
-      <div class="floating-cards" aria-label="Capacidades clave de Mascotify">
-        <?php foreach ($heroCards as $floatingCard): ?>
-        <?php require COMPONENTS_PATH . '/floating-card.php'; ?>
-        <?php endforeach; ?>
-      </div>
-    </aside>
-  </div>
-</section>
-
-<section id="seguridad" class="section trust-section">
-  <div class="container">
-    <?php
-    $sectionHeader = [
-        'eyebrow' => 'Privacidad y seguridad',
-        'title' => 'Una base mas confiable para identificar, cuidar y crecer sin exponer de mas',
-        'description' => 'Mascotify apunta a combinar identidad clara, salud orientativa, comunidad y soporte legal desde una experiencia que transmite prudencia y orden.',
-    ];
-    require COMPONENTS_PATH . '/section-header.php';
-    ?>
-    <div class="trust-grid">
-      <?php foreach ($trustCards as $trustCard): ?>
-      <?php require COMPONENTS_PATH . '/trust-card.php'; ?>
+    <div class="benefit-strip" aria-label="Beneficios rapidos de Mascotify">
+      <?php foreach ($benefits as $benefit): ?>
+      <article class="benefit-card">
+        <span class="benefit-card__kicker"><?= e((string) $benefit['kicker']); ?></span>
+        <h2><?= e((string) $benefit['title']); ?></h2>
+        <p><?= e((string) $benefit['text']); ?></p>
+      </article>
       <?php endforeach; ?>
     </div>
   </div>
 </section>
 
-<section id="funciones" class="section section-accent">
+<section class="section story-section">
+  <div class="container story-layout">
+    <div class="story-copy">
+      <?php
+      $sectionHeader = [
+          'eyebrow' => 'Cuidar, proteger, conectar',
+          'title' => 'Un ecosistema visual de cuidado, seguridad y comunidad para mascotas',
+          'description' => 'Mascotify no busca ser otra landing generica: propone una presencia institucional para la app con una identidad mas editorial y preparada para crecer.',
+      ];
+      require COMPONENTS_PATH . '/section-header.php';
+      ?>
+    </div>
+    <div class="story-stack">
+      <?php foreach ($storyPanels as $featurePanel): ?>
+      <?php require COMPONENTS_PATH . '/feature-panel.php'; ?>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+
+<section id="seguridad" class="section assurance-section">
+  <div class="container assurance-shell">
+    <div class="assurance-copy">
+      <?php
+      $sectionHeader = [
+          'eyebrow' => 'Privacidad y seguridad',
+          'title' => 'Disenado para compartir menos, ordenar mejor y reaccionar con mas contexto',
+          'description' => 'El sitio y la app priorizan un enfoque prudente: ubicacion aproximada, menos exposicion publica y una via clara para soporte y eliminacion de cuenta.',
+      ];
+      require COMPONENTS_PATH . '/section-header.php';
+      ?>
+      <ul class="assurance-list">
+        <li>No exponer direccion exacta de usuarios o mascotas.</li>
+        <li>No mostrar telefono ni email publicamente como dato abierto.</li>
+        <li>Plantear contacto futuro mediado por Mascotify cuando la funcion lo requiera.</li>
+      </ul>
+    </div>
+    <div class="assurance-grid">
+      <article class="assurance-card">
+        <span class="assurance-card__label">Cuidado</span>
+        <h3>Datos utiles para actuar sin ruido</h3>
+        <p>Perfiles, salud y antecedentes visibles sin perder criterio sobre que conviene compartir y que no.</p>
+      </article>
+      <article class="assurance-card assurance-card--accent">
+        <span class="assurance-card__label">Control</span>
+        <h3>Soporte y baja documentados</h3>
+        <p>La base web ya contempla soporte, privacidad, terminos y eliminacion de cuenta como URLs enlazables.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="funciones" class="section functions-section">
   <div class="container">
     <?php
     $sectionHeader = [
         'eyebrow' => 'Funciones principales',
-        'title' => 'Una composicion de funciones pensada para la vida real de cada mascota',
-        'description' => 'No se trata solo de una ficha bonita: Mascotify organiza identidad, salud, ayuda comunitaria, contenido y roadmap sobre una misma base de producto.',
+        'title' => 'Una composicion editorial para mostrar lo que Mascotify busca resolver',
+        'description' => 'La app combina identidad, salud, ayuda comunitaria, contenido y roadmap en una estructura pensada para mascotas, familias y futuros servicios pet.',
     ];
     require COMPONENTS_PATH . '/section-header.php';
     ?>
-    <div class="editorial-grid">
-      <?php foreach ($functionCards as $featureCard): ?>
-      <?php require COMPONENTS_PATH . '/feature-card.php'; ?>
+    <div class="feature-editorial">
+      <?php foreach ($functionPanels as $featurePanel): ?>
+      <?php require COMPONENTS_PATH . '/feature-panel.php'; ?>
       <?php endforeach; ?>
     </div>
   </div>
 </section>
 
-<section id="usar-mascotify" class="section app-entry-section">
-  <div class="container">
-    <div class="app-entry-shell">
+<section id="usar-mascotify" class="section platform-section">
+  <div class="container platform-shell">
+    <div class="platform-copy">
       <?php
       $sectionHeader = [
           'eyebrow' => 'Acceso a Mascotify',
           'title' => 'Usa Mascotify',
           'description' => 'Elegi como queres entrar: desde la web hoy o desde tu iPhone y Android cuando las apps esten disponibles.',
-          'className' => 'app-entry-heading',
       ];
       require COMPONENTS_PATH . '/section-header.php';
       ?>
-      <div class="app-entry-grid">
-        <?php foreach ($appEntries as $appEntryCard): ?>
-        <?php require COMPONENTS_PATH . '/app-entry-card.php'; ?>
-        <?php endforeach; ?>
-      </div>
+      <p class="platform-copy__note">
+        La experiencia publica queda preparada para sumar las URLs reales cuando existan, sin inventar enlaces ni forzar estados de publicacion.
+      </p>
+    </div>
+    <div class="platform-grid">
+      <?php foreach ($appEntries as $appEntryCard): ?>
+      <?php require COMPONENTS_PATH . '/app-entry-card.php'; ?>
+      <?php endforeach; ?>
     </div>
   </div>
 </section>
 
-<section id="legal" class="section">
-  <div class="container status-grid">
-    <article class="status-card">
+<section id="legal" class="section readiness-section">
+  <div class="container readiness-grid">
+    <article class="readiness-card">
       <p class="eyebrow">Estado del producto</p>
-      <h2>Una marca en construccion, con base real para salir al mundo</h2>
+      <h2>Producto en desarrollo / version beta interna</h2>
       <p>
         Mascotify todavia esta en evolucion. Las funciones, los textos legales y la disponibilidad comercial
         pueden cambiar antes de la publicacion final en stores o web publica definitiva.
       </p>
-      <ul class="checklist">
-        <li>Version beta interna con foco en producto y presentacion.</li>
-        <li>Roadmap abierto para comunidad, matching y profesionales pet.</li>
-        <li>Preparado para sumar URLs publicas finales cuando existan.</li>
-      </ul>
     </article>
-    <article class="legal-card">
+    <article class="readiness-card readiness-card--links">
       <p class="eyebrow">Legal y soporte</p>
-      <h2>Soporte, terminos y privacidad visibles desde una sola base institucional</h2>
-      <p>
-        La landing publica, la politica de privacidad, los terminos, soporte y eliminacion de cuenta
-        ya tienen una base lista para integrarse con stores y con la app.
-      </p>
+      <h2>Una base institucional lista para enlazar desde app y stores</h2>
       <div class="link-list">
         <a href="/privacidad">Politica de privacidad</a>
         <a href="/terminos">Terminos y condiciones</a>
         <a href="/eliminacion-de-cuenta">Eliminacion de cuenta y datos</a>
         <a href="/soporte">Soporte</a>
       </div>
+    </article>
+    <article class="readiness-card readiness-card--support">
+      <p class="eyebrow">Mascotify Web</p>
+      <h2>Web, App Store y Play Store conviven en una misma base visual</h2>
+      <p>
+        La seccion de acceso mantiene sus placeholders y estados actuales mientras el dominio y las apps definitivas siguen en definicion.
+      </p>
     </article>
   </div>
 </section>
