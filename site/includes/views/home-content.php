@@ -43,6 +43,19 @@ $appEntries = [
         'buttonVariant' => 'secondary',
         'dataAttribute' => 'data-app-store-link',
     ],
+    [
+        'badge' => 'Android',
+        'badgeClass' => 'entry-badge-android',
+        'cardClass' => 'app-entry-card-android',
+        'title' => 'Play Store',
+        'text' => 'Descarga Mascotify para Android cuando este disponible en Google Play.',
+        'status' => is_placeholder_url(PLAY_STORE_URL) ? 'Disponible proximamente.' : 'Disponible ahora.',
+        'buttonLabel' => 'Descargar en Play Store',
+        'url' => PLAY_STORE_URL,
+        'disabled' => is_placeholder_url(PLAY_STORE_URL),
+        'buttonVariant' => 'secondary',
+        'dataAttribute' => 'data-play-store-link',
+    ],
 ];
 ?>
 <section id="inicio" class="hero">
@@ -156,7 +169,7 @@ $appEntries = [
       $sectionHeader = [
           'eyebrow' => 'Acceso a Mascotify',
           'title' => 'Usa Mascotify',
-          'description' => 'Elegi como queres entrar: desde la web o desde tu iPhone cuando la app este disponible.',
+          'description' => 'Elegi como queres entrar: desde la web o desde tu iPhone y Android cuando las apps esten disponibles.',
           'className' => 'app-entry-heading',
       ];
       require COMPONENTS_PATH . '/section-header.php';

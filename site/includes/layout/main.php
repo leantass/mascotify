@@ -12,6 +12,7 @@ extract($pageData, EXTR_SKIP);
 <body
   data-app-web-url="<?= e(APP_WEB_URL); ?>"
   data-app-store-url="<?= e(APP_STORE_URL); ?>"
+  data-play-store-url="<?= e(PLAY_STORE_URL); ?>"
   data-support-email="<?= e(SUPPORT_EMAIL); ?>"
 >
   <?php require LAYOUT_PATH . '/header.php'; ?>

@@ -7,18 +7,20 @@
 La seccion `#usar-mascotify` concentra los accesos a la app:
 - Mascotify Web: [URL_APP_WEB_MASCOTIFY]
 - App Store: [URL_APP_STORE_MASCOTIFY]
+- Play Store: [URL_PLAY_STORE_MASCOTIFY]
 
 Pendientes:
 - Reemplazar `[URL_APP_WEB_MASCOTIFY]` cuando exista la URL final de la app web.
 - Reemplazar `[URL_APP_STORE_MASCOTIFY]` cuando la app este publicada en App Store.
+- Reemplazar `[URL_PLAY_STORE_MASCOTIFY]` cuando la app este publicada en Google Play.
 - Si todavia no existe link real, mantener el estado "Proximamente".
 
 ## URLs legales
-- Politica de privacidad: [URL_PUBLICA_MASCOTIFY]/privacidad.html
-- Terminos y condiciones: [URL_PUBLICA_MASCOTIFY]/terminos.html
-- Eliminacion de cuenta y datos: [URL_PUBLICA_MASCOTIFY]/eliminacion-de-cuenta.html
-- Soporte: [URL_PUBLICA_MASCOTIFY]/soporte.html
-- Indice legal: [URL_PUBLICA_MASCOTIFY]/legal.html
+- Politica de privacidad: [URL_PUBLICA_MASCOTIFY]/privacidad
+- Terminos y condiciones: [URL_PUBLICA_MASCOTIFY]/terminos
+- Eliminacion de cuenta y datos: [URL_PUBLICA_MASCOTIFY]/eliminacion-de-cuenta
+- Soporte: [URL_PUBLICA_MASCOTIFY]/soporte
+- Indice legal: [URL_PUBLICA_MASCOTIFY]/legal
 
 ## Uso esperado en Play Console y App Store
 Estas URLs estan pensadas para:

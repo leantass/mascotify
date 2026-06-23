@@ -755,12 +755,15 @@ textarea:focus-visible {
   display: grid;
   gap: 1.25rem;
   margin-top: 1.8rem;
+  align-items: stretch;
 }
 
 .app-entry-card {
   display: grid;
+  align-content: start;
   gap: 0.85rem;
   padding: 1.6rem;
+  height: 100%;
   border-radius: var(--radius-lg);
   border: 1px solid rgba(215, 232, 233, 1);
   background: rgba(255, 255, 255, 0.95);
@@ -793,6 +796,11 @@ textarea:focus-visible {
   color: var(--accent-strong);
 }
 
+.entry-badge-android {
+  background: var(--support-soft);
+  color: #8a5a00;
+}
+
 .entry-status {
   color: var(--text);
   font-weight: 700;
@@ -800,11 +808,22 @@ textarea:focus-visible {
 
 .entry-button {
   width: fit-content;
+  margin-top: auto;
 }
 
 .app-entry-card-store .entry-button {
   border-color: rgba(215, 232, 233, 1);
   background: rgba(255, 255, 255, 0.9);
+}
+
+.app-entry-card-android {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 242, 198, 0.64));
+}
+
+.app-entry-card-android .entry-button {
+  border-color: rgba(255, 204, 51, 0.32);
+  background: rgba(255, 255, 255, 0.92);
 }
 
 .safety-layout,
@@ -1062,10 +1081,13 @@ textarea:focus-visible {
 @media (min-width: 700px) {
   .feature-strip,
   .cards-grid,
-  .app-entry-grid,
   .support-grid,
   .legal-index-grid,
   .split-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-entry-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1211,6 +1233,10 @@ textarea:focus-visible {
   }
 
   .cards-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .app-entry-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 

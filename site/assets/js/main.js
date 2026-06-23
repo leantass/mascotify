@@ -106,6 +106,7 @@ function initSmoothAnchors() {
 function initAppEntryLinks() {
   var appWebUrl = document.body.dataset.appWebUrl || "[URL_APP_WEB_MASCOTIFY]";
   var appStoreUrl = document.body.dataset.appStoreUrl || "[URL_APP_STORE_MASCOTIFY]";
+  var playStoreUrl = document.body.dataset.playStoreUrl || "[URL_PLAY_STORE_MASCOTIFY]";
   var entryLinks = document.querySelectorAll("[data-app-entry-link]");
 
   var isPlaceholderUrl = function (value) {
@@ -138,13 +139,14 @@ function initAppEntryLinks() {
 
       if (/^https?:/i.test(url)) {
         link.setAttribute("target", "_blank");
-        link.setAttribute("rel", "noreferrer");
+        link.setAttribute("rel", "noopener noreferrer");
       }
     });
   };
 
   configureExternalLinks("[data-web-app-link]", appWebUrl);
   configureExternalLinks("[data-app-store-link]", appStoreUrl);
+  configureExternalLinks("[data-play-store-link]", playStoreUrl);
 }
 
 function initDeletionForm() {

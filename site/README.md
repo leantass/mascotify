@@ -45,6 +45,14 @@ npm run watch:css
 * `/soporte`
 * `/legal`
 
+## Acceso a Mascotify
+
+La seccion `#usar-mascotify` contempla:
+
+* Mascotify Web: `[URL_APP_WEB_MASCOTIFY]`
+* App Store: `[URL_APP_STORE_MASCOTIFY]`
+* Play Store: `[URL_PLAY_STORE_MASCOTIFY]`
+
 ## Deploy cPanel
 
 Subir el contenido de `site/` al document root del dominio.
@@ -62,6 +70,7 @@ No subir:
 * confirmar dominio final
 * confirmar URL de app web
 * confirmar URL de App Store
+* confirmar URL de Play Store
 * completar email soporte
 * revision legal
 * validacion SSL/HTTPS en cPanel

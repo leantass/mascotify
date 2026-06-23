@@ -18,6 +18,7 @@ define('SITE_AUTHOR', 'Mascotify');
 define('SUPPORT_EMAIL', '[EMAIL_SOPORTE_MASCOTIFY]');
 define('APP_WEB_URL', '[URL_APP_WEB_MASCOTIFY]');
 define('APP_STORE_URL', '[URL_APP_STORE_MASCOTIFY]');
+define('PLAY_STORE_URL', '[URL_PLAY_STORE_MASCOTIFY]');
 define('ASSETS_VERSION', '20260623-php');
 define('DEFAULT_OG_IMAGE', '/assets/images/mascotify-logo-real.png');
 define('PRIMARY_THEME_COLOR', '#66CCCC');
