@@ -1,87 +1,67 @@
 # Mascotify Public Website
 
-Este micrositio estatico reune una landing publica de Mascotify y las paginas
-legales minimas necesarias para futura publicacion en stores y web.
+## Stack
 
-## Rutas disponibles
+* PHP
+* HTML
+* Tailwind CSS compilado
+* JavaScript Vanilla
+* .htaccess
 
-- `index.html`
-- `privacidad.html`
-- `terminos.html`
-- `eliminacion-de-cuenta.html`
-- `soporte.html`
-- `legal.html`
+## Arquitectura
 
-## URL publica principal
+Carpetas principales:
 
-Mientras no se confirme el dominio final, usar este placeholder unico:
+* `config`: constantes globales y bootstrap del entorno.
+* `includes/core`: helpers globales y funciones SEO.
+* `includes/layout`: head, header, navigation, footer, cookie banner y layout principal.
+* `includes/components`: piezas reutilizables de cards, secciones y accesos.
+* `includes/schema`: arrays PHP para JSON-LD.
+* `includes/views`: contenido real de cada pagina.
+* `assets`: CSS, JS, imagenes, favicon e iconos.
 
-- `[URL_PUBLICA_MASCOTIFY]`
+## Desarrollo local
 
-Debe reemplazarse antes de publicar en Play Console, App Store Connect o
-enlazarlo desde la app.
-
-## Acceso a Mascotify
-
-La seccion `#usar-mascotify` concentra los accesos a la app:
-
-- Mascotify Web: `[URL_APP_WEB_MASCOTIFY]`
-- App Store: `[URL_APP_STORE_MASCOTIFY]`
-
-Uso:
-
-- Boton "Ir a la app" en header
-- CTA principal del hero
-- Link en footer
-- Seccion comercial "Usa Mascotify" dentro de `index.html`
-
-Pendientes:
-
-- Reemplazar `[URL_APP_WEB_MASCOTIFY]` cuando exista la URL final de la app web.
-- Reemplazar `[URL_APP_STORE_MASCOTIFY]` cuando la app este publicada en App Store.
-- Si todavia no existe link real, mantener el estado "Proximamente".
-
-## URLs legales
-
-- `[URL_PUBLICA_MASCOTIFY]/privacidad.html`
-- `[URL_PUBLICA_MASCOTIFY]/terminos.html`
-- `[URL_PUBLICA_MASCOTIFY]/eliminacion-de-cuenta.html`
-- `[URL_PUBLICA_MASCOTIFY]/soporte.html`
-- `[URL_PUBLICA_MASCOTIFY]/legal.html`
-
-## Como abrir localmente
-
-Opcion simple:
-
-- Abrir `index.html` directamente en el navegador.
-
-Opcion servidor:
+Desde `site/`:
 
 ```bash
-python -m http.server 8088
+php -S localhost:8088 router.php
 ```
 
-Alternativa en Windows si `python` no esta disponible:
+CSS:
 
 ```bash
-py -m http.server 8088
+npm install
+npm run build:css
+npm run watch:css
 ```
 
-Luego abrir:
+## Rutas
 
-- `http://localhost:8088/index.html`
+* `/`
+* `/privacidad`
+* `/terminos`
+* `/eliminacion-de-cuenta`
+* `/soporte`
+* `/legal`
 
-## Pendientes antes de publicar
+## Deploy cPanel
 
-- Confirmar dominio final.
-- Completar responsable legal.
-- Completar email de soporte.
-- Hacer revision legal.
-- Revisar textos finales segun funciones reales activas.
-- Verificar que todas las URLs respondan publicamente.
-- Conectar formularios si se desea.
+Subir el contenido de `site/` al document root del dominio.
 
-## Estado de esta fase
+No subir:
 
-No hay deploy en esta fase. El objetivo es dejar la base visual, legal y
-tecnica lista para una publicacion futura.
+* `node_modules`
+* archivos temporales
+* backups locales
+* ZIPs
+* builds Flutter
+
+## Pendientes
+
+* confirmar dominio final
+* confirmar URL de app web
+* confirmar URL de App Store
+* completar email soporte
+* revision legal
+* validacion SSL/HTTPS en cPanel

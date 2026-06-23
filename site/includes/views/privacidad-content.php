@@ -1,0 +1,189 @@
+<?php
+
+declare(strict_types=1);
+?>
+<div class="legal-page">
+  <section class="legal-hero">
+    <div class="container">
+      <p class="eyebrow">Legal</p>
+      <h1>Politica de privacidad</h1>
+      <p class="lead">
+        Esta politica es una base preliminar para Mascotify. Debe revisarse y completarse
+        antes de su publicacion definitiva.
+      </p>
+      <p class="notice">
+        Este texto es una base preliminar y debe ser revisado por asesoria legal antes de publicacion definitiva.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container legal-layout">
+      <aside class="toc-card">
+        <h2>Indice</h2>
+        <nav aria-label="Indice de privacidad">
+          <a href="#introduccion">1. Introduccion</a>
+          <a href="#responsable">2. Responsable del producto</a>
+          <a href="#datos">3. Datos que podria recopilar Mascotify</a>
+          <a href="#uso">4. Para que se usan los datos</a>
+          <a href="#sensibles">5. Datos sensibles</a>
+          <a href="#ubicacion">6. Ubicacion</a>
+          <a href="#comunidad">7. Contenido de comunidad</a>
+          <a href="#terceros">8. Comparticion con terceros</a>
+          <a href="#publicidad">9. Publicidad y monetizacion</a>
+          <a href="#conservacion">10. Conservacion de datos</a>
+          <a href="#eliminacion">11. Eliminacion de cuenta y datos</a>
+          <a href="#seguridad">12. Seguridad</a>
+          <a href="#menores">13. Menores de edad</a>
+          <a href="#cambios">14. Cambios en la politica</a>
+          <a href="#contacto">15. Contacto</a>
+        </nav>
+      </aside>
+
+      <article class="legal-content">
+        <section id="introduccion">
+          <h2>1. Introduccion</h2>
+          <p>
+            Mascotify es una aplicacion en desarrollo para organizacion de perfiles de mascotas,
+            identificacion mediante QR, registros cargados por el usuario, herramientas de comunidad
+            y futuras funciones vinculadas con matching y servicios pet.
+          </p>
+          <p>
+            Esta politica explica de forma preliminar que informacion podria tratar Mascotify,
+            como podria usarla y que criterios de privacidad se proyectan para el producto.
+          </p>
+        </section>
+
+        <section id="responsable">
+          <h2>2. Responsable del producto</h2>
+          <p>Responsable: [COMPLETAR RESPONSABLE LEGAL]</p>
+          <p>Contacto: [COMPLETAR EMAIL DE CONTACTO]</p>
+          <p>Pais: Argentina</p>
+        </section>
+
+        <section id="datos">
+          <h2>3. Datos que podria recopilar Mascotify</h2>
+          <ul>
+            <li>Datos de cuenta: nombre, email e identificadores internos.</li>
+            <li>Datos de mascotas: nombre, especie, raza, edad aproximada, tamano, caracteristicas, foto o avatar.</li>
+            <li>Datos de salud o vacunas cargados por el usuario.</li>
+            <li>Datos asociados a QR seguro e identificacion de mascota.</li>
+            <li>Ubicacion aproximada si el usuario habilita esa funcion.</li>
+            <li>Contenido subido por el usuario, como clips, imagenes o publicaciones.</li>
+            <li>Datos de uso, diagnostico tecnico y seguridad.</li>
+            <li>Datos de monetizacion o publicidad solo si esas funciones se activan en el futuro.</li>
+          </ul>
+        </section>
+
+        <section id="uso">
+          <h2>4. Para que se usan los datos</h2>
+          <ul>
+            <li>Crear y administrar la cuenta del usuario.</li>
+            <li>Gestionar perfiles de mascotas.</li>
+            <li>Mostrar QR seguro y facilitar identificacion.</li>
+            <li>Ayudar en herramientas relacionadas con mascotas perdidas.</li>
+            <li>Habilitar comunidad, clips y publicaciones.</li>
+            <li>Soportar matching local o futuro dentro de la app.</li>
+            <li>Mejorar seguridad, soporte y evolucion del producto.</li>
+          </ul>
+        </section>
+
+        <section id="sensibles">
+          <h2>5. Datos sensibles</h2>
+          <p>
+            La informacion de salud o vacunas de mascotas es cargada por el usuario y tiene caracter orientativo.
+            No reemplaza evaluacion veterinaria ni asesoramiento profesional.
+          </p>
+          <p>
+            Mascotify no esta disenado para solicitar datos medicos humanos ni para tratar informacion clinica humana.
+          </p>
+        </section>
+
+        <section id="ubicacion">
+          <h2>6. Ubicacion</h2>
+          <p>
+            Cuando una funcion requiera contexto geografico, el enfoque previsto es usar zona aproximada
+            y evitar la publicacion de la direccion exacta del usuario o de su domicilio.
+          </p>
+        </section>
+
+        <section id="comunidad">
+          <h2>7. Contenido de comunidad</h2>
+          <p>
+            Cada usuario es responsable del contenido que sube a Mascotify. No debe publicar datos privados
+            de terceros, material ilegal, abusivo o informacion que pueda comprometer la seguridad de personas o mascotas.
+          </p>
+        </section>
+
+        <section id="terceros">
+          <h2>8. Comparticion con terceros</h2>
+          <p>
+            Mascotify podria apoyarse en proveedores tecnicos futuros para hosting, almacenamiento multimedia,
+            analitica, notificaciones y operacion del servicio.
+          </p>
+          <p>
+            La intencion del producto es no vender datos personales. Cualquier integracion futura debera
+            informarse y revisarse conforme a la version final del servicio.
+          </p>
+        </section>
+
+        <section id="publicidad">
+          <h2>9. Publicidad y monetizacion</h2>
+          <p>
+            El producto contempla planificacion de planes Free, Plus y Pro. Si en el futuro se habilita publicidad,
+            se buscara limitarla a ubicaciones apropiadas y no mostrar anuncios en pantallas sensibles como salud,
+            QR, privacidad, emergencias o flujos criticos.
+          </p>
+        </section>
+
+        <section id="conservacion">
+          <h2>10. Conservacion de datos</h2>
+          <p>
+            Los datos se conservaran durante el tiempo necesario para operar la cuenta, sostener el servicio,
+            atender soporte, cumplir obligaciones legales o gestionar resguardos tecnicos razonables.
+          </p>
+        </section>
+
+        <section id="eliminacion">
+          <h2>11. Eliminacion de cuenta y datos</h2>
+          <p>
+            Mascotify preve un mecanismo de solicitud de eliminacion de cuenta y datos.
+            La version actual del micrositio lo documenta en <a href="/eliminacion-de-cuenta">Eliminacion de cuenta y datos</a>.
+          </p>
+        </section>
+
+        <section id="seguridad">
+          <h2>12. Seguridad</h2>
+          <p>
+            Se proyecta aplicar medidas tecnicas y organizativas razonables para proteger la informacion,
+            reducir exposicion innecesaria y responder a incidentes de seguridad de forma apropiada.
+          </p>
+        </section>
+
+        <section id="menores">
+          <h2>13. Menores de edad</h2>
+          <p>
+            Si el producto llega a ser utilizado por menores, su uso deberia realizarse bajo supervision
+            de una persona adulta responsable y con los resguardos legales correspondientes.
+          </p>
+        </section>
+
+        <section id="cambios">
+          <h2>14. Cambios en la politica</h2>
+          <p>
+            Esta politica puede actualizarse a medida que Mascotify evolucione, incorpore funciones reales
+            o defina proveedores y operaciones efectivas.
+          </p>
+        </section>
+
+        <section id="contacto">
+          <h2>15. Contacto</h2>
+          <p>
+            Para consultas sobre privacidad, completar y usar el contacto definitivo:
+            [COMPLETAR EMAIL DE CONTACTO].
+          </p>
+        </section>
+      </article>
+    </div>
+  </section>
+</div>

@@ -32,6 +32,12 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+node_modules/
+site/node_modules/
+site/storage/logs/*
+!site/storage/logs/.gitkeep
+site/_legacy_static_reference/
+*.zip
 
 # Symbolication related
 app.*.symbols

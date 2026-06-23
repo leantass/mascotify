@@ -2,7 +2,12 @@
   "name": "mascotify-public-website",
   "private": true,
   "scripts": {
-    "start": "python -m http.server 8088",
-    "serve": "python -m http.server 8088"
+    "build:css": "npx @tailwindcss/cli -i ./assets/css/input.css -o ./assets/css/styles.css --minify",
+    "watch:css": "npx @tailwindcss/cli -i ./assets/css/input.css -o ./assets/css/styles.css --watch",
+    "serve": "php -S localhost:8088 router.php"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "latest",
+    "tailwindcss": "latest"
   }
 }
