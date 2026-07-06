@@ -3,7 +3,7 @@
 ## Identidad de app
 
 - [ ] Confirmar nombre visible final: `Mascotify`.
-- [ ] Confirmar package/applicationId final: `com.mascotify.app`.
+- [ ] Confirmar package/applicationId final: `com.leantass.mascotify`.
 - [ ] Confirmar versionName.
 - [ ] Confirmar versionCode.
 - [ ] Confirmar iconos finales en todas las densidades.

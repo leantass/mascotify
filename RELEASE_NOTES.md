@@ -4,6 +4,17 @@ Fecha: 2026-06-12
 
 Esta beta interna esta pensada para validacion en telefono Android y web local antes de cualquier publicacion publica.
 
+## Version 1.0.0+7
+
+- Android package/applicationId alineado con la ficha existente de Play Console:
+  `com.leantass.mascotify`.
+- Namespace Android actualizado para que el manifest release y los providers de
+  librerias hereden el package correcto.
+- Authorities generadas por AndroidX Startup/Firebase corregidas al nuevo
+  package final de Android.
+- AAB release nuevo para Internal Testing requerido antes de volver a subir a
+  Play Console.
+
 ## Version 1.0.0+6
 
 - Hardening defensivo local/controlado: auditoria de secretos, hardcodes,

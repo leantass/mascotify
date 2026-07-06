@@ -11,16 +11,16 @@ Preparar Mascotify para una futura publicacion Android sin publicar todavia, sin
 - App module: `android/app/build.gradle.kts`.
 - Manifest principal: `android/app/src/main/AndroidManifest.xml`.
 - Nombre visible actual: `Mascotify`.
-- Package/applicationId actual: `com.mascotify.app`.
-- Namespace Android actual: `com.mascotify.app`.
-- Version actual desde `pubspec.yaml`: `1.0.0+1`.
+- Package/applicationId actual: `com.leantass.mascotify`.
+- Namespace Android actual: `com.leantass.mascotify`.
+- Version actual desde `pubspec.yaml`: `1.0.0+7`.
 - `versionName`: `1.0.0`.
-- `versionCode`: `1`.
+- `versionCode`: `7`.
 - `compileSdk`: toma `flutter.compileSdkVersion` (Flutter local: API 36).
 - `targetSdk`: toma `flutter.targetSdkVersion` (Flutter local: API 36).
 - `minSdk`: toma `flutter.minSdkVersion`.
 - Iconos: existen `ic_launcher.png` en densidades `mdpi`, `hdpi`, `xhdpi`, `xxhdpi` y `xxxhdpi`.
-- Signing release: preparado de forma condicional con `android/key.properties`, pero no hay `key.properties` presente.
+- Signing release: preparado de forma condicional con `android/key.properties` local completo y una keystore fuera de Git.
 - Plantilla local: `android/key.properties.example`.
 - Secretos: `.gitignore` excluye `key.properties`, `*.jks` y `*.keystore`.
 
@@ -144,7 +144,7 @@ docs/mobile/play_store_checklist.md
 1. Configurar Android SDK local y validar `flutter doctor`.
 2. Probar `tooling\mobile\android_release_check.bat`.
 3. Probar en emulador y dispositivo fisico.
-4. Definir `applicationId` definitivo antes de Play Store.
+4. Mantener `applicationId` definitivo de Play Store: `com.leantass.mascotify`.
 5. Preparar iconos finales.
 6. Crear keystore real fuera del repositorio.
 7. Configurar signing release con secretos seguros.

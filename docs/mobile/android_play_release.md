@@ -9,11 +9,11 @@ La app actual sigue funcionando como demo/local mientras no exista backend real 
 ## Estado actual auditado
 
 - App name visible: `Mascotify`.
-- Package/applicationId: `com.mascotify.app`.
-- Namespace Android: `com.mascotify.app`.
-- Version actual: `1.0.0+1`.
+- Package/applicationId: `com.leantass.mascotify`.
+- Namespace Android: `com.leantass.mascotify`.
+- Version actual: `1.0.0+7`.
 - `versionName`: `1.0.0`.
-- `versionCode`: `1`.
+- `versionCode`: `7`.
 - `compileSdk`: `flutter.compileSdkVersion` (Flutter local: API 36).
 - `targetSdk`: `flutter.targetSdkVersion` (Flutter local: API 36).
 - `minSdk`: `flutter.minSdkVersion`.
@@ -32,7 +32,7 @@ Referencia oficial: https://developer.android.com/google/play/requirements/targe
 La version Android sale de `pubspec.yaml`:
 
 ```yaml
-version: 1.0.0+1
+version: 1.0.0+7
 ```
 
 - `versionName`: parte visible para usuarios (`1.0.0`).
@@ -112,7 +112,7 @@ build\app\outputs\bundle\release\app-release.aab
 ## Subir a Play Console
 
 1. Crear la app en Google Play Console.
-2. Confirmar package id: `com.mascotify.app`.
+2. Confirmar package id: `com.leantass.mascotify`.
 3. Completar ficha de Play Store.
 4. Completar politica de privacidad.
 5. Completar Data Safety.

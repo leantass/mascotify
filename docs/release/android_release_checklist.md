@@ -2,7 +2,7 @@
 
 ## Proyecto
 
-- [ ] Confirmar `applicationId`: `com.mascotify.app`.
+- [ ] Confirmar `applicationId`: `com.leantass.mascotify`.
 - [ ] Confirmar nombre visible: `Mascotify`.
 - [ ] Confirmar version en `pubspec.yaml`.
 - [ ] Incrementar `versionCode` antes de cada subida a Play.

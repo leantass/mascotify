@@ -20,12 +20,12 @@ Estado observado:
 
 - Proyecto Android: `android/`.
 - Gradle: Kotlin DSL en `android/app/build.gradle.kts`.
-- `applicationId`: `com.mascotify.app`.
-- `namespace`: `com.mascotify.app`.
+- `applicationId`: `com.leantass.mascotify`.
+- `namespace`: `com.leantass.mascotify`.
 - Nombre visible: `Mascotify`.
-- Version Flutter: `1.0.0+1` desde `pubspec.yaml`.
+- Version Flutter: `1.0.0+7` desde `pubspec.yaml`.
 - `versionName`: `1.0.0`.
-- `versionCode`: `1`.
+- `versionCode`: `7`.
 - `compileSdk`, `targetSdk` y `minSdk`: toman los valores de Flutter.
 - Manifest principal: no declara permisos funcionales explicitos.
 - Debug/profile: declaran `INTERNET` para tooling Flutter.

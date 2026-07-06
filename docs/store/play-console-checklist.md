@@ -2,8 +2,8 @@
 
 ## Preparacion de app
 
-- [ ] Crear app en Google Play Console.
-- [ ] Confirmar package name `com.mascotify.app`.
+- [ ] Usar la app existente en Google Play Console.
+- [ ] Confirmar package name `com.leantass.mascotify`.
 - [ ] Configurar App signing by Google Play.
 - [ ] Definir upload key y guardar keystore fuera del repo.
 

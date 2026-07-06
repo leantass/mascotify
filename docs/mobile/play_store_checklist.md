@@ -3,8 +3,8 @@
 ## Cuenta y app
 
 - [ ] Cuenta Google Play Console activa.
-- [ ] App creada en Play Console.
-- [ ] Package/applicationId confirmado: `com.mascotify.app`.
+- [ ] App existente en Play Console confirmada.
+- [ ] Package/applicationId confirmado: `com.leantass.mascotify`.
 - [ ] Nombre visible confirmado: `Mascotify`.
 - [ ] VersionName revisado.
 - [ ] VersionCode incrementado para la subida.
