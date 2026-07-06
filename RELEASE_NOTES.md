@@ -4,6 +4,12 @@ Fecha: 2026-06-12
 
 Esta beta interna esta pensada para validacion en telefono Android y web local antes de cualquier publicacion publica.
 
+## Version 1.0.0+8
+
+- Nuevo build para Play Console Closed Testing.
+- VersionCode incrementado porque Play ya registro el codigo 7.
+- Package name mantenido: `com.leantass.mascotify`.
+
 ## Version 1.0.0+7
 
 - Android package/applicationId alineado con la ficha existente de Play Console:
