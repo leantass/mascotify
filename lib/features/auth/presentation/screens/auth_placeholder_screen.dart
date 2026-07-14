@@ -5,6 +5,7 @@ import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../explore/presentation/screens/professionals_screen.dart';
 import '../../data/local_auth_models.dart';
 import '../auth_session_controller.dart';
 
@@ -86,9 +87,7 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                   isBusy: auth.isBusy,
                   onFamilyDemo: () =>
                       _submitDemoLogin(email: LocalAuthSeedData.familyEmail),
-                  onProfessionalDemo: () => _submitDemoLogin(
-                    email: LocalAuthSeedData.professionalEmail,
-                  ),
+                  onProfessionalDemo: () => _openProfessionalBetaPreview(),
                 );
 
                 return ListView(
@@ -140,9 +139,7 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                 isBusy: auth.isBusy,
                 onFamilyDemo: () =>
                     _submitDemoLogin(email: LocalAuthSeedData.familyEmail),
-                onProfessionalDemo: () => _submitDemoLogin(
-                  email: LocalAuthSeedData.professionalEmail,
-                ),
+                onProfessionalDemo: () => _openProfessionalBetaPreview(),
               );
               Widget buildRightUtilityColumn() {
                 return Column(
@@ -405,7 +402,15 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                             option: option,
                             isSelected:
                                 _registerExperience == option.experience,
+                            isLockedBeta:
+                                option.experience ==
+                                AccountExperience.professional,
                             onTap: () {
+                              if (option.experience ==
+                                  AccountExperience.professional) {
+                                _openProfessionalBetaPreview();
+                                return;
+                              }
                               setState(() {
                                 _registerExperience = option.experience;
                               });
@@ -426,7 +431,15 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                             option: option,
                             isSelected:
                                 _registerExperience == option.experience,
+                            isLockedBeta:
+                                option.experience ==
+                                AccountExperience.professional,
                             onTap: () {
+                              if (option.experience ==
+                                  AccountExperience.professional) {
+                                _openProfessionalBetaPreview();
+                                return;
+                              }
                               setState(() {
                                 _registerExperience = option.experience;
                               });
@@ -443,7 +456,7 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
                 googleButtonLabel: 'Google',
                 onGoogleTap: auth.isBusy
                     ? null
-                    : () => _submitGoogleAuth(_registerExperience),
+                    : () => _submitGoogleAuth(AccountExperience.family),
                 primaryButton: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -481,7 +494,7 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
       email: _registerEmailController.text,
       city: _registerCityController.text,
       password: _registerPasswordController.text,
-      experience: _registerExperience,
+      experience: AccountExperience.family,
     );
 
     if (!mounted) return;
@@ -506,6 +519,12 @@ class _AuthPlaceholderScreenState extends State<AuthPlaceholderScreen> {
     _loginEmailController.text = email;
     _loginPasswordController.text = LocalAuthSeedData.demoPassword;
     await _submitLogin();
+  }
+
+  void _openProfessionalBetaPreview() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const ProfessionalsScreen()),
+    );
   }
 
   void _setMode(bool value) {
@@ -1126,7 +1145,7 @@ class _DemoPanel extends StatelessWidget {
                               )
                             : null,
                         onPressed: isBusy ? null : onProfessionalDemo,
-                        child: const Text('Demo profesional'),
+                        child: const Text('Preview profesional beta'),
                       ),
                     ),
                   ],
@@ -1155,7 +1174,7 @@ class _DemoPanel extends StatelessWidget {
                             )
                           : null,
                       onPressed: isBusy ? null : onProfessionalDemo,
-                      child: const Text('Demo profesional'),
+                      child: const Text('Preview profesional beta'),
                     ),
                   ),
                 ],
@@ -1198,12 +1217,14 @@ class _ExperienceChoiceCard extends StatelessWidget {
     required this.option,
     required this.isSelected,
     required this.onTap,
+    this.isLockedBeta = false,
     this.isDense = false,
   });
 
   final ExperienceOption option;
   final bool isSelected;
   final VoidCallback onTap;
+  final bool isLockedBeta;
   final bool isDense;
 
   @override
@@ -1235,15 +1256,43 @@ class _ExperienceChoiceCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  option.title,
-                  maxLines: isCompactCard ? 2 : null,
-                  overflow: isCompactCard
-                      ? TextOverflow.ellipsis
-                      : TextOverflow.visible,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(height: titleHeight),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        option.title,
+                        maxLines: isCompactCard ? 2 : null,
+                        overflow: isCompactCard
+                            ? TextOverflow.ellipsis
+                            : TextOverflow.visible,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleMedium?.copyWith(height: titleHeight),
+                      ),
+                    ),
+                    if (isLockedBeta) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.dark,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          'Beta',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 SizedBox(height: subtitleSpacing),
                 Text(
@@ -1309,6 +1358,7 @@ class _AuthField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
@@ -1320,10 +1370,18 @@ class _AuthField extends StatelessWidget {
           vertical: isDense ? 8 : 16,
         ),
         filled: true,
-        fillColor: AppColors.surfaceAlt,
+        fillColor: theme.inputDecorationTheme.fillColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(color: theme.colorScheme.primary),
         ),
       ),
     );

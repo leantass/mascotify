@@ -6,6 +6,7 @@ import '../../../shared/data/account_identity_mock_data.dart';
 import '../../../shared/models/account_identity_models.dart';
 import 'google_auth_service.dart';
 import 'local_auth_models.dart';
+import 'local_password_hasher.dart';
 
 class AuthOperationResult {
   const AuthOperationResult.success({
@@ -49,7 +50,7 @@ class LocalAuthRepository {
       _buildSeededAccount(
         account: AccountIdentityMockData.professionalAccount,
         password: LocalAuthSeedData.demoPassword,
-        lastActiveExperience: AccountExperience.professional,
+        lastActiveExperience: AccountExperience.family,
         onboardingCompleted: true,
       ),
     ];
@@ -68,9 +69,13 @@ class LocalAuthRepository {
       return null;
     }
 
-    final resolvedExperience =
-        account.supportsExperience(session.activeExperience)
-        ? session.activeExperience
+    final requestedExperience =
+        session.activeExperience == AccountExperience.professional &&
+            account.supportsExperience(AccountExperience.family)
+        ? AccountExperience.family
+        : session.activeExperience;
+    final resolvedExperience = account.supportsExperience(requestedExperience)
+        ? requestedExperience
         : account.lastActiveExperience;
 
     final nextSession = StoredAuthSession(
@@ -90,7 +95,6 @@ class LocalAuthRepository {
     required String password,
   }) async {
     final normalizedEmail = normalizeEmail(email);
-    final hashedPassword = hashPassword(password);
     final users = _loadUsers();
 
     final account = users
@@ -102,8 +106,24 @@ class LocalAuthRepository {
       );
     }
 
-    if (account.passwordHash != hashedPassword) {
+    if (!LocalPasswordHasher.verifyPassword(
+      rawPassword: password,
+      salt: account.email,
+      storedHash: account.passwordHash,
+    )) {
       return const AuthOperationResult.failure('La contraseña no coincide.');
+    }
+
+    if (LocalPasswordHasher.needsRehash(account.passwordHash)) {
+      final accountIndex = users.indexOf(account);
+      final upgradedUsers = [...users]
+        ..[accountIndex] = account.copyWith(
+          passwordHash: LocalPasswordHasher.hashPassword(
+            password,
+            salt: account.email,
+          ),
+        );
+      await _saveUsers(upgradedUsers);
     }
 
     final session = StoredAuthSession(
@@ -150,20 +170,27 @@ class LocalAuthRepository {
       );
     }
 
+    final effectiveExperience = experience == AccountExperience.professional
+        ? AccountExperience.family
+        : experience;
+
     final account = StoredAuthAccount(
       id: 'local-${DateTime.now().microsecondsSinceEpoch}',
       ownerName: trimmedName,
       email: normalizedEmail,
-      passwordHash: hashPassword(trimmedPassword),
-      planName: experience == AccountExperience.family
+      passwordHash: LocalPasswordHasher.hashPassword(
+        trimmedPassword,
+        salt: normalizedEmail,
+      ),
+      planName: effectiveExperience == AccountExperience.family
           ? 'Mascotify Plus'
           : 'Mascotify Pro',
       city: trimmedCity,
       memberSince: _buildMemberSinceLabel(DateTime.now()),
-      availableExperiences: <AccountExperience>[experience],
-      lastActiveExperience: experience,
+      availableExperiences: <AccountExperience>[effectiveExperience],
+      lastActiveExperience: effectiveExperience,
       onboardingCompleted: false,
-      familyProfile: experience == AccountExperience.family
+      familyProfile: effectiveExperience == AccountExperience.family
           ? StoredFamilyProfile(
               householdName: 'Hogar de ${_firstName(trimmedName)}',
               petsSummaryLabel: 'Todavía no cargaste mascotas',
@@ -178,7 +205,7 @@ class LocalAuthRepository {
               ],
             )
           : null,
-      professionalProfile: experience == AccountExperience.professional
+      professionalProfile: effectiveExperience == AccountExperience.professional
           ? StoredProfessionalProfile(
               businessName: trimmedName,
               category: 'Perfil profesional inicial',
@@ -204,7 +231,7 @@ class LocalAuthRepository {
     final updatedUsers = <StoredAuthAccount>[...users, account];
     final session = StoredAuthSession(
       userId: account.id,
-      activeExperience: experience,
+      activeExperience: effectiveExperience,
     );
 
     await _saveUsers(updatedUsers);
@@ -240,7 +267,9 @@ class LocalAuthRepository {
       return AuthOperationResult.success(account: account, session: session);
     }
 
-    final experience = fallbackExperience;
+    final experience = fallbackExperience == AccountExperience.professional
+        ? AccountExperience.family
+        : fallbackExperience;
     final ownerName = profile.displayName.trim().isEmpty
         ? normalizedEmail.split('@').first
         : profile.displayName.trim();
@@ -248,7 +277,10 @@ class LocalAuthRepository {
       id: _googleAccountId(profile.uid),
       ownerName: ownerName,
       email: normalizedEmail,
-      passwordHash: hashPassword('firebase-google:${profile.uid}'),
+      passwordHash: LocalPasswordHasher.hashPassword(
+        'firebase-google:${profile.uid}',
+        salt: normalizedEmail,
+      ),
       planName: experience == AccountExperience.family
           ? 'Mascotify Plus'
           : 'Mascotify Pro',
@@ -348,6 +380,12 @@ class LocalAuthRepository {
     }
 
     final account = users[index];
+    if (experience == AccountExperience.professional) {
+      return const AuthOperationResult.failure(
+        'Profesionales pet esta en beta. La experiencia activa hoy es familiar.',
+      );
+    }
+
     if (!account.supportsExperience(experience)) {
       return const AuthOperationResult.failure(
         'Ese perfil todavía no está disponible en esta cuenta.',
@@ -383,7 +421,10 @@ class LocalAuthRepository {
       id: account.id,
       ownerName: account.ownerName,
       email: normalizeEmail(account.email),
-      passwordHash: hashPassword(password),
+      passwordHash: LocalPasswordHasher.hashPassword(
+        password,
+        salt: normalizeEmail(account.email),
+      ),
       planName: account.planName,
       city: account.city,
       memberSince: account.memberSince,

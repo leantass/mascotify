@@ -92,6 +92,13 @@ La idea es construir un ecosistema real, claro, premium y util.
 - ✅ Autoplay del clip visible.
 - ✅ Scroll vertical sin flechas.
 - ✅ Fallback seguro si falla video.
+- ✅ Videos oficiales propios de Mascotify para Clips iniciales.
+- ✅ Clips starter sin copyright externo.
+- ✅ Bloopers reales delegados a uploads de usuarios.
+- ✅ Loader de huella para carga.
+- ⏳ Upload real de usuarios pendiente.
+- ⏳ Moderacion de clips reales pendiente.
+- ⏳ Feed online curado pendiente si se decide usar fuentes licenciadas.
 - Viewer preparado para videos asset.
 - Contenido educativo general.
 - Variedad de especies y categorias.
@@ -250,6 +257,21 @@ Volver mas potente la comunidad experta:
 ---
 
 ## Historial de hitos
+
+### Hitos Mascotify 2026-06-11
+
+- Hecho: loader huellita para carga/offline.
+- Hecho: limpieza visual y reduccion de textos en pantallas principales.
+- Hecho: Ayuda en Configuracion.
+- Hecho: seccion Matching en navegacion.
+- Hecho: Matching local/demo por mascota, zona y compatibilidad.
+- Hecho: Clips viewer con UI proporcional.
+- Hecho: barra de reproduccion en Clips.
+- Hecho: videos oficiales V3 con jingles originales.
+- Pendiente: backend real para Matching.
+- Pendiente: consentimiento/privacidad Matching produccion.
+- Pendiente: chat/solicitud de contacto para matches.
+- Pendiente: upload real de clips de usuarios.
 
 | Fecha | Hito | Commit/PR | Estado | Observaciones |
 | --- | --- | --- | --- | --- |

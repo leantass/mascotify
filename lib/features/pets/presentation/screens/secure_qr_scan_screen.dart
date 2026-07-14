@@ -478,6 +478,7 @@ class _QrField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return TextField(
       key: fieldKey,
       controller: controller,
@@ -485,8 +486,19 @@ class _QrField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: AppColors.surfaceAlt,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
+        fillColor: theme.inputDecorationTheme.fillColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(color: theme.colorScheme.primary),
+        ),
       ),
     );
   }

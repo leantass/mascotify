@@ -29,7 +29,7 @@ val hasReleaseSigning = releaseSigningFile.exists() &&
     rootProject.file(releaseStoreFilePath).exists()
 
 android {
-    namespace = "com.mascotify.app"
+    namespace = "com.leantass.mascotify"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -57,7 +57,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.mascotify.app"
+        applicationId = "com.leantass.mascotify"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

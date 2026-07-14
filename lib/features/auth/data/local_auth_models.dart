@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import '../../../shared/models/account_identity_models.dart';
 import '../../../shared/models/app_user.dart';
 
@@ -331,19 +329,4 @@ AccountExperience accountExperienceFromName(String rawValue) {
 
 String normalizeEmail(String value) {
   return value.trim().toLowerCase();
-}
-
-String hashPassword(String rawPassword) {
-  final offsetBasis = BigInt.parse('cbf29ce484222325', radix: 16);
-  final prime = BigInt.parse('100000001b3', radix: 16);
-  final mask = BigInt.parse('ffffffffffffffff', radix: 16);
-  final bytes = utf8.encode('mascotify-local-auth::$rawPassword');
-
-  var hash = offsetBasis;
-  for (final byte in bytes) {
-    hash ^= BigInt.from(byte);
-    hash = (hash * prime) & mask;
-  }
-
-  return hash.toRadixString(16).padLeft(16, '0');
 }

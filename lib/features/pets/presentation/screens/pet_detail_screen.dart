@@ -9,6 +9,9 @@ import '../../../../shared/models/pet_vaccine.dart';
 import '../../../../shared/models/report_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 import 'pet_health_screen.dart';
 import 'qr_scan_preview_screen.dart';
 import 'qr_traceability_screen.dart';
@@ -43,8 +46,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
               const SizedBox(height: 16),
               _SectionCard(
                 title: 'Identidad',
-                subtitle:
-                    'Base del perfil digital y estado general del registro.',
+                subtitle: 'Datos principales del perfil.',
                 icon: Icons.badge_outlined,
                 accentColor: AppColors.primarySoft,
                 children: [
@@ -58,8 +60,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
               const SizedBox(height: 16),
               _SectionCard(
                 title: 'Documentación',
-                subtitle:
-                    'Preparada para vacunas, certificados e historial base.',
+                subtitle: 'Estado de registros cargados.',
                 icon: Icons.description_outlined,
                 accentColor: AppColors.supportSoft,
                 children: [
@@ -85,8 +86,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
               const SizedBox(height: 16),
               _SectionCard(
                 title: 'Acciones rápidas',
-                subtitle:
-                    'Atajos listos para futuras operaciones del producto.',
+                subtitle: 'Atajos del perfil.',
                 icon: Icons.flash_on_outlined,
                 accentColor: AppColors.primarySoft,
                 children: [
@@ -98,6 +98,11 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
                         .toList(),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              const ContextualHelpLink(
+                topic: HelpTopic.petProfile,
+                label: 'Ver ayuda sobre Perfil de mascota',
               ),
             ],
           ),
@@ -121,10 +126,15 @@ class _PetHeroCard extends StatelessWidget {
         width: 76,
         height: 76,
         decoration: BoxDecoration(
-          color: AppColors.dark,
+          color: mascotifySurfaceTint(context),
           borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: mascotifyBorder(context)),
         ),
-        child: const Icon(Icons.pets_rounded, color: Colors.white, size: 36),
+        child: Icon(
+          Icons.pets_rounded,
+          color: mascotifyPrimaryText(context),
+          size: 36,
+        ),
       );
     }
 
@@ -132,13 +142,14 @@ class _PetHeroCard extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.supportSoft,
+          color: mascotifyTone(context, AppColors.supportSoft),
           borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: mascotifyBorder(context)),
         ),
         child: Text(
           pet.status,
           style: textTheme.bodyMedium?.copyWith(
-            color: AppColors.textPrimary,
+            color: mascotifyPrimaryText(context),
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -150,15 +161,15 @@ class _PetHeroCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(pet.colorHex),
-            AppColors.surface,
-            AppColors.primarySoft,
+            mascotifyTone(context, Color(pet.colorHex)),
+            mascotifySurface(context),
+            mascotifyTone(context, AppColors.primarySoft),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,7 +198,7 @@ class _PetHeroCard extends StatelessWidget {
           Text(
             '${pet.species} - ${pet.breed}',
             style: textTheme.bodyLarge?.copyWith(
-              color: AppColors.textSecondary,
+              color: mascotifySecondaryText(context),
             ),
           ),
           const SizedBox(height: 18),
@@ -831,14 +842,14 @@ class _QrEmptyStateCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         text,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           height: 1.45,
         ),
       ),
@@ -862,17 +873,18 @@ class _SocialStatTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color,
+        color: mascotifyTone(context, color),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: MascotifyPalette.of(context).textMuted,
+            ),
           ),
           const SizedBox(height: 6),
           Text(value, style: Theme.of(context).textTheme.titleMedium),
@@ -893,8 +905,11 @@ class _MomentCard extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 108),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.surfaceAlt, AppColors.primarySoft],
+        gradient: LinearGradient(
+          colors: [
+            mascotifySurfaceAlt(context),
+            mascotifyTone(context, AppColors.primarySoft),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -907,12 +922,13 @@ class _MomentCard extends StatelessWidget {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: mascotifySurfaceTint(context),
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: mascotifyBorder(context)),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.photo_library_outlined,
-              color: AppColors.primaryDeep,
+              color: Theme.of(context).colorScheme.primary,
               size: 18,
             ),
           ),
@@ -934,13 +950,14 @@ class _ProfileTagChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.accentSoft,
+        color: mascotifyTone(context, AppColors.accentSoft),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.accentDeep,
+          color: Theme.of(context).colorScheme.secondary,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -958,14 +975,14 @@ class _PreferenceChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -984,13 +1001,14 @@ class _MatchingPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: mascotifyTone(context, backgroundColor),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -1009,9 +1027,9 @@ class _MatchingSignalTile extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1020,12 +1038,13 @@ class _MatchingSignalTile extends StatelessWidget {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              color: AppColors.primarySoft,
+              color: mascotifyTone(context, AppColors.primarySoft),
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: mascotifyBorder(context)),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.favorite_border_rounded,
-              color: AppColors.textPrimary,
+              color: mascotifyPrimaryText(context),
               size: 18,
             ),
           ),
@@ -1034,7 +1053,7 @@ class _MatchingSignalTile extends StatelessWidget {
             child: Text(
               text,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textPrimary,
+                color: mascotifyPrimaryText(context),
                 height: 1.45,
               ),
             ),

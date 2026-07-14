@@ -43,7 +43,7 @@ void main() {
     expect(AppEnvironment.isDemoLocal, isTrue);
   });
 
-  testWidgets('demo professional login keeps working in demo/local mode', (
+  testWidgets('professional beta preview keeps demo/local mode visible', (
     tester,
   ) async {
     setDesktopViewport(tester);
@@ -51,10 +51,11 @@ void main() {
 
     await tester.pumpWidget(session.buildApp());
     await tester.pumpAndSettle();
-    await _tapVisibleText(tester, 'Demo profesional');
+    await _tapVisibleText(tester, 'Preview profesional beta');
 
-    expect(find.text('Inicio'), findsOneWidget);
-    expect(find.text('Modo profesional'), findsWidgets);
+    expect(session.controller.isAuthenticated, isFalse);
+    expect(find.text('Profesionales pet beta'), findsWidgets);
+    expect(find.text('Modo profesional'), findsNothing);
     expect(AppEnvironment.isDemoLocal, isTrue);
   });
 

@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../test_helpers.dart';
 
 void main() {
-  testWidgets('demo professional login opens the professional experience', (
+  testWidgets('professional demo opens beta preview without logging in', (
     tester,
   ) async {
     setDesktopViewport(tester);
@@ -12,14 +12,15 @@ void main() {
     await tester.pumpWidget(session.buildApp());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Demo profesional'));
+    await tester.tap(find.text('Preview profesional beta'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Iniciar sesión'), findsNothing);
-    expect(find.text('Inicio'), findsOneWidget);
-    expect(find.text('Servicios'), findsWidgets);
-    expect(find.text('Explorar'), findsOneWidget);
-    expect(find.text('Perfil'), findsOneWidget);
-    expect(find.text('Modo profesional'), findsWidgets);
+    expect(session.controller.isAuthenticated, isFalse);
+    expect(find.text('Profesionales pet beta'), findsWidgets);
+    expect(find.text('Beta'), findsWidgets);
+    expect(find.textContaining('Sin agenda real'), findsWidgets);
+    await tester.scrollUntilVisible(find.textContaining('No se pueden'), 500);
+    expect(find.textContaining('No se pueden cargar datos'), findsOneWidget);
+    expect(find.text('Modo profesional'), findsNothing);
   });
 }

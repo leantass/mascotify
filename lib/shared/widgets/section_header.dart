@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
+import '../../theme/app_theme.dart';
 
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
@@ -18,6 +18,8 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final palette = MascotifyPalette.of(context);
     final textTheme = Theme.of(context).textTheme;
 
     return Row(
@@ -34,13 +36,14 @@ class SectionHeader extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.accentSoft,
+                    color: palette.accentSoft,
                     borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: colorScheme.outlineVariant),
                   ),
                   child: Text(
                     eyebrow!,
                     style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.accentDeep,
+                      color: colorScheme.onSurface,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -52,7 +55,7 @@ class SectionHeader extends StatelessWidget {
               Text(
                 subtitle,
                 style: textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],

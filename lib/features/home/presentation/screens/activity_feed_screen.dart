@@ -7,6 +7,9 @@ import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/ecosystem_activity_feed_item.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 
 class ActivityFeedScreen extends StatefulWidget {
   const ActivityFeedScreen({super.key});
@@ -67,7 +70,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Eventos locales de mascotas, mensajes, social, QR y notificaciones reunidos para esta cuenta.',
+                        'Eventos de la cuenta en un solo lugar.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 18),
@@ -100,6 +103,12 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                             ),
                           ),
                         ),
+                      const SizedBox(height: 6),
+                      const ContextualHelpLink(
+                        topic: HelpTopic.activity,
+                        label: 'Ver ayuda sobre Actividad',
+                        compact: true,
+                      ),
                     ],
                   ),
                 ),
@@ -284,14 +293,18 @@ class _FilterChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.dark : Colors.white,
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary
+              : mascotifySurfaceAlt(context),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: mascotifyBorder(context)),
         ),
         child: Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: isSelected ? Colors.white : AppColors.textPrimary,
+            color: isSelected
+                ? Theme.of(context).colorScheme.onPrimary
+                : mascotifyPrimaryText(context),
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -318,17 +331,17 @@ class _ActivityHero extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [
-            AppColors.primarySoft,
-            AppColors.surface,
-            AppColors.supportSoft,
+            mascotifyTone(context, AppColors.primarySoft),
+            mascotifySurface(context),
+            mascotifyTone(context, AppColors.supportSoft),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,13 +349,13 @@ class _ActivityHero extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.dark,
+              color: mascotifySurfaceTint(context),
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
               'Pulso del ecosistema',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white,
+                color: mascotifyPrimaryText(context),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -355,9 +368,9 @@ class _ActivityHero extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'Una línea de tiempo local para volver rápido a mascotas, mensajes, social y notificaciones importantes.',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: mascotifySecondaryText(context),
+            ),
           ),
           const SizedBox(height: 18),
           ResponsiveWrapGrid(
@@ -387,14 +400,14 @@ class _EmptyActivityState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         'Todavia no hay actividad en esta cuenta. Cuando agregues mascotas, envies mensajes o recibas notificaciones, el feed va a mostrar esos eventos aca.',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           height: 1.45,
         ),
       ),
@@ -413,9 +426,9 @@ class _FilteredEmptyState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,7 +441,7 @@ class _FilteredEmptyState extends StatelessWidget {
           Text(
             'Probá con otra búsqueda o volvé a ver todo el feed.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
+              color: mascotifyPrimaryText(context),
               height: 1.45,
             ),
           ),
@@ -448,7 +461,7 @@ class _ActivityFeedTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _colorFor(item.type);
+    final color = _colorFor(context, item.type);
 
     return Material(
       color: Colors.transparent,
@@ -459,9 +472,9 @@ class _ActivityFeedTile extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surfaceAlt,
+            color: mascotifySurfaceAlt(context),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: mascotifyBorder(context)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -473,7 +486,10 @@ class _ActivityFeedTile extends StatelessWidget {
                   color: color,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(_iconFor(item.type), color: AppColors.textPrimary),
+                child: Icon(
+                  _iconFor(item.type),
+                  color: mascotifyPrimaryText(context),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -497,7 +513,7 @@ class _ActivityFeedTile extends StatelessWidget {
                     Text(
                       item.description,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textPrimary,
+                        color: mascotifyPrimaryText(context),
                         height: 1.45,
                       ),
                     ),
@@ -505,9 +521,9 @@ class _ActivityFeedTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              const Icon(
+              Icon(
                 Icons.chevron_right_rounded,
-                color: AppColors.textMuted,
+                color: MascotifyPalette.of(context).textMuted,
               ),
             ],
           ),
@@ -533,18 +549,18 @@ class _ActivityFeedTile extends StatelessWidget {
     }
   }
 
-  Color _colorFor(EcosystemActivityFeedType type) {
+  Color _colorFor(BuildContext context, EcosystemActivityFeedType type) {
     switch (type) {
       case EcosystemActivityFeedType.message:
       case EcosystemActivityFeedType.social:
-        return AppColors.accentSoft;
+        return mascotifyTone(context, AppColors.accentSoft);
       case EcosystemActivityFeedType.qr:
       case EcosystemActivityFeedType.pet:
-        return AppColors.primarySoft;
+        return mascotifyTone(context, AppColors.primarySoft);
       case EcosystemActivityFeedType.notification:
-        return AppColors.supportSoft;
+        return mascotifyTone(context, AppColors.supportSoft);
       case EcosystemActivityFeedType.professional:
-        return AppColors.surface;
+        return mascotifySurfaceTint(context);
     }
   }
 }
@@ -560,17 +576,18 @@ class _HeroMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.72),
+        color: mascotifyTone(context, Colors.white.withValues(alpha: 0.72)),
         borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: MascotifyPalette.of(context).textMuted,
+            ),
           ),
           const SizedBox(height: 6),
           Text(value, style: Theme.of(context).textTheme.titleMedium),
@@ -590,14 +607,14 @@ class _ActivityPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: mascotifySurfaceTint(context),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           fontWeight: FontWeight.w700,
         ),
       ),

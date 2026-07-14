@@ -29,8 +29,10 @@ void main() {
     await _openClipsViewer(tester);
 
     expect(find.byType(PageView), findsOneWidget);
-    expect(find.text('El gato que se adueno del sillon'), findsOneWidget);
-    expect(find.text('Video local'), findsOneWidget);
+    expect(find.text('QR seguro para tu mascota'), findsOneWidget);
+    expect(find.text('Mascotify'), findsWidgets);
+    expect(find.text('Contenido oficial'), findsWidgets);
+    expect(find.text('Video local'), findsNothing);
   });
 
   testWidgets('scroll vertical cambia al siguiente clip', (tester) async {
@@ -40,7 +42,7 @@ void main() {
     await tester.drag(find.byType(PageView), const Offset(0, -700));
     await tester.pumpAndSettle();
 
-    expect(find.text('Perro aprende a usar su QR'), findsOneWidget);
+    expect(find.text('Clips de mascotas'), findsOneWidget);
     expect(find.text('2/${ClipsMockData.clips.length}'), findsOneWidget);
   });
 
@@ -51,14 +53,14 @@ void main() {
 
     await _openClipsViewer(tester);
 
-    expect(find.text('128 likes'), findsOneWidget);
-    await tester.tap(find.text('128 likes'));
+    expect(find.text('186 likes'), findsOneWidget);
+    await tester.tap(find.text('186 likes'));
     await tester.pumpAndSettle();
-    expect(find.text('129 likes'), findsOneWidget);
+    expect(find.text('187 likes'), findsOneWidget);
 
-    await tester.tap(find.text('129 likes'));
+    await tester.tap(find.text('187 likes'));
     await tester.pumpAndSettle();
-    expect(find.text('128 likes'), findsOneWidget);
+    expect(find.text('186 likes'), findsOneWidget);
   });
 
   testWidgets('la vista Clips funciona en viewport mobile', (tester) async {
@@ -70,7 +72,7 @@ void main() {
     await _openClipsViewer(tester);
 
     expect(find.byType(PageView), findsOneWidget);
-    expect(find.text('El gato que se adueno del sillon'), findsOneWidget);
+    expect(find.text('QR seguro para tu mascota'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

@@ -98,6 +98,29 @@ test('GET /health includes CORS headers for configured Flutter web origins', asy
   }
 });
 
+test('GET /health includes defensive security headers', async () => {
+  const server = await startTestServer();
+
+  try {
+    const response = await fetch(`${server.baseUrl}/health`);
+
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
+    assert.equal(response.headers.get('x-frame-options'), 'DENY');
+    assert.match(
+      response.headers.get('permissions-policy') ?? '',
+      /geolocation=\(\)/
+    );
+    assert.match(
+      response.headers.get('content-security-policy') ?? '',
+      /frame-ancestors 'none'/
+    );
+  } finally {
+    await server.close();
+  }
+});
+
 test('OPTIONS /api/v1/health answers preflight without auth or Cloudinary', async () => {
   const server = await startTestServer();
 

@@ -11,6 +11,9 @@ import '../../../../shared/models/pet.dart';
 import '../../../../shared/models/social_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 import 'connections_inbox_screen.dart';
 import 'explore_clip_viewer_screen.dart';
 import 'professionals_screen.dart';
@@ -151,15 +154,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Perfiles con potencial de conexión, afinidad social y futuras oportunidades de matching.',
+                'Perfiles para descubrir y guardar.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 16),
               if (pets.isEmpty)
                 const _ExploreEmptyState(
                   title: 'Todavía no hay perfiles para explorar',
-                  description:
-                      'Cuando la cuenta tenga mascotas persistidas, esta vista podrá mostrar afinidades, guardados e intereses con más contexto.',
+                  description: 'Agrega mascotas para ver perfiles aca.',
                 )
               else if (filteredPets.isEmpty)
                 const _ExploreEmptyState(
@@ -191,26 +193,29 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.surfaceAlt, AppColors.primarySoft],
+                  gradient: LinearGradient(
+                    colors: [
+                      mascotifySurfaceAlt(context),
+                      mascotifyTone(context, AppColors.primarySoft),
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: mascotifyBorder(context)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Discovery progresivo',
+                      'Guardados',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Mascotify también puede acompañar un descubrimiento más pausado: guardar, revisar después y retomar conexiones cuando el momento sea el indicado.',
+                      'Vuelve a perfiles que te interesaron sin perderlos.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textPrimary,
+                        color: mascotifyPrimaryText(context),
                         height: 1.5,
                       ),
                     ),
@@ -221,8 +226,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               if (savedProfiles.isEmpty)
                 const _ExploreEmptyState(
                   title: 'Todavía no guardaste perfiles',
-                  description:
-                      'Cuando marques una mascota para revisar después, va a quedar persistida acá dentro de tu cuenta.',
+                  description: 'Los perfiles guardados apareceran aca.',
                 )
               else
                 ResponsiveWrapGrid(
@@ -231,6 +235,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       .map((entry) => _SavedProfileCard(entry: entry))
                       .toList(),
                 ),
+              const SizedBox(height: 16),
+              const ContextualHelpLink(
+                topic: HelpTopic.explore,
+                label: 'Ver ayuda sobre Explorar',
+              ),
             ],
           ),
         ),
@@ -411,15 +420,18 @@ class _ExploreSectionSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final borderColor = mascotifyBorder(context);
+    final containerColor = mascotifySurfaceAlt(context);
+
     return Semantics(
       label: 'Selector de seccion de Explorar',
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: AppColors.surfaceAlt,
+          color: containerColor,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: borderColor),
         ),
         child: Row(
           children: [
@@ -462,10 +474,16 @@ class _SectionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = selected ? Colors.white : AppColors.textPrimary;
+    final isDark = mascotifyIsDark(context);
+    final foreground = selected
+        ? (isDark ? Theme.of(context).colorScheme.primary : Colors.white)
+        : mascotifyPrimaryText(context);
+    final selectedBackground = isDark
+        ? mascotifyTone(context, AppColors.primarySoft)
+        : AppColors.primaryDeep;
 
     return Material(
-      color: selected ? AppColors.primaryDeep : Colors.transparent,
+      color: selected ? selectedBackground : Colors.transparent,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -595,17 +613,30 @@ class _ClipsHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = mascotifyIsDark(context);
+    final borderColor = isDark
+        ? mascotifyBorder(context)
+        : const Color(0xFFCFEFF5);
+    final badgeColor = isDark ? mascotifySurfaceTint(context) : AppColors.dark;
+    final badgeTextColor = isDark
+        ? mascotifyPrimaryText(context)
+        : Colors.white;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primarySoft, Color(0xFFEAFBFF), AppColors.surface],
+        gradient: LinearGradient(
+          colors: [
+            mascotifyTone(context, AppColors.primarySoft),
+            mascotifySurface(context),
+            mascotifySurfaceAlt(context),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Color(0xFFCFEFF5)),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -613,15 +644,16 @@ class _ClipsHero extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.dark,
+              color: badgeColor,
               borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: borderColor),
             ),
             child: Text(
               source == SocialClipsDataSource.remote
                   ? 'Clips sociales'
                   : 'Clips con video',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white,
+                color: badgeTextColor,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -638,16 +670,16 @@ class _ClipsHero extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             'Feed vertical de videos reales para descubrir mascotas, cuidados y comunidad.',
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(color: AppColors.textPrimary),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: mascotifyPrimaryText(context),
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Los clips iniciales usan MP4 locales incluidos en la app y se reproducen sin depender de internet.',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: mascotifySecondaryText(context),
+            ),
           ),
           const SizedBox(height: 16),
           Align(
@@ -676,9 +708,9 @@ class _ClipsStatusPill extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.74),
+        color: mascotifyTone(context, Colors.white),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFCFEFF5)),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Row(
         children: [
@@ -696,7 +728,7 @@ class _ClipsStatusPill extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textPrimary,
+                color: mascotifyPrimaryText(context),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -911,6 +943,12 @@ class _ClipCategoryFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = mascotifyIsDark(context);
+    final selectedChipColor = mascotifyTone(context, AppColors.primarySoft);
+    final selectedLabelColor = isDark
+        ? Theme.of(context).colorScheme.primary
+        : AppColors.primaryDeep;
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -922,11 +960,13 @@ class _ClipCategoryFilters extends StatelessWidget {
                   label: Text(category),
                   selected: selectedCategory == category,
                   onSelected: (_) => onSelected(category),
-                  selectedColor: AppColors.primarySoft,
+                  selectedColor: selectedChipColor,
+                  backgroundColor: mascotifySurfaceAlt(context),
+                  side: BorderSide(color: mascotifyBorder(context)),
                   labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: selectedCategory == category
-                        ? AppColors.primaryDeep
-                        : AppColors.textPrimary,
+                        ? selectedLabelColor
+                        : mascotifyPrimaryText(context),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -960,6 +1000,11 @@ class _ExploreClipCard extends StatelessWidget {
     final hasVideo = clip.hasPlayableVideo;
     final thumbnail = clip.thumbnailAssetPath;
     final authorLabel = clip.authorDisplayName ?? clip.sourceLabel;
+    final mediaLabel = clip.sourceType == 'officialMascotify'
+        ? 'Mascotify'
+        : hasVideo
+        ? 'Video local'
+        : 'Demo';
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -994,12 +1039,15 @@ class _ExploreClipCard extends StatelessWidget {
                       width: 64,
                       height: 64,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.92),
+                        color: mascotifyTone(context, Colors.white),
                         borderRadius: BorderRadius.circular(32),
+                        border: Border.all(color: mascotifyBorder(context)),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.play_arrow_rounded,
-                        color: AppColors.primaryDeep,
+                        color: mascotifyIsDark(context)
+                            ? Theme.of(context).colorScheme.primary
+                            : AppColors.primaryDeep,
                         size: 42,
                       ),
                     ),
@@ -1007,9 +1055,7 @@ class _ExploreClipCard extends StatelessWidget {
                   Positioned(
                     left: 14,
                     top: 14,
-                    child: _VideoBadge(
-                      label: hasVideo ? 'Video local' : 'Demo',
-                    ),
+                    child: _VideoBadge(label: mediaLabel),
                   ),
                   Positioned(
                     left: 14,
@@ -1021,6 +1067,8 @@ class _ExploreClipCard extends StatelessWidget {
                       children: [
                         _VideoBadge(label: clip.category),
                         _VideoBadge(label: clip.animalType),
+                        if (clip.contentOriginLabel != null)
+                          _VideoBadge(label: clip.contentOriginLabel!),
                         if (clip.sourceLabel != null)
                           _VideoBadge(label: clip.sourceLabel!),
                         if (!hasVideo)
@@ -1125,19 +1173,27 @@ class _ClipPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = mascotifyIsDark(context);
+    final iconColor = isDark
+        ? Theme.of(context).colorScheme.primary
+        : AppColors.dark;
+
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.accentSoft, AppColors.primarySoft],
+          colors: [
+            mascotifyTone(context, AppColors.accentSoft),
+            mascotifyTone(context, AppColors.primarySoft),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
-      child: const Align(
+      child: Align(
         alignment: Alignment.topRight,
         child: Padding(
-          padding: EdgeInsets.all(18),
-          child: Icon(Icons.pets_rounded, color: AppColors.dark, size: 42),
+          padding: const EdgeInsets.all(18),
+          child: Icon(Icons.pets_rounded, color: iconColor, size: 42),
         ),
       ),
     );
@@ -1154,13 +1210,14 @@ class _VideoBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
+        color: mascotifyTone(context, Colors.white),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           fontWeight: FontWeight.w800,
         ),
       ),
@@ -1183,15 +1240,21 @@ class _ClipActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final selectedForeground = mascotifyIsDark(context)
+        ? Theme.of(context).colorScheme.primary
+        : AppColors.primaryDeep;
+
     return OutlinedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: 18),
       label: Text(label),
       style: OutlinedButton.styleFrom(
         foregroundColor: selected
-            ? AppColors.primaryDeep
-            : AppColors.textPrimary,
-        backgroundColor: selected ? AppColors.primarySoft : null,
+            ? selectedForeground
+            : mascotifyPrimaryText(context),
+        backgroundColor: selected
+            ? mascotifyTone(context, AppColors.primarySoft)
+            : null,
       ),
     );
   }
@@ -1216,9 +1279,9 @@ class _ExploreEmptyStateWithAction extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1228,7 +1291,7 @@ class _ExploreEmptyStateWithAction extends StatelessWidget {
           Text(
             description,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
+              color: mascotifyPrimaryText(context),
               height: 1.45,
             ),
           ),
@@ -1245,16 +1308,29 @@ class _ExploreHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = mascotifyIsDark(context);
+    final borderColor = isDark
+        ? mascotifyBorder(context)
+        : const Color(0xFFCFEFF5);
+    final badgeColor = isDark ? mascotifySurfaceTint(context) : AppColors.dark;
+    final badgeTextColor = isDark
+        ? mascotifyPrimaryText(context)
+        : Colors.white;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.accentSoft, AppColors.surface, Color(0xFFEAFBFF)],
+        gradient: LinearGradient(
+          colors: [
+            mascotifyTone(context, AppColors.accentSoft),
+            mascotifySurface(context),
+            mascotifyTone(context, AppColors.primarySoft),
+          ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Color(0xFFCFEFF5)),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1262,13 +1338,14 @@ class _ExploreHero extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.dark,
+              color: badgeColor,
               borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: borderColor),
             ),
             child: Text(
               'Ecosistema social',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white,
+                color: badgeTextColor,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -1281,9 +1358,9 @@ class _ExploreHero extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'Explorar es la base donde identidad digital, afinidad social, comunidad experta y futuras conexiones se unen para generar descubrimiento real.',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: mascotifySecondaryText(context),
+            ),
           ),
           const SizedBox(height: 18),
           Wrap(
@@ -1315,6 +1392,11 @@ class _ConnectionsEntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final iconBackground = mascotifyTone(context, AppColors.accentSoft);
+    final iconColor = mascotifyIsDark(context)
+        ? Theme.of(context).colorScheme.secondary
+        : AppColors.accentDeep;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -1327,13 +1409,11 @@ class _ConnectionsEntryCard extends StatelessWidget {
                   width: 46,
                   height: 46,
                   decoration: BoxDecoration(
-                    color: AppColors.accentSoft,
+                    color: iconBackground,
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: mascotifyBorder(context)),
                   ),
-                  child: const Icon(
-                    Icons.forum_rounded,
-                    color: AppColors.accentDeep,
-                  ),
+                  child: Icon(Icons.forum_rounded, color: iconColor),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -1394,6 +1474,11 @@ class _ProfessionalsEntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final iconBackground = mascotifyTone(context, AppColors.supportSoft);
+    final iconColor = mascotifyIsDark(context)
+        ? Theme.of(context).colorScheme.tertiary
+        : AppColors.textPrimary;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -1406,12 +1491,13 @@ class _ProfessionalsEntryCard extends StatelessWidget {
                   width: 46,
                   height: 46,
                   decoration: BoxDecoration(
-                    color: AppColors.supportSoft,
+                    color: iconBackground,
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: mascotifyBorder(context)),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.workspace_premium_outlined,
-                    color: AppColors.textPrimary,
+                    color: iconColor,
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -1420,7 +1506,7 @@ class _ProfessionalsEntryCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Profesionales y contenido',
+                        'Profesionales pet',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 4),
@@ -1437,17 +1523,11 @@ class _ProfessionalsEntryCard extends StatelessWidget {
             Row(
               children: const [
                 Expanded(
-                  child: _MiniMetric(
-                    label: 'Profesionales',
-                    value: '3 destacados',
-                  ),
+                  child: _MiniMetric(label: 'Profesionales', value: 'Beta'),
                 ),
                 SizedBox(width: 10),
                 Expanded(
-                  child: _MiniMetric(
-                    label: 'Contenidos',
-                    value: 'Charlas breves',
-                  ),
+                  child: _MiniMetric(label: 'Contenidos', value: 'Preview'),
                 ),
               ],
             ),
@@ -1456,7 +1536,7 @@ class _ProfessionalsEntryCard extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: onOpenProfessionals,
-                child: const Text('Explorar profesionales'),
+                child: const Text('Ver preview beta'),
               ),
             ),
           ],
@@ -1563,14 +1643,14 @@ class _FilterDropdown extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: AppColors.surfaceAlt,
+        fillColor: mascotifySurfaceAlt(context),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: mascotifyBorder(context)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: mascotifyBorder(context)),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
@@ -1603,6 +1683,11 @@ class _ExplorePetCard extends StatelessWidget {
     final isSaved = AppData.savedProfiles.any(
       (entry) => entry.pet.id == currentPet.id,
     );
+    final isDark = mascotifyIsDark(context);
+    final avatarColor = mascotifyTone(context, Color(currentPet.colorHex));
+    final avatarIconColor = isDark
+        ? mascotifyPrimaryText(context)
+        : AppColors.dark;
 
     return Card(
       child: Padding(
@@ -1616,12 +1701,13 @@ class _ExplorePetCard extends StatelessWidget {
                   width: 70,
                   height: 70,
                   decoration: BoxDecoration(
-                    color: Color(currentPet.colorHex),
+                    color: avatarColor,
                     borderRadius: BorderRadius.circular(22),
+                    border: Border.all(color: mascotifyBorder(context)),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.pets_rounded,
-                    color: AppColors.dark,
+                    color: avatarIconColor,
                     size: 30,
                   ),
                 ),
@@ -1644,14 +1730,22 @@ class _ExplorePetCard extends StatelessWidget {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primarySoft,
+                              color: mascotifyTone(
+                                context,
+                                AppColors.primarySoft,
+                              ),
                               borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: mascotifyBorder(context),
+                              ),
                             ),
                             child: Text(
                               currentPet.sex,
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
-                                    color: AppColors.primaryDeep,
+                                    color: isDark
+                                        ? Theme.of(context).colorScheme.primary
+                                        : AppColors.primaryDeep,
                                     fontWeight: FontWeight.w700,
                                   ),
                             ),
@@ -1667,7 +1761,7 @@ class _ExplorePetCard extends StatelessWidget {
                       Text(
                         currentPet.location,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textPrimary,
+                          color: mascotifyPrimaryText(context),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -1686,13 +1780,14 @@ class _ExplorePetCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.surfaceAlt,
+                color: mascotifySurfaceAlt(context),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: mascotifyBorder(context)),
               ),
               child: Text(
                 currentPet.socialInterest,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textPrimary,
+                  color: mascotifyPrimaryText(context),
                   height: 1.45,
                 ),
               ),
@@ -1702,13 +1797,14 @@ class _ExplorePetCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.primarySoft,
+                color: mascotifyTone(context, AppColors.primarySoft),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: mascotifyBorder(context)),
               ),
               child: Text(
                 currentPet.matchingPreferences.matchSummary,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textPrimary,
+                  color: mascotifyPrimaryText(context),
                   height: 1.45,
                 ),
               ),
@@ -1753,13 +1849,14 @@ class _ExplorePetCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.supportSoft,
+                color: mascotifyTone(context, AppColors.supportSoft),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: mascotifyBorder(context)),
               ),
               child: Text(
                 currentPet.matchingPreferences.suggestedApproach,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textPrimary,
+                  color: mascotifyPrimaryText(context),
                   height: 1.45,
                 ),
               ),
@@ -1816,6 +1913,11 @@ class _SavedProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pet = AppData.findPetById(entry.pet.id) ?? entry.pet;
+    final isDark = mascotifyIsDark(context);
+    final avatarColor = mascotifyTone(context, Color(pet.colorHex));
+    final avatarIconColor = isDark
+        ? mascotifyPrimaryText(context)
+        : AppColors.dark;
 
     return Card(
       child: Padding(
@@ -1827,13 +1929,11 @@ class _SavedProfileCard extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: Color(pet.colorHex),
+                color: avatarColor,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: mascotifyBorder(context)),
               ),
-              child: const Icon(
-                Icons.bookmark_added_rounded,
-                color: AppColors.dark,
-              ),
+              child: Icon(Icons.bookmark_added_rounded, color: avatarIconColor),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -1854,14 +1954,15 @@ class _SavedProfileCard extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.supportSoft,
+                          color: mascotifyTone(context, AppColors.supportSoft),
                           borderRadius: BorderRadius.circular(999),
+                          border: Border.all(color: mascotifyBorder(context)),
                         ),
                         child: Text(
                           'Guardado',
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
-                                color: AppColors.textPrimary,
+                                color: mascotifyPrimaryText(context),
                                 fontWeight: FontWeight.w700,
                               ),
                         ),
@@ -1877,14 +1978,14 @@ class _SavedProfileCard extends StatelessWidget {
                   Text(
                     pet.location,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: mascotifySecondaryText(context),
                     ),
                   ),
                   const SizedBox(height: 10),
                   Text(
                     '${entry.reason} ${entry.savedAtLabel}.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
+                      color: mascotifyPrimaryText(context),
                       height: 1.45,
                     ),
                   ),
@@ -1893,13 +1994,14 @@ class _SavedProfileCard extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceAlt,
+                      color: mascotifySurfaceAlt(context),
                       borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: mascotifyBorder(context)),
                     ),
                     child: Text(
                       pet.matchingPreferences.matchSummary,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textPrimary,
+                        color: mascotifyPrimaryText(context),
                         height: 1.4,
                       ),
                     ),
@@ -1945,13 +2047,14 @@ class _HeroPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: mascotifyTone(context, AppColors.surface),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -1970,17 +2073,18 @@ class _MiniMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: MascotifyPalette.of(context).textMuted,
+            ),
           ),
           const SizedBox(height: 6),
           Text(value, style: Theme.of(context).textTheme.titleMedium),
@@ -1997,16 +2101,21 @@ class _TagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = mascotifyIsDark(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.accentSoft,
+        color: mascotifyTone(context, AppColors.accentSoft),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.accentDeep,
+          color: isDark
+              ? Theme.of(context).colorScheme.secondary
+              : AppColors.accentDeep,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -2024,14 +2133,14 @@ class _AffinityChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -2049,14 +2158,14 @@ class _SavedTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textPrimary,
+          color: mascotifyPrimaryText(context),
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -2086,12 +2195,15 @@ class _ExploreEmptyClipsScreen extends StatelessWidget {
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: AppColors.accentSoft,
+                      color: mascotifyTone(context, AppColors.accentSoft),
                       borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: mascotifyBorder(context)),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.play_disabled_rounded,
-                      color: AppColors.accentDeep,
+                      color: mascotifyIsDark(context)
+                          ? Theme.of(context).colorScheme.secondary
+                          : AppColors.accentDeep,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -2103,7 +2215,7 @@ class _ExploreEmptyClipsScreen extends StatelessWidget {
                   Text(
                     'Volver a Explorar permite seguir usando la app mientras se carga el feed.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: mascotifySecondaryText(context),
                       height: 1.45,
                     ),
                   ),
@@ -2134,17 +2246,18 @@ class _MetaTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: MascotifyPalette.of(context).textMuted,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
@@ -2152,7 +2265,7 @@ class _MetaTile extends StatelessWidget {
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
+              color: mascotifyPrimaryText(context),
               fontWeight: FontWeight.w700,
               height: 1.35,
             ),
@@ -2179,12 +2292,15 @@ Future<void> _showSavedProfileDialog(BuildContext context, Pet pet) async {
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: AppColors.supportSoft,
+                  color: mascotifyTone(context, AppColors.supportSoft),
                   borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: mascotifyBorder(context)),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.bookmark_added_rounded,
-                  color: AppColors.textPrimary,
+                  color: mascotifyIsDark(context)
+                      ? Theme.of(context).colorScheme.tertiary
+                      : AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -2202,13 +2318,14 @@ Future<void> _showSavedProfileDialog(BuildContext context, Pet pet) async {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceAlt,
+                  color: mascotifySurfaceAlt(context),
                   borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: mascotifyBorder(context)),
                 ),
                 child: Text(
                   'Este guardado ya queda persistido dentro de tu cuenta y refuerza una lógica de discovery progresivo más real dentro de Mascotify.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: mascotifyPrimaryText(context),
                     height: 1.5,
                   ),
                 ),
@@ -2241,9 +2358,9 @@ class _ExploreEmptyState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2253,7 +2370,7 @@ class _ExploreEmptyState extends StatelessWidget {
           Text(
             description,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
+              color: mascotifyPrimaryText(context),
               height: 1.45,
             ),
           ),

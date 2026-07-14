@@ -4,6 +4,7 @@ import '../../../../features/auth/presentation/auth_session_controller.dart';
 import '../../../../core/app_environment.dart';
 import '../../../../core/localization/app_locale_controller.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/theme/app_theme_controller.dart';
 import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../shared/models/app_user.dart';
@@ -11,7 +12,10 @@ import '../../../../shared/models/plan_entitlements.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
+import 'help_screen.dart';
 import 'support_contacts_screen.dart';
+import '../widgets/contextual_help_link.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key, this.experience = AccountExperience.family});
@@ -45,11 +49,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: isFamily
-                        ? const [AppColors.surface, AppColors.primarySoft]
-                        : const [
-                            AppColors.accentSoft,
-                            AppColors.surface,
-                            Color(0xFFEAFBFF),
+                        ? [
+                            mascotifySurface(context),
+                            mascotifyTone(context, AppColors.primarySoft),
+                          ]
+                        : [
+                            mascotifyTone(context, AppColors.accentSoft),
+                            mascotifySurface(context),
+                            mascotifyTone(context, const Color(0xFFEAFBFF)),
                           ],
                     begin: isFamily ? Alignment.topLeft : Alignment.centerLeft,
                     end: isFamily
@@ -59,8 +66,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   borderRadius: BorderRadius.circular(32),
                   border: Border.all(
                     color: isFamily
-                        ? AppColors.border
-                        : const Color(0xFFCFEFF5),
+                        ? mascotifyBorder(context)
+                        : mascotifyTone(context, const Color(0xFFCFEFF5)),
                   ),
                 ),
                 child: LayoutBuilder(
@@ -69,7 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       width: 74,
                       height: 74,
                       decoration: BoxDecoration(
-                        color: AppColors.dark,
+                        color: mascotifySurfaceTint(context),
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Icon(
@@ -101,18 +108,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.accentSoft,
+                            color: mascotifyTone(context, AppColors.accentSoft),
                             borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: mascotifyBorder(context)),
                           ),
                           child: Text(
                             isFamily
                                 ? 'Modo familia - ${account.city}'
-                                : 'Modo profesional - ${account.city}',
+                                : 'Beta profesional - ${account.city}',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: AppColors.accentDeep,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.secondary,
                                   fontWeight: FontWeight.w700,
                                 ),
                           ),
@@ -261,9 +271,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               (item) => _ModeChip(
                                 label: item == AccountExperience.family
                                     ? 'Familia'
-                                    : 'Profesional',
+                                    : 'Profesional beta',
                                 isActive: item == widget.experience,
                                 onTap: auth.isBusy
+                                    ? null
+                                    : item == AccountExperience.professional
                                     ? null
                                     : () => auth.switchExperience(item),
                               ),
@@ -286,13 +298,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.supportSoft,
+                    color: mascotifyTone(context, AppColors.supportSoft),
                     borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: mascotifyBorder(context)),
                   ),
                   child: Text(
                     user.planName,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
+                      color: mascotifyPrimaryText(context),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -376,7 +389,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Tu autenticación actual se persiste localmente. Logout limpia la sesión activa pero mantiene las cuentas registradas en este dispositivo.',
+                        'La sesion activa se mantiene en este dispositivo.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 16),
@@ -395,6 +408,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                 ),
+              ),
+              const SizedBox(height: 16),
+              const ContextualHelpLink(
+                topic: HelpTopic.profileSettings,
+                label: 'Ver ayuda sobre Perfil y configuracion',
               ),
             ],
           ),
@@ -437,12 +455,12 @@ class _RuntimeModeNotice extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: AppColors.supportSoft,
+                color: mascotifyTone(context, AppColors.supportSoft),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.info_outline_rounded,
-                color: AppColors.primaryDeep,
+                color: Theme.of(context).colorScheme.primary,
               ),
             );
             final text = Column(
@@ -456,7 +474,7 @@ class _RuntimeModeNotice extends StatelessWidget {
                 Text(
                   '${AppEnvironment.runtimeShortDescription} ${AppEnvironment.productionReadinessLabel}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: mascotifySecondaryText(context),
                     height: 1.4,
                   ),
                 ),
@@ -520,6 +538,7 @@ class _PreferencesAndPlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return DefaultTabController(
       length: 3,
       child: Card(
@@ -536,9 +555,9 @@ class _PreferencesAndPlanCard extends StatelessWidget {
                     controller: tabController,
                     isScrollable: true,
                     tabAlignment: TabAlignment.start,
-                    labelColor: AppColors.primaryDeep,
-                    unselectedLabelColor: AppColors.textSecondary,
-                    indicatorColor: AppColors.primary,
+                    labelColor: colorScheme.primary,
+                    unselectedLabelColor: colorScheme.onSurfaceVariant,
+                    indicatorColor: colorScheme.primary,
                     tabs: const [
                       Tab(text: 'Suscripción'),
                       Tab(text: 'Notificaciones'),
@@ -690,10 +709,12 @@ class _PlanCatalogCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
-    final borderColor = isCurrent ? AppColors.primary : AppColors.border;
+    final borderColor = isCurrent
+        ? Theme.of(context).colorScheme.primary
+        : mascotifyBorder(context);
     final backgroundColor = isCurrent
-        ? AppColors.primarySoft
-        : AppColors.surfaceAlt;
+        ? mascotifyTone(context, AppColors.primarySoft)
+        : mascotifySurfaceAlt(context);
 
     return Container(
       key: ValueKey('plan-card-${entitlement.shortName.toLowerCase()}'),
@@ -713,7 +734,7 @@ class _PlanCatalogCard extends StatelessWidget {
                 child: Text(
                   entitlement.shortName,
                   style: theme.titleMedium?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: mascotifyPrimaryText(context),
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -725,13 +746,13 @@ class _PlanCatalogCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
                     'Actual',
                     style: theme.labelSmall?.copyWith(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onPrimary,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -742,7 +763,7 @@ class _PlanCatalogCard extends StatelessWidget {
           Text(
             entitlement.priceLabel,
             style: theme.titleMedium?.copyWith(
-              color: AppColors.primaryDeep,
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -750,7 +771,7 @@ class _PlanCatalogCard extends StatelessWidget {
           Text(
             entitlement.petLimitDisplayLabel,
             style: theme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
+              color: mascotifyPrimaryText(context),
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -758,7 +779,7 @@ class _PlanCatalogCard extends StatelessWidget {
           Text(
             entitlement.positioningLabel,
             style: theme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
+              color: mascotifySecondaryText(context),
               height: 1.35,
             ),
           ),
@@ -766,7 +787,7 @@ class _PlanCatalogCard extends StatelessWidget {
           Text(
             entitlement.adsLabel,
             style: theme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
+              color: mascotifySecondaryText(context),
               height: 1.35,
             ),
           ),
@@ -875,6 +896,7 @@ class _ConfigurationTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localeController = AppLocaleScope.maybeOf(context);
+    final themeController = AppThemeScope.maybeOf(context);
     final localizations = AppLocalizations.of(context);
     final languageOptions = <String>[
       localizations.automaticLanguage,
@@ -924,6 +946,27 @@ class _ConfigurationTab extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         _SettingsDropdown(
+          fieldKey: const ValueKey('appearance-theme-dropdown'),
+          title: 'Apariencia',
+          subtitle: 'Elegí cómo querés ver Mascotify.',
+          icon: Icons.dark_mode_outlined,
+          value: themeController?.mode.label ?? MascotifyThemeMode.system.label,
+          options: MascotifyThemeMode.values
+              .map((mode) => mode.label)
+              .toList(growable: false),
+          onChanged: isBusy || themeController == null
+              ? null
+              : (value) async {
+                  final mode = MascotifyThemeMode.fromLabel(value);
+                  await themeController.setMode(mode);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Tema actualizado: ${mode.label}.')),
+                  );
+                },
+        ),
+        const SizedBox(height: 14),
+        _SettingsDropdown(
           title: 'Privacidad',
           subtitle: 'Define cuánta visibilidad tendrán tus perfiles.',
           icon: Icons.lock_outline_rounded,
@@ -967,6 +1010,23 @@ class _ConfigurationTab extends StatelessWidget {
           icon: Icons.tips_and_updates_outlined,
           value: user.ecosystemSuggestionsEnabled,
           onChanged: isBusy ? null : onEcosystemSuggestionsChanged,
+        ),
+        const SizedBox(height: 14),
+        _SettingsAction(
+          actionKey: const ValueKey('settings-help-action'),
+          title: 'Ayuda',
+          subtitle: 'Guias de uso, privacidad, clips y matching.',
+          icon: Icons.help_outline_rounded,
+          label: 'Abrir',
+          onPressed: isBusy
+              ? null
+              : () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const HelpScreen(
+                      initialTopic: HelpTopic.profileSettings,
+                    ),
+                  ),
+                ),
         ),
         const SizedBox(height: 14),
         _SettingsAction(
@@ -1035,7 +1095,7 @@ class _SettingsDropdown extends StatelessWidget {
           key: fieldKey,
           initialValue: options.contains(value) ? value : options.first,
           isExpanded: true,
-          decoration: _fieldDecoration(),
+          decoration: _fieldDecoration(context),
           items: options
               .map(
                 (option) => DropdownMenuItem<String>(
@@ -1076,6 +1136,8 @@ class _SettingsSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final palette = MascotifyPalette.of(context);
     return _SettingsShell(
       title: title,
       subtitle: subtitle,
@@ -1084,8 +1146,8 @@ class _SettingsSwitch extends StatelessWidget {
         key: switchKey,
         value: value,
         onChanged: onChanged,
-        activeThumbColor: AppColors.accent,
-        activeTrackColor: AppColors.accentSoft,
+        activeThumbColor: colorScheme.secondary,
+        activeTrackColor: palette.accentSoft,
       ),
     );
   }
@@ -1104,13 +1166,14 @@ class _SettingsInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return _SettingsShell(
       title: title,
       subtitle: subtitle,
       icon: icon,
-      trailing: const Icon(
+      trailing: Icon(
         Icons.check_circle_outline_rounded,
-        color: AppColors.primaryDeep,
+        color: colorScheme.primary,
       ),
     );
   }
@@ -1163,13 +1226,15 @@ class _SettingsShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final palette = MascotifyPalette.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: palette.surfaceAlt,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -1180,10 +1245,10 @@ class _SettingsShell extends StatelessWidget {
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceTint,
+                  color: palette.surfaceTint,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(icon, color: AppColors.primaryDeep),
+                child: Icon(icon, color: colorScheme.primary),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -1195,7 +1260,7 @@ class _SettingsShell extends StatelessWidget {
                     Text(
                       subtitle,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: colorScheme.onSurfaceVariant,
                         height: 1.35,
                       ),
                     ),
@@ -1229,17 +1294,23 @@ class _SettingsShell extends StatelessWidget {
   }
 }
 
-InputDecoration _fieldDecoration() {
+InputDecoration _fieldDecoration(BuildContext context) {
+  final theme = Theme.of(context);
+  final colorScheme = theme.colorScheme;
   return InputDecoration(
     filled: true,
-    fillColor: AppColors.surface,
+    fillColor: theme.inputDecorationTheme.fillColor ?? colorScheme.surface,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(16),
-      borderSide: const BorderSide(color: AppColors.border),
+      borderSide: BorderSide(color: colorScheme.outlineVariant),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(16),
-      borderSide: const BorderSide(color: AppColors.border),
+      borderSide: BorderSide(color: colorScheme.outlineVariant),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: colorScheme.primary),
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
   );
@@ -1253,12 +1324,15 @@ class _AccountInfoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final palette = MascotifyPalette.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: palette.surfaceAlt,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1267,13 +1341,13 @@ class _AccountInfoTile extends StatelessWidget {
             label,
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+            ).textTheme.bodyMedium?.copyWith(color: palette.textMuted),
           ),
           const SizedBox(height: 6),
           Text(
             value,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w600,
               height: 1.45,
             ),
@@ -1297,20 +1371,26 @@ class _ModeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final palette = MascotifyPalette.of(context);
     return InkWell(
       borderRadius: BorderRadius.circular(999),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.accentSoft : AppColors.surfaceAlt,
+          color: isActive ? palette.accentSoft : palette.surfaceAlt,
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(
+            color: isActive
+                ? colorScheme.secondary
+                : colorScheme.outlineVariant,
+          ),
         ),
         child: Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppColors.textPrimary,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w700,
           ),
         ),

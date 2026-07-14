@@ -13,6 +13,9 @@ import '../../../../shared/services/pet_health_reminder_engine.dart';
 import '../../../../shared/services/pet_vaccine_guidance_engine.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 
 class PetHealthScreen extends StatefulWidget {
   const PetHealthScreen({super.key, required this.pet});
@@ -117,6 +120,11 @@ class _PetHealthScreenState extends State<PetHealthScreen> {
               ],
               const SizedBox(height: 16),
               _HealthHistoryCard(pet: pet),
+              const SizedBox(height: 16),
+              const ContextualHelpLink(
+                topic: HelpTopic.health,
+                label: 'Ver ayuda sobre Salud y vacunas',
+              ),
             ],
           ),
         ),
@@ -562,9 +570,9 @@ class _GuidanceItemTile extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -632,10 +640,14 @@ class _ReminderTile extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: reminder.severity == PetVaccineReminderSeverity.important
-            ? AppColors.supportSoft
-            : AppColors.primarySoft,
+        color: mascotifyTone(
+          context,
+          reminder.severity == PetVaccineReminderSeverity.important
+              ? AppColors.supportSoft
+              : AppColors.primarySoft,
+        ),
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -728,9 +740,9 @@ class _SpeciesSuggestedVaccinesCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               suggestionSet.note,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: MascotifyPalette.of(context).textMuted,
+              ),
             ),
             const SizedBox(height: 16),
             if (suggestions.isEmpty)
@@ -792,9 +804,9 @@ class _NoGeneralScheduleNotice extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -831,9 +843,9 @@ class _SuggestionTile extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -859,9 +871,9 @@ class _SuggestionTile extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               suggestion.note,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: MascotifyPalette.of(context).textMuted,
+              ),
             ),
           ],
           const SizedBox(height: 12),
@@ -994,9 +1006,9 @@ class _VaccineTile extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1008,14 +1020,15 @@ class _VaccineTile extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: softColor,
+                  color: mascotifyTone(context, softColor),
                   borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: mascotifyBorder(context)),
                 ),
                 child: Icon(
                   vaccine.isPending
                       ? Icons.schedule_rounded
                       : Icons.check_circle_outline_rounded,
-                  color: AppColors.textPrimary,
+                  color: mascotifyPrimaryText(context),
                 ),
               ),
               const SizedBox(width: 12),
@@ -1462,10 +1475,16 @@ class _NoticeCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.supportSoft,
+        color: mascotifyTone(context, AppColors.supportSoft),
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
-      child: Text(text),
+      child: Text(
+        text,
+        style: Theme.of(
+          context,
+        ).textTheme.bodyMedium?.copyWith(color: mascotifyPrimaryText(context)),
+      ),
     );
   }
 }
@@ -1481,9 +1500,9 @@ class _MetricTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1532,19 +1551,7 @@ class _HistoryLine extends StatelessWidget {
 }
 
 InputDecoration _inputDecoration(String label) {
-  return InputDecoration(
-    labelText: label,
-    filled: true,
-    fillColor: AppColors.surface,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-      borderSide: const BorderSide(color: AppColors.border),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-      borderSide: const BorderSide(color: AppColors.border),
-    ),
-  );
+  return InputDecoration(labelText: label, filled: true);
 }
 
 DateTime? _parseDate(String value) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_theme.dart';
 import '../models/pet.dart';
 
 class PetCard extends StatelessWidget {
@@ -17,7 +18,16 @@ class PetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final palette = MascotifyPalette.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final textTheme = Theme.of(context).textTheme;
+    final petTone = isDark
+        ? Color.alphaBlend(
+            Color(pet.colorHex).withValues(alpha: 0.24),
+            palette.surfaceAlt,
+          )
+        : Color(pet.colorHex);
 
     return Material(
       color: Colors.transparent,
@@ -33,8 +43,11 @@ class PetCard extends StatelessWidget {
                   width: compact ? 58 : 68,
                   height: compact ? 58 : 68,
                   decoration: BoxDecoration(
-                    color: Color(pet.colorHex),
+                    color: petTone,
                     borderRadius: BorderRadius.circular(22),
+                    border: isDark
+                        ? Border.all(color: colorScheme.outlineVariant)
+                        : null,
                   ),
                   child: Stack(
                     alignment: Alignment.center,
@@ -71,13 +84,16 @@ class PetCard extends StatelessWidget {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primarySoft,
+                              color: palette.primarySoft,
                               borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: colorScheme.outlineVariant,
+                              ),
                             ),
                             child: Text(
                               pet.species,
                               style: textTheme.bodyMedium?.copyWith(
-                                color: AppColors.primaryDeep,
+                                color: colorScheme.primary,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -88,7 +104,7 @@ class PetCard extends StatelessWidget {
                       Text(
                         pet.breed,
                         style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -98,13 +114,13 @@ class PetCard extends StatelessWidget {
                         children: [
                           _InfoPill(
                             label: pet.ageLabel,
-                            backgroundColor: AppColors.surfaceAlt,
-                            textColor: AppColors.textPrimary,
+                            backgroundColor: palette.surfaceAlt,
+                            textColor: colorScheme.onSurface,
                           ),
                           _InfoPill(
                             label: pet.status,
-                            backgroundColor: AppColors.supportSoft,
-                            textColor: AppColors.textPrimary,
+                            backgroundColor: palette.supportSoft,
+                            textColor: colorScheme.onSurface,
                           ),
                         ],
                       ),
@@ -116,12 +132,13 @@ class PetCard extends StatelessWidget {
                   width: 34,
                   height: 34,
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceAlt,
+                    color: palette.surfaceAlt,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: colorScheme.outlineVariant),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.chevron_right_rounded,
-                    color: AppColors.textSecondary,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],

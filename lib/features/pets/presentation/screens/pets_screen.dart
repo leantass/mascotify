@@ -10,7 +10,10 @@ import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../shared/widgets/pet_card.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
 import '../../../lost_pets/presentation/screens/lost_pets_screen.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+import '../../../profile/presentation/widgets/contextual_help_link.dart';
 import 'pet_detail_screen.dart';
 
 enum _PetsSection { myPets, lostPets }
@@ -40,17 +43,16 @@ class _PetsScreenState extends State<PetsScreen> {
               Container(
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: mascotifySurface(context),
                   borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: mascotifyBorder(context)),
                 ),
                 child: Column(
                   children: [
                     SectionHeader(
                       eyebrow: 'Centro de mascotas',
                       title: 'Mascotas',
-                      subtitle:
-                          'Gestiona perfiles persistidos localmente y reportes comunitarios de mascotas perdidas.',
+                      subtitle: 'Perfiles y reportes de tu cuenta.',
                       trailing: showingMyPets
                           ? ElevatedButton.icon(
                               onPressed: _handleAddPet,
@@ -71,8 +73,9 @@ class _PetsScreenState extends State<PetsScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceAlt,
+                        color: mascotifySurfaceAlt(context),
                         borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: mascotifyBorder(context)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +86,7 @@ class _PetsScreenState extends State<PetsScreen> {
                                 : '${AppData.lostPets.where((item) => !item.isFound).length} reportes activos de mascotas perdidas para esta cuenta.',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: AppColors.textPrimary,
+                                  color: mascotifyPrimaryText(context),
                                   fontWeight: FontWeight.w600,
                                 ),
                           ),
@@ -91,10 +94,10 @@ class _PetsScreenState extends State<PetsScreen> {
                           Text(
                             showingMyPets
                                 ? '${entitlement.planName}: ${entitlement.petLimitDisplayLabel}.'
-                                : 'La ubicación se guarda con país, región, ciudad y zona aproximada de pérdida.',
+                                : 'Solo se muestra zona general.',
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: mascotifySecondaryText(context),
                                   fontWeight: FontWeight.w600,
                                 ),
                           ),
@@ -113,6 +116,13 @@ class _PetsScreenState extends State<PetsScreen> {
                 )
               else
                 const LostPetsSection(showHero: false),
+              const SizedBox(height: 16),
+              ContextualHelpLink(
+                topic: showingMyPets ? HelpTopic.pets : HelpTopic.lostPets,
+                label: showingMyPets
+                    ? 'Ver ayuda sobre Mascotas'
+                    : 'Ver ayuda sobre Mascotas perdidas',
+              ),
             ],
           ),
         ),
@@ -232,9 +242,9 @@ class _PetsSectionSelector extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: mascotifySurface(context),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: mascotifyBorder(context)),
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -293,10 +303,14 @@ class _PetsSectionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = selected ? Colors.white : AppColors.textPrimary;
+    final foreground = selected
+        ? Theme.of(context).colorScheme.onPrimary
+        : mascotifyPrimaryText(context);
 
     return Material(
-      color: selected ? AppColors.primaryDeep : Colors.transparent,
+      color: selected
+          ? Theme.of(context).colorScheme.primary
+          : Colors.transparent,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         key: ValueKey('pets-section-$label'),
@@ -396,9 +410,9 @@ class _PetsEmptyState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
+        color: mascotifySurfaceAlt(context),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: mascotifyBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,7 +425,7 @@ class _PetsEmptyState extends StatelessWidget {
           Text(
             'En browser conviene dejar clara la base operativa desde el primer paso: cuando agregues tu primera mascota, esta vista va a crecer con identidad, QR, matching y seguimiento persistido.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
+              color: mascotifyPrimaryText(context),
               height: 1.45,
             ),
           ),
@@ -557,7 +571,7 @@ class _PetFormDialogState extends State<_PetFormDialog> {
                 key: const ValueKey('pet-species-dropdown'),
                 initialValue: _selectedSpecies,
                 isExpanded: true,
-                decoration: _petFieldDecoration('Tipo de animal'),
+                decoration: _petFieldDecoration(context, 'Tipo de animal'),
                 items: PetSpeciesCatalog.species
                     .map(
                       (species) => DropdownMenuItem<String>(
@@ -582,7 +596,7 @@ class _PetFormDialogState extends State<_PetFormDialog> {
                 key: const ValueKey('pet-breed-dropdown'),
                 initialValue: _selectedBreed,
                 isExpanded: true,
-                decoration: _petFieldDecoration('Raza / tipo'),
+                decoration: _petFieldDecoration(context, 'Raza / tipo'),
                 items:
                     PetSpeciesCatalog.breedOptionsForSpecies(_selectedSpecies)
                         .map(
@@ -633,7 +647,7 @@ class _PetFormDialogState extends State<_PetFormDialog> {
               DropdownButtonFormField<String>(
                 initialValue: _selectedSex,
                 isExpanded: true,
-                decoration: _petFieldDecoration('Sexo'),
+                decoration: _petFieldDecoration(context, 'Sexo'),
                 items: const [
                   DropdownMenuItem(value: 'Macho', child: Text('Macho')),
                   DropdownMenuItem(value: 'Hembra', child: Text('Hembra')),
@@ -1010,7 +1024,7 @@ class _LocationFields extends StatelessWidget {
           key: const ValueKey('pet-country-dropdown'),
           initialValue: selectedCountry,
           isExpanded: true,
-          decoration: _petFieldDecoration('País'),
+          decoration: _petFieldDecoration(context, 'País'),
           items: LocationCatalog.countries
               .map(
                 (country) => DropdownMenuItem<String>(
@@ -1036,7 +1050,10 @@ class _LocationFields extends StatelessWidget {
             key: const ValueKey('pet-region-dropdown'),
             initialValue: selectedRegion,
             isExpanded: true,
-            decoration: _petFieldDecoration('Provincia / Estado / Región'),
+            decoration: _petFieldDecoration(
+              context,
+              'Provincia / Estado / Región',
+            ),
             items: regions
                 .map(
                   (region) => DropdownMenuItem<String>(
@@ -1064,7 +1081,7 @@ class _LocationFields extends StatelessWidget {
                 ? selectedCity
                 : (cities.isEmpty ? null : cities.first),
             isExpanded: true,
-            decoration: _petFieldDecoration('Ciudad / localidad'),
+            decoration: _petFieldDecoration(context, 'Ciudad / localidad'),
             items: cities
                 .map(
                   (city) =>
@@ -1116,20 +1133,33 @@ class _PetField extends StatelessWidget {
       maxLines: maxLines,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
-      decoration: _petFieldDecoration(label, hintText: hintText),
+      decoration: _petFieldDecoration(context, label, hintText: hintText),
     );
   }
 }
 
-InputDecoration _petFieldDecoration(String label, {String? hintText}) {
+InputDecoration _petFieldDecoration(
+  BuildContext context,
+  String label, {
+  String? hintText,
+}) {
+  final theme = Theme.of(context);
   return InputDecoration(
     labelText: label,
     hintText: hintText,
     filled: true,
-    fillColor: AppColors.surfaceAlt,
+    fillColor: theme.inputDecorationTheme.fillColor,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(18),
-      borderSide: BorderSide.none,
+      borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+      borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+      borderSide: BorderSide(color: theme.colorScheme.primary),
     ),
   );
 }

@@ -9,6 +9,7 @@ import '../features/pets/presentation/screens/secure_qr_scan_screen.dart';
 import 'localization/app_locale_controller.dart';
 import 'localization/app_localizations.dart';
 import 'navigation/main_navigation_screen.dart';
+import 'theme/app_theme_controller.dart';
 import '../theme/app_theme.dart';
 
 class MascotifyApp extends StatefulWidget {
@@ -16,10 +17,12 @@ class MascotifyApp extends StatefulWidget {
     super.key,
     required this.sessionController,
     this.localeController,
+    this.themeController,
   });
 
   final AuthSessionController sessionController;
   final AppLocaleController? localeController;
+  final AppThemeController? themeController;
 
   @override
   State<MascotifyApp> createState() => _MascotifyAppState();
@@ -27,7 +30,9 @@ class MascotifyApp extends StatefulWidget {
 
 class _MascotifyAppState extends State<MascotifyApp> {
   AppLocaleController? _ownedLocaleController;
+  AppThemeController? _ownedThemeController;
   Future<AppLocaleController>? _localeControllerFuture;
+  Future<AppThemeController>? _themeControllerFuture;
 
   @override
   void initState() {
@@ -40,26 +45,46 @@ class _MascotifyAppState extends State<MascotifyApp> {
         return _ownedLocaleController!;
       });
     }
+    if (widget.themeController == null) {
+      _themeControllerFuture = SharedPreferences.getInstance().then((
+        preferences,
+      ) {
+        _ownedThemeController = AppThemeController(preferences: preferences);
+        return _ownedThemeController!;
+      });
+    }
   }
 
   @override
   void dispose() {
     _ownedLocaleController?.dispose();
+    _ownedThemeController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final providedController = widget.localeController;
-    if (providedController != null) {
+    final providedLocaleController = widget.localeController;
+    final providedThemeController = widget.themeController;
+    if (providedLocaleController != null && providedThemeController != null) {
       return _LocalizedMascotifyApp(
         sessionController: widget.sessionController,
-        localeController: providedController,
+        localeController: providedLocaleController,
+        themeController: providedThemeController,
       );
     }
 
-    return FutureBuilder<AppLocaleController>(
-      future: _localeControllerFuture,
+    return FutureBuilder<List<Object>>(
+      future: Future.wait<Object>([
+        if (providedLocaleController == null)
+          _localeControllerFuture!
+        else
+          Future<AppLocaleController>.value(providedLocaleController),
+        if (providedThemeController == null)
+          _themeControllerFuture!
+        else
+          Future<AppThemeController>.value(providedThemeController),
+      ]),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const MaterialApp(
@@ -70,7 +95,8 @@ class _MascotifyAppState extends State<MascotifyApp> {
 
         return _LocalizedMascotifyApp(
           sessionController: widget.sessionController,
-          localeController: snapshot.data!,
+          localeController: snapshot.data![0] as AppLocaleController,
+          themeController: snapshot.data![1] as AppThemeController,
         );
       },
     );
@@ -81,56 +107,63 @@ class _LocalizedMascotifyApp extends StatelessWidget {
   const _LocalizedMascotifyApp({
     required this.sessionController,
     required this.localeController,
+    required this.themeController,
   });
 
   final AuthSessionController sessionController;
   final AppLocaleController localeController;
+  final AppThemeController themeController;
 
   @override
   Widget build(BuildContext context) {
     return AppLocaleScope(
       controller: localeController,
-      child: AuthScope(
-        controller: sessionController,
-        child: AnimatedBuilder(
-          animation: localeController,
-          builder: (context, _) {
-            return MaterialApp(
-              title: 'Mascotify',
-              debugShowCheckedModeBanner: false,
-              theme: AppTheme.light(),
-              locale: localeController.materialLocale,
-              supportedLocales: AppLocalizations.supportedLocales,
-              localizationsDelegates: const [
-                AppLocalizations.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              localeResolutionCallback: (locale, supportedLocales) {
-                return AppLocalizations.resolve(locale);
-              },
-              onGenerateRoute: (settings) {
-                final name = settings.name ?? '';
-                const petQrPrefix = '/pet/qr/';
-                const publicQrPrefix = '/q/';
-                final prefix = name.startsWith(publicQrPrefix)
-                    ? publicQrPrefix
-                    : petQrPrefix;
-                if (name.startsWith(prefix) && name.length > prefix.length) {
-                  final qrId = Uri.decodeComponent(
-                    name.substring(prefix.length),
-                  );
-                  return MaterialPageRoute<void>(
-                    settings: settings,
-                    builder: (_) => SecureQrScanScreen(qrId: qrId),
-                  );
-                }
-                return null;
-              },
-              home: const _AppSessionGate(),
-            );
-          },
+      child: AppThemeScope(
+        controller: themeController,
+        child: AuthScope(
+          controller: sessionController,
+          child: AnimatedBuilder(
+            animation: Listenable.merge([localeController, themeController]),
+            builder: (context, _) {
+              return MaterialApp(
+                title: 'Mascotify',
+                debugShowCheckedModeBanner: false,
+                theme: AppTheme.light(),
+                darkTheme: AppTheme.dark(),
+                themeMode: themeController.materialThemeMode,
+                locale: localeController.materialLocale,
+                supportedLocales: AppLocalizations.supportedLocales,
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                localeResolutionCallback: (locale, supportedLocales) {
+                  return AppLocalizations.resolve(locale);
+                },
+                onGenerateRoute: (settings) {
+                  final name = settings.name ?? '';
+                  const petQrPrefix = '/pet/qr/';
+                  const publicQrPrefix = '/q/';
+                  final prefix = name.startsWith(publicQrPrefix)
+                      ? publicQrPrefix
+                      : petQrPrefix;
+                  if (name.startsWith(prefix) && name.length > prefix.length) {
+                    final qrId = Uri.decodeComponent(
+                      name.substring(prefix.length),
+                    );
+                    return MaterialPageRoute<void>(
+                      settings: settings,
+                      builder: (_) => SecureQrScanScreen(qrId: qrId),
+                    );
+                  }
+                  return null;
+                },
+                home: const _AppSessionGate(),
+              );
+            },
+          ),
         ),
       ),
     );

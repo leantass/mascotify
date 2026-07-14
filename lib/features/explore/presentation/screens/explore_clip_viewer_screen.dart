@@ -1,12 +1,25 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../shared/models/social_models.dart';
+import '../../../../shared/widgets/paw_loading_indicator.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
-import 'clip_web_asset_video_view.dart'
-    if (dart.library.js_interop) 'clip_web_asset_video_view_web.dart';
+import '../../../../theme/app_theme.dart';
+import '../../../profile/presentation/screens/help_screen.dart';
+
+const double _clipViewerAspectRatio = 480 / 854;
+const double _clipViewerDesktopBreakpoint = 700;
+const double _clipViewerDesktopMaxWidth = 420;
+const double _clipViewerDesktopSideGutter = 48;
+const double _clipViewerDesktopVerticalGutter = 16;
+const double _clipPlaybackHudHeight = 46;
+const double _clipPlaybackHudBottomMargin = 10;
+const double _clipPlaybackHudReservedHeight =
+    _clipPlaybackHudHeight + _clipPlaybackHudBottomMargin + 8;
 
 class ExploreClipViewerScreen extends StatefulWidget {
   const ExploreClipViewerScreen({
@@ -84,123 +97,153 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
   }
 
   Widget _buildViewer() {
-    return ResponsivePageBody(
-      maxWidth: 560,
-      child: SizedBox.expand(
-        child: Stack(
-          children: [
-            Semantics(
-              label: 'Feed vertical de clips',
-              child: PageView.builder(
-                controller: _pageController,
-                scrollDirection: Axis.vertical,
-                itemCount: _clips.length,
-                onPageChanged: (index) => setState(() => _currentIndex = index),
-                itemBuilder: (context, index) {
-                  final clip = _clips[index];
-                  return _ViewerClipPage(
-                    key: ValueKey(clip.id),
-                    clip: clip,
-                    isActive: index == _currentIndex,
-                    isMuted: _isMuted,
-                    onSwipeNext: () => _goToClip(index + 1),
-                    onSwipePrevious: () => _goToClip(index - 1),
-                    onToggleLike: () => _toggleClipLike(clip.id),
-                    onShare: () => _shareClip(clip.id),
-                    onToggleSave: () => _toggleClipSave(clip.id),
-                    onComments: _showCommentsComingSoon,
-                    onToggleFollow: clip.authorId == null
-                        ? null
-                        : () => _toggleClipFollow(clip.id),
-                  );
-                },
-              ),
-            ),
-            Positioned(
-              left: 14,
-              right: 14,
-              top: 12,
-              child: Row(
-                children: [
-                  TextButton.icon(
-                    onPressed: _close,
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    label: const Text('Volver'),
-                    style: _viewerNavigationButtonStyle(),
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 11,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.34),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.14),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final frameSize = _viewerFrameSizeFor(constraints);
+        final isDesktopFrame =
+            constraints.maxWidth >= _clipViewerDesktopBreakpoint;
+
+        return Center(
+          child: Container(
+            key: const ValueKey('clips-vertical-frame'),
+            width: frameSize.width,
+            height: frameSize.height,
+            decoration: BoxDecoration(
+              color: const Color(0xFF070B0D),
+              borderRadius: BorderRadius.circular(isDesktopFrame ? 28 : 0),
+              border: isDesktopFrame
+                  ? Border.all(color: Colors.white.withValues(alpha: 0.08))
+                  : null,
+              boxShadow: isDesktopFrame
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.38),
+                        blurRadius: 36,
+                        offset: const Offset(0, 20),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.22),
-                          blurRadius: 16,
-                          offset: const Offset(0, 8),
+                    ]
+                  : null,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              clipBehavior: Clip.hardEdge,
+              children: [
+                Semantics(
+                  label: 'Feed vertical de clips',
+                  child: PageView.builder(
+                    key: const ValueKey('clips-vertical-page-view'),
+                    controller: _pageController,
+                    scrollDirection: Axis.vertical,
+                    clipBehavior: Clip.hardEdge,
+                    itemCount: _clips.length,
+                    onPageChanged: (index) =>
+                        setState(() => _currentIndex = index),
+                    itemBuilder: (context, index) {
+                      final clip = _clips[index];
+                      return _ViewerClipPage(
+                        key: ValueKey('clip-page-${clip.id}'),
+                        clip: clip,
+                        isActive: index == _currentIndex,
+                        isMuted: _isMuted,
+                        onSwipeNext: () => _goToClip(index + 1),
+                        onSwipePrevious: () => _goToClip(index - 1),
+                        onToggleLike: () => _toggleClipLike(clip.id),
+                        onShare: () => _shareClip(clip.id),
+                        onToggleSave: () => _toggleClipSave(clip.id),
+                        onComments: _showCommentsComingSoon,
+                        onToggleFollow: clip.authorId == null
+                            ? null
+                            : () => _toggleClipFollow(clip.id),
+                      );
+                    },
+                  ),
+                ),
+                Positioned(
+                  left: 14,
+                  right: 14,
+                  top: 12,
+                  child: Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: _close,
+                        icon: const Icon(Icons.arrow_back_rounded),
+                        label: const Text('Volver'),
+                        style: _viewerNavigationButtonStyle(),
+                      ),
+                      const Spacer(),
+                      IconButton.filledTonal(
+                        key: const ValueKey('clips-contextual-help'),
+                        tooltip: 'Ayuda sobre Clips',
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                const HelpScreen(initialTopic: HelpTopic.clips),
+                          ),
                         ),
-                      ],
-                    ),
-                    child: Text(
-                      '${_currentIndex + 1}/${_clips.length}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
+                        icon: const Icon(Icons.help_outline_rounded),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 11,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.34),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.14),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.22),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          '${_currentIndex + 1}/${_clips.length}',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  right: 14,
+                  top: 58,
+                  child: Tooltip(
+                    message: _isMuted ? 'Activar sonido' : 'Silenciar',
+                    child: Semantics(
+                      button: true,
+                      label: _isMuted ? 'Activar sonido' : 'Silenciar video',
+                      child: IconButton.filled(
+                        onPressed: () => setState(() => _isMuted = !_isMuted),
+                        icon: Icon(
+                          _isMuted
+                              ? Icons.volume_off_rounded
+                              : Icons.volume_up_rounded,
+                        ),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.black.withValues(alpha: 0.42),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(42, 42),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-            Positioned(
-              right: 17,
-              top: 96,
-              bottom: 28,
-              child: RotatedBox(
-                quarterTurns: 1,
-                child: LinearProgressIndicator(
-                  value: (_currentIndex + 1) / _clips.length,
-                  minHeight: 3,
-                  color: AppColors.accent,
-                  backgroundColor: Colors.white.withValues(alpha: 0.16),
                 ),
-              ),
+              ],
             ),
-            Positioned(
-              right: 14,
-              top: 58,
-              child: Tooltip(
-                message: _isMuted ? 'Activar sonido' : 'Silenciar',
-                child: Semantics(
-                  button: true,
-                  label: _isMuted ? 'Activar sonido' : 'Silenciar video',
-                  child: IconButton.filled(
-                    onPressed: () => setState(() => _isMuted = !_isMuted),
-                    icon: Icon(
-                      _isMuted
-                          ? Icons.volume_off_rounded
-                          : Icons.volume_up_rounded,
-                    ),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.black.withValues(alpha: 0.42),
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(42, 42),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -214,8 +257,9 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: mascotifySurface(context),
               borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: mascotifyBorder(context)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -225,12 +269,12 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: AppColors.accentSoft,
+                    color: mascotifyTone(context, AppColors.accentSoft),
                     borderRadius: BorderRadius.circular(18),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.play_disabled_rounded,
-                    color: AppColors.accentDeep,
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -242,7 +286,7 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
                 Text(
                   'No pudimos encontrar ese clip local. Podes volver a Explorar y abrir otro desde la lista.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: mascotifySecondaryText(context),
                     height: 1.45,
                   ),
                 ),
@@ -359,7 +403,54 @@ class _ExploreClipViewerScreenState extends State<ExploreClipViewerScreen> {
   }
 }
 
-class _ViewerClipPage extends StatelessWidget {
+Size _viewerFrameSizeFor(BoxConstraints constraints) {
+  final availableWidth = constraints.maxWidth.isFinite
+      ? constraints.maxWidth
+      : _clipViewerDesktopMaxWidth;
+  final availableHeight = constraints.maxHeight.isFinite
+      ? constraints.maxHeight
+      : _clipViewerDesktopMaxWidth / _clipViewerAspectRatio;
+  final isDesktopFrame = availableWidth >= _clipViewerDesktopBreakpoint;
+
+  if (!isDesktopFrame) {
+    return Size(availableWidth, availableHeight);
+  }
+
+  final maxFrameHeight = (availableHeight - _clipViewerDesktopVerticalGutter)
+      .clamp(0.0, double.infinity);
+  final maxFrameWidth = (availableWidth - _clipViewerDesktopSideGutter).clamp(
+    0.0,
+    _clipViewerDesktopMaxWidth,
+  );
+
+  var width = maxFrameHeight * _clipViewerAspectRatio;
+  if (width > maxFrameWidth) {
+    width = maxFrameWidth;
+  }
+  var height = width / _clipViewerAspectRatio;
+  if (height > maxFrameHeight) {
+    height = maxFrameHeight;
+    width = height * _clipViewerAspectRatio;
+  }
+
+  return Size(width, height);
+}
+
+class _ClipPlaybackState {
+  const _ClipPlaybackState({
+    this.progress = 0,
+    this.position = Duration.zero,
+    this.duration = Duration.zero,
+    this.onSeek,
+  });
+
+  final double progress;
+  final Duration position;
+  final Duration duration;
+  final ValueChanged<double>? onSeek;
+}
+
+class _ViewerClipPage extends StatefulWidget {
   const _ViewerClipPage({
     super.key,
     required this.clip,
@@ -386,190 +477,208 @@ class _ViewerClipPage extends StatelessWidget {
   final VoidCallback? onToggleFollow;
 
   @override
+  State<_ViewerClipPage> createState() => _ViewerClipPageState();
+}
+
+class _ViewerClipPageState extends State<_ViewerClipPage> {
+  final ValueNotifier<_ClipPlaybackState> _playback = ValueNotifier(
+    const _ClipPlaybackState(),
+  );
+
+  @override
+  void didUpdateWidget(covariant _ViewerClipPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.clip.id != widget.clip.id) {
+      _playback.value = const _ClipPlaybackState();
+    }
+  }
+
+  @override
+  void dispose() {
+    _playback.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final clip = widget.clip;
     final hasVideo = clip.hasPlayableVideo || !clip.isDemoContent;
     final thumbnail = clip.thumbnailAssetPath;
-    final topMediaLabel = clip.videoSourceType == 'asset'
-        ? 'Video local'
-        : clip.videoSourceType == 'network'
-        ? 'Video remoto'
-        : clip.isDemoContent
-        ? 'Demo'
-        : 'Video remoto';
+    final topMediaLabel = _mediaLabelFor(clip);
     final creatorLabel =
+        clip.sourceLabel ??
         clip.authorDisplayName ??
-        (clip.authorId == null ? clip.sourceLabel : 'Creador ${clip.authorId}');
+        (clip.authorId == null ? null : 'Creador ${clip.authorId}');
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(22),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            _ClipVideoSurface(
-              clip: clip,
-              thumbnail: thumbnail,
-              isActive: isActive,
-              isMuted: isMuted,
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withValues(alpha: 0.22),
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.28),
-                    Colors.black.withValues(alpha: 0.84),
-                  ],
-                  stops: const [0, 0.32, 0.58, 1],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+    return RepaintBoundary(
+      child: ColoredBox(
+        color: const Color(0xFF070B0D),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              fit: StackFit.expand,
+              clipBehavior: Clip.hardEdge,
+              children: [
+                _ClipVideoSurface(
+                  clip: clip,
+                  thumbnail: thumbnail,
+                  isActive: widget.isActive,
+                  isMuted: widget.isMuted,
+                  playback: _playback,
                 ),
-              ),
-            ),
-            Positioned.fill(
-              child: _VerticalSwipeLayer(
-                onNext: onSwipeNext,
-                onPrevious: onSwipePrevious,
-              ),
-            ),
-            Positioned(
-              left: 18,
-              right: 86,
-              top: 82,
-              child: Wrap(
-                spacing: 7,
-                runSpacing: 7,
-                children: [
-                  _ViewerBadge(label: topMediaLabel),
-                  if (clip.sourceLabel != null)
-                    _ViewerBadge(label: clip.sourceLabel!),
-                  _ViewerBadge(label: clip.category),
-                  _ViewerBadge(label: clip.animalType),
-                ],
-              ),
-            ),
-            Positioned(
-              right: 10,
-              bottom: 24,
-              child: _ReelActionRail(
-                clip: clip,
-                onToggleLike: onToggleLike,
-                onComments: onComments,
-                onToggleSave: onToggleSave,
-                onShare: onShare,
-                onToggleFollow: onToggleFollow,
-              ),
-            ),
-            Positioned(
-              left: 18,
-              right: 90,
-              bottom: 22,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (!hasVideo) const _ViewerBadge(label: 'Clip demo local'),
-                  const SizedBox(height: 10),
-                  if (creatorLabel != null) ...[
-                    Row(
+                IgnorePointer(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withValues(alpha: 0.22),
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.28),
+                          Colors.black.withValues(alpha: 0.84),
+                        ],
+                        stops: const [0, 0.32, 0.58, 1],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  bottom: _clipPlaybackHudReservedHeight,
+                  child: _VerticalSwipeLayer(
+                    onNext: widget.onSwipeNext,
+                    onPrevious: widget.onSwipePrevious,
+                  ),
+                ),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final metrics = ClipViewerMetrics.fromSize(
+                      Size(constraints.maxWidth, constraints.maxHeight),
+                    );
+                    return Stack(
                       children: [
-                        Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: AppColors.accent.withValues(alpha: 0.9),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.58),
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.pets_rounded,
-                            color: Colors.white,
-                            size: 14,
+                        Positioned(
+                          left: metrics.horizontalPadding,
+                          right: metrics.actionRailWidth + 18,
+                          top: metrics.topChipsOffset,
+                          child: _ClipBadgeRow(
+                            badges: _topBadgesFor(clip, topMediaLabel),
+                            metrics: metrics,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            creatorLabel,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.86),
-                                  fontWeight: FontWeight.w800,
-                                ),
+                        Positioned(
+                          right: metrics.horizontalPadding - 4,
+                          bottom: metrics.actionRailBottom,
+                          child: _ReelActionRail(
+                            clip: clip,
+                            metrics: metrics,
+                            onToggleLike: widget.onToggleLike,
+                            onComments: widget.onComments,
+                            onToggleSave: widget.onToggleSave,
+                            onShare: widget.onShare,
+                            onToggleFollow: widget.onToggleFollow,
+                          ),
+                        ),
+                        Positioned(
+                          left: metrics.horizontalPadding,
+                          right: metrics.actionRailWidth + 18,
+                          bottom: metrics.bottomPadding,
+                          child: _ClipBottomInfo(
+                            clip: clip,
+                            creatorLabel: creatorLabel,
+                            hasVideo: hasVideo,
+                            metrics: metrics,
+                          ),
+                        ),
+                        Positioned(
+                          left: metrics.horizontalPadding,
+                          right: metrics.horizontalPadding,
+                          bottom: _clipPlaybackHudBottomMargin,
+                          child: ValueListenableBuilder<_ClipPlaybackState>(
+                            valueListenable: _playback,
+                            builder: (context, playback, _) {
+                              return _ClipPlaybackHud(playback: playback);
+                            },
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 7),
-                  ],
-                  Text(
-                    clip.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      height: 1.05,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.65),
-                          blurRadius: 12,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 7),
-                  Text(
-                    clip.description,
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      height: 1.34,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.72),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.swap_vert_rounded,
-                        color: Colors.white.withValues(alpha: 0.74),
-                        size: 16,
-                      ),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          'Desliza para ver mas clips',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.74),
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+class ClipViewerMetrics {
+  const ClipViewerMetrics({
+    required this.frameWidth,
+    required this.frameHeight,
+    required this.scaleFactor,
+    required this.actionButtonSize,
+    required this.actionIconSize,
+    required this.actionLabelFontSize,
+    required this.chipFontSize,
+    required this.chipHeight,
+    required this.bottomTitleSize,
+    required this.bottomCaptionSize,
+    required this.bottomPadding,
+    required this.sideRailSpacing,
+    required this.seekBarHeight,
+    required this.horizontalPadding,
+    required this.topChipsOffset,
+    required this.actionRailWidth,
+    required this.actionRailBottom,
+  });
+
+  final double frameWidth;
+  final double frameHeight;
+  final double scaleFactor;
+  final double actionButtonSize;
+  final double actionIconSize;
+  final double actionLabelFontSize;
+  final double chipFontSize;
+  final double chipHeight;
+  final double bottomTitleSize;
+  final double bottomCaptionSize;
+  final double bottomPadding;
+  final double sideRailSpacing;
+  final double seekBarHeight;
+  final double horizontalPadding;
+  final double topChipsOffset;
+  final double actionRailWidth;
+  final double actionRailBottom;
+
+  factory ClipViewerMetrics.fromSize(Size size) {
+    final width = size.width.clamp(320.0, 460.0);
+    final scale = (width / 390).clamp(0.9, 1.08);
+    return ClipViewerMetrics(
+      frameWidth: size.width,
+      frameHeight: size.height,
+      scaleFactor: scale,
+      actionButtonSize: (42 * scale).clamp(40.0, 47.0),
+      actionIconSize: (22 * scale).clamp(21.0, 25.0),
+      actionLabelFontSize: (10 * scale).clamp(9.5, 11.5),
+      chipFontSize: (10.8 * scale).clamp(10.5, 12.0),
+      chipHeight: (27 * scale).clamp(25.0, 29.0),
+      bottomTitleSize: (18.5 * scale).clamp(17.5, 20.0),
+      bottomCaptionSize: (12.6 * scale).clamp(12.0, 13.6),
+      bottomPadding:
+          _clipPlaybackHudReservedHeight + (16 * scale).clamp(14.0, 22.0),
+      sideRailSpacing: (9 * scale).clamp(8.0, 11.0),
+      seekBarHeight: (3 * scale).clamp(2.5, 4.0),
+      horizontalPadding: (17 * scale).clamp(15.0, 21.0),
+      topChipsOffset: (72 * scale).clamp(64.0, 80.0),
+      actionRailWidth: (58 * scale).clamp(54.0, 64.0),
+      actionRailBottom:
+          _clipPlaybackHudReservedHeight + (54 * scale).clamp(50.0, 64.0),
     );
   }
 }
@@ -597,9 +706,12 @@ class _ViewerPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.accentSoft, AppColors.primarySoft],
+          colors: [
+            mascotifyTone(context, AppColors.accentSoft),
+            mascotifyTone(context, AppColors.primarySoft),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -627,13 +739,17 @@ class _ViewerPlaceholder extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.86),
+                    color: mascotifyTone(
+                      context,
+                      Colors.white.withValues(alpha: 0.86),
+                    ),
                     borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: mascotifyBorder(context)),
                   ),
                   child: Text(
                     message ?? 'Vista demo segura',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
+                      color: mascotifyPrimaryText(context),
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -687,12 +803,14 @@ class _ClipVideoSurface extends StatelessWidget {
     required this.thumbnail,
     required this.isActive,
     required this.isMuted,
+    required this.playback,
   });
 
   final ExploreClip clip;
   final String? thumbnail;
   final bool isActive;
   final bool isMuted;
+  final ValueNotifier<_ClipPlaybackState> playback;
 
   @override
   Widget build(BuildContext context) {
@@ -701,8 +819,9 @@ class _ClipVideoSurface extends StatelessWidget {
         assetPath: clip.videoAssetPath!,
         isActive: isActive,
         isMuted: isMuted,
+        playback: playback,
         loading: _buildLoadingSurface(context),
-        fallback: _buildFallback('No pudimos reproducir este video'),
+        fallback: _buildFallback(context, 'No pudimos cargar este clip'),
       );
     }
 
@@ -711,15 +830,16 @@ class _ClipVideoSurface extends StatelessWidget {
         videoUrl: clip.videoUrl!,
         isActive: isActive,
         isMuted: isMuted,
+        playback: playback,
         loading: _buildLoadingSurface(context),
-        fallback: _buildFallback('No pudimos reproducir este video'),
+        fallback: _buildFallback(context, 'No pudimos cargar este clip'),
       );
     }
 
-    return _buildFallback('Fallback demo animado');
+    return _buildFallback(context, 'Fallback demo animado');
   }
 
-  Widget _buildFallback(String message) {
+  Widget _buildFallback(BuildContext context, String message) {
     if (thumbnail == null) {
       return _ViewerPlaceholder(message: message);
     }
@@ -732,13 +852,17 @@ class _ClipVideoSurface extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.86),
+              color: mascotifyTone(
+                context,
+                Colors.white.withValues(alpha: 0.86),
+              ),
               borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: mascotifyBorder(context)),
             ),
             child: Text(
               message,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: mascotifyPrimaryText(context),
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -775,30 +899,176 @@ class _ClipVideoSurface extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.34),
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
             ),
+            child: PawLoadingIndicator(
+              message: 'Cargando video...',
+              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primaryDeep.withValues(alpha: 0.82),
+              compact: true,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+String _mediaLabelFor(ExploreClip clip) {
+  if (clip.sourceType == 'officialMascotify') return 'Mascotify';
+  if (clip.videoSourceType == 'asset') return 'Video local';
+  if (clip.videoSourceType == 'network') return 'Video remoto';
+  if (clip.isDemoContent) return 'Demo';
+  return 'Video remoto';
+}
+
+List<String> _topBadgesFor(ExploreClip clip, String mediaLabel) {
+  final values = <String>[
+    mediaLabel,
+    if (clip.contentOriginLabel != null) clip.contentOriginLabel!,
+    if (clip.sourceType != 'officialMascotify') clip.category,
+  ];
+  final maxBadges = clip.sourceType == 'officialMascotify' ? 2 : 3;
+  return values.take(maxBadges).toList(growable: false);
+}
+
+class _ClipBadgeRow extends StatelessWidget {
+  const _ClipBadgeRow({required this.badges, required this.metrics});
+
+  final List<String> badges;
+  final ClipViewerMetrics metrics;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      key: const ValueKey('clip-badge-row'),
+      height: 31,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: [
+            for (var index = 0; index < badges.length; index++) ...[
+              _ViewerBadge(label: badges[index], metrics: metrics),
+              if (index < badges.length - 1) const SizedBox(width: 6),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ClipBottomInfo extends StatelessWidget {
+  const _ClipBottomInfo({
+    required this.clip,
+    required this.creatorLabel,
+    required this.hasVideo,
+    required this.metrics,
+  });
+
+  final ExploreClip clip;
+  final String? creatorLabel;
+  final bool hasVideo;
+  final ClipViewerMetrics metrics;
+
+  @override
+  Widget build(BuildContext context) {
+    final creator = creatorLabel;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (!hasVideo) _ViewerBadge(label: 'Clip demo local', metrics: metrics),
+        if (!hasVideo) const SizedBox(height: 8),
+        if (creator != null) ...[
+          Container(
+            key: const ValueKey('clip-official-identity'),
+            constraints: const BoxConstraints(minHeight: 28),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white.withValues(alpha: 0.92),
+                Container(
+                  width: 25,
+                  height: 25,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.92),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.50),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.28),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.pets_rounded,
+                    color: Colors.white,
+                    size: 13,
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'Cargando video',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
+                Expanded(
+                  child: Text(
+                    creator,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.88),
+                      fontWeight: FontWeight.w700,
+                      fontSize: metrics.bottomCaptionSize - 0.7,
+                      letterSpacing: 0,
+                      height: 1.05,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.52),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 9),
+        ],
+        Text(
+          clip.title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: metrics.bottomTitleSize,
+            height: 1.08,
+            shadows: [
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.65),
+                blurRadius: 12,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          clip.description,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Colors.white.withValues(alpha: 0.9),
+            fontSize: metrics.bottomCaptionSize,
+            height: 1.28,
+            shadows: [
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.72),
+                blurRadius: 10,
+              ),
+            ],
           ),
         ),
       ],
@@ -811,6 +1081,7 @@ class _AssetClipVideoPlayer extends StatefulWidget {
     required this.assetPath,
     required this.isActive,
     required this.isMuted,
+    required this.playback,
     required this.loading,
     required this.fallback,
   });
@@ -818,6 +1089,7 @@ class _AssetClipVideoPlayer extends StatefulWidget {
   final String assetPath;
   final bool isActive;
   final bool isMuted;
+  final ValueNotifier<_ClipPlaybackState> playback;
   final Widget loading;
   final Widget fallback;
 
@@ -828,7 +1100,6 @@ class _AssetClipVideoPlayer extends StatefulWidget {
 class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
   VideoPlayerController? _controller;
   bool _hasError = false;
-  bool _webVideoReady = false;
 
   @override
   void initState() {
@@ -842,7 +1113,6 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
     if (oldWidget.assetPath != widget.assetPath) {
       _disposeController();
       _hasError = false;
-      _webVideoReady = false;
       _initialize();
     } else if (oldWidget.isActive != widget.isActive) {
       _syncPlayback();
@@ -859,8 +1129,11 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
   }
 
   Future<void> _initialize() async {
-    if (kIsWeb) return;
-    final controller = VideoPlayerController.asset(widget.assetPath);
+    final controller = kIsWeb
+        ? VideoPlayerController.networkUrl(
+            Uri.base.resolve('assets/${widget.assetPath}'),
+          )
+        : VideoPlayerController.asset(widget.assetPath);
     _controller = controller;
     controller.addListener(_onControllerChanged);
     try {
@@ -868,6 +1141,7 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
       await controller.setLooping(true);
       await controller.setVolume(widget.isMuted ? 0 : 1);
       await _syncPlayback();
+      _publishPlayback();
       if (!mounted) return;
       setState(() {});
     } catch (_) {
@@ -882,10 +1156,34 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
     controller.removeListener(_onControllerChanged);
     controller.dispose();
     _controller = null;
+    widget.playback.value = const _ClipPlaybackState();
   }
 
   void _onControllerChanged() {
+    _publishPlayback();
     if (mounted) setState(() {});
+  }
+
+  void _publishPlayback() {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) {
+      widget.playback.value = const _ClipPlaybackState();
+      return;
+    }
+    final duration = controller.value.duration;
+    final position = controller.value.position;
+    final progress = duration.inMilliseconds <= 0
+        ? 0.0
+        : (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
+    widget.playback.value = _ClipPlaybackState(
+      progress: progress,
+      position: position,
+      duration: duration,
+      onSeek: (value) {
+        final target = duration * value;
+        controller.seekTo(target);
+      },
+    );
   }
 
   Future<void> _syncPlayback() async {
@@ -911,34 +1209,6 @@ class _AssetClipVideoPlayerState extends State<_AssetClipVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) {
-      if (_hasError) {
-        return widget.fallback;
-      }
-
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          WebAssetClipVideoView(
-            assetPath: widget.assetPath,
-            isActive: widget.isActive,
-            isMuted: widget.isMuted,
-            onReady: () {
-              if (mounted && !_webVideoReady) {
-                setState(() => _webVideoReady = true);
-              }
-            },
-            onError: () {
-              if (mounted) {
-                setState(() => _hasError = true);
-              }
-            },
-          ),
-          if (!_webVideoReady) widget.loading,
-        ],
-      );
-    }
-
     final controller = _controller;
     if (_hasError || controller == null) {
       return widget.fallback;
@@ -956,6 +1226,7 @@ class _NetworkClipVideoPlayer extends StatefulWidget {
     required this.videoUrl,
     required this.isActive,
     required this.isMuted,
+    required this.playback,
     required this.loading,
     required this.fallback,
   });
@@ -963,6 +1234,7 @@ class _NetworkClipVideoPlayer extends StatefulWidget {
   final String videoUrl;
   final bool isActive;
   final bool isMuted;
+  final ValueNotifier<_ClipPlaybackState> playback;
   final Widget loading;
   final Widget fallback;
 
@@ -992,6 +1264,7 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
       }
       _controller = null;
       _hasError = false;
+      widget.playback.value = const _ClipPlaybackState();
       _initialize();
     } else if (oldWidget.isActive != widget.isActive) {
       _syncPlayback();
@@ -1008,6 +1281,7 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
       controller.removeListener(_onControllerChanged);
       controller.dispose();
     }
+    widget.playback.value = const _ClipPlaybackState();
     super.dispose();
   }
 
@@ -1022,6 +1296,7 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
       await controller.setLooping(true);
       await controller.setVolume(widget.isMuted ? 0 : 1);
       await _syncPlayback();
+      _publishPlayback();
       if (!mounted) return;
       setState(() {});
     } catch (_) {
@@ -1031,7 +1306,30 @@ class _NetworkClipVideoPlayerState extends State<_NetworkClipVideoPlayer> {
   }
 
   void _onControllerChanged() {
+    _publishPlayback();
     if (mounted) setState(() {});
+  }
+
+  void _publishPlayback() {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) {
+      widget.playback.value = const _ClipPlaybackState();
+      return;
+    }
+    final duration = controller.value.duration;
+    final position = controller.value.position;
+    final progress = duration.inMilliseconds <= 0
+        ? 0.0
+        : (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
+    widget.playback.value = _ClipPlaybackState(
+      progress: progress,
+      position: position,
+      duration: duration,
+      onSeek: (value) {
+        final target = duration * value;
+        controller.seekTo(target);
+      },
+    );
   }
 
   Future<void> _syncPlayback() async {
@@ -1076,12 +1374,6 @@ class _VideoPlayerFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final duration = controller.value.duration;
-    final position = controller.value.position;
-    final progress = duration.inMilliseconds <= 0
-        ? 0.0
-        : (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
-
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
@@ -1094,12 +1386,17 @@ class _VideoPlayerFrame extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          FittedBox(
-            fit: BoxFit.cover,
-            child: SizedBox(
-              width: controller.value.size.width,
-              height: controller.value.size.height,
-              child: VideoPlayer(controller),
+          ColoredBox(
+            color: const Color(0xFF070B0D),
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: SizedBox(
+                  width: controller.value.size.width,
+                  height: controller.value.size.height,
+                  child: VideoPlayer(controller),
+                ),
+              ),
             ),
           ),
           Center(
@@ -1121,19 +1418,76 @@ class _VideoPlayerFrame extends StatelessWidget {
               ),
             ),
           ),
-          Positioned(
-            left: 18,
-            right: 18,
-            bottom: 10,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(999),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 5,
-                color: AppColors.accent,
-                backgroundColor: Colors.white.withValues(alpha: 0.34),
-              ),
-            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ClipPlaybackHud extends StatefulWidget {
+  const _ClipPlaybackHud({required this.playback});
+
+  final _ClipPlaybackState playback;
+
+  @override
+  State<_ClipPlaybackHud> createState() => _ClipPlaybackHudState();
+}
+
+class _ClipPlaybackHudState extends State<_ClipPlaybackHud> {
+  Timer? _hideTimer;
+  bool _showTime = false;
+
+  @override
+  void dispose() {
+    _hideTimer?.cancel();
+    super.dispose();
+  }
+
+  void _showTimeNow() {
+    _hideTimer?.cancel();
+    if (_showTime) return;
+    setState(() => _showTime = true);
+  }
+
+  void _hideTimeSoon() {
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(milliseconds: 900), () {
+      if (!mounted) return;
+      setState(() => _showTime = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final playback = widget.playback;
+    final onSeek = playback.onSeek;
+    return SizedBox(
+      key: const ValueKey('clip-video-seekbar-hud'),
+      height: _clipPlaybackHudHeight,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 140),
+            reverseDuration: const Duration(milliseconds: 160),
+            child: _showTime
+                ? _ClipTimeRow(
+                    key: const ValueKey('clip-video-time-row-visible'),
+                    position: playback.position,
+                    duration: playback.duration,
+                  )
+                : const SizedBox(
+                    key: ValueKey('clip-video-time-row-hidden'),
+                    height: 0,
+                  ),
+          ),
+          SizedBox(height: _showTime ? 5 : 0),
+          ClipVideoSeekBar(
+            progress: playback.progress,
+            height: 3,
+            onSeek: onSeek ?? (_) {},
+            onInteractionStart: _showTimeNow,
+            onInteractionEnd: _hideTimeSoon,
           ),
         ],
       ),
@@ -1141,24 +1495,186 @@ class _VideoPlayerFrame extends StatelessWidget {
   }
 }
 
+class _ClipTimeRow extends StatelessWidget {
+  const _ClipTimeRow({
+    super.key,
+    required this.position,
+    required this.duration,
+  });
+
+  final Duration position;
+  final Duration duration;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.labelMedium?.copyWith(
+      color: Colors.white,
+      fontWeight: FontWeight.w900,
+      fontFeatures: const [FontFeature.tabularFigures()],
+      height: 1,
+      letterSpacing: 0,
+      shadows: [
+        Shadow(color: Colors.black.withValues(alpha: 0.32), blurRadius: 6),
+      ],
+    );
+
+    return Row(
+      key: const ValueKey('clip-video-time-row'),
+      children: [
+        Text(
+          _formatClipTime(position),
+          key: const ValueKey('clip-video-current-time'),
+          style: style,
+        ),
+        const Spacer(),
+        Text(
+          _formatClipTime(duration),
+          key: const ValueKey('clip-video-duration-time'),
+          style: style,
+        ),
+      ],
+    );
+  }
+}
+
+String _formatClipTime(Duration value) {
+  final safeValue = value.isNegative ? Duration.zero : value;
+  final minutes = safeValue.inMinutes.remainder(60);
+  final seconds = safeValue.inSeconds.remainder(60).toString().padLeft(2, '0');
+  return '$minutes:$seconds';
+}
+
+class ClipVideoSeekBar extends StatelessWidget {
+  const ClipVideoSeekBar({
+    super.key,
+    required this.progress,
+    required this.onSeek,
+    this.height = 3,
+    this.onInteractionStart,
+    this.onInteractionEnd,
+  });
+
+  final double progress;
+  final ValueChanged<double> onSeek;
+  final double height;
+  final VoidCallback? onInteractionStart;
+  final VoidCallback? onInteractionEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        void seek(Offset localPosition) {
+          final width = constraints.maxWidth <= 0 ? 1.0 : constraints.maxWidth;
+          onSeek((localPosition.dx / width).clamp(0.0, 1.0));
+        }
+
+        return GestureDetector(
+          key: const ValueKey('clip-video-seekbar'),
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (details) {
+            onInteractionStart?.call();
+            seek(details.localPosition);
+            onInteractionEnd?.call();
+          },
+          onHorizontalDragStart: (_) => onInteractionStart?.call(),
+          onHorizontalDragUpdate: (details) => seek(details.localPosition),
+          onHorizontalDragEnd: (_) => onInteractionEnd?.call(),
+          onHorizontalDragCancel: () => onInteractionEnd?.call(),
+          child: Container(
+            key: const ValueKey('clip-video-seekbar-control'),
+            height: 24,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(999)),
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                Container(
+                  key: const ValueKey('clip-video-seekbar-track'),
+                  height: height,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.34),
+                    borderRadius: BorderRadius.circular(999),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.32),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+                FractionallySizedBox(
+                  widthFactor: progress.clamp(0.0, 1.0),
+                  child: Container(
+                    key: const ValueKey('clip-video-seekbar-progress'),
+                    height: height,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.circular(999),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.accent.withValues(alpha: 0.28),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment((progress.clamp(0.0, 1.0) * 2) - 1, 0),
+                  child: Container(
+                    key: const ValueKey('clip-video-seekbar-thumb'),
+                    width: height + 8,
+                    height: height + 8,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.black.withValues(alpha: 0.32),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.38),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _ViewerBadge extends StatelessWidget {
-  const _ViewerBadge({required this.label});
+  const _ViewerBadge({required this.label, this.metrics});
 
   final String label;
+  final ClipViewerMetrics? metrics;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      height: metrics?.chipHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
+        color: Colors.black.withValues(alpha: 0.24),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -1166,9 +1682,10 @@ class _ViewerBadge extends StatelessWidget {
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
           color: Colors.white,
-          fontWeight: FontWeight.w800,
-          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          fontSize: metrics?.chipFontSize ?? 11,
           height: 1,
+          letterSpacing: 0,
         ),
       ),
     );
@@ -1178,6 +1695,7 @@ class _ViewerBadge extends StatelessWidget {
 class _ReelActionRail extends StatelessWidget {
   const _ReelActionRail({
     required this.clip,
+    required this.metrics,
     required this.onToggleLike,
     required this.onComments,
     required this.onToggleSave,
@@ -1186,6 +1704,7 @@ class _ReelActionRail extends StatelessWidget {
   });
 
   final ExploreClip clip;
+  final ClipViewerMetrics metrics;
   final VoidCallback onToggleLike;
   final VoidCallback onComments;
   final VoidCallback onToggleSave;
@@ -1206,16 +1725,18 @@ class _ReelActionRail extends StatelessWidget {
             label: '${clip.likes} likes',
             selected: clip.isLiked,
             selectedColor: AppColors.primaryDeep,
+            metrics: metrics,
             onPressed: onToggleLike,
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: metrics.sideRailSpacing),
           _ReelActionButton(
             icon: Icons.mode_comment_outlined,
             label: '${clip.comments} comentarios',
             selected: false,
+            metrics: metrics,
             onPressed: onComments,
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: metrics.sideRailSpacing),
           _ReelActionButton(
             icon: clip.isSaved
                 ? Icons.bookmark_rounded
@@ -1223,17 +1744,19 @@ class _ReelActionRail extends StatelessWidget {
             label: clip.isSaved ? 'Guardado' : 'Guardar',
             selected: clip.isSaved,
             selectedColor: AppColors.accentDeep,
+            metrics: metrics,
             onPressed: onToggleSave,
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: metrics.sideRailSpacing),
           _ReelActionButton(
             icon: Icons.ios_share_rounded,
             label: clip.shares > 0 ? '${clip.shares} compartidos' : 'Compartir',
             selected: false,
+            metrics: metrics,
             onPressed: onShare,
           ),
           if (clip.authorId != null && !clip.isDemoContent) ...[
-            const SizedBox(height: 2),
+            SizedBox(height: metrics.sideRailSpacing),
             _ReelActionButton(
               icon: clip.isFollowingAuthor
                   ? Icons.check_circle_rounded
@@ -1241,6 +1764,7 @@ class _ReelActionRail extends StatelessWidget {
               label: clip.isFollowingAuthor ? 'Siguiendo' : 'Seguir',
               selected: clip.isFollowingAuthor,
               selectedColor: AppColors.success,
+              metrics: metrics,
               onPressed: onToggleFollow ?? () {},
             ),
           ],
@@ -1255,6 +1779,7 @@ class _ReelActionButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.selected,
+    required this.metrics,
     required this.onPressed,
     this.selectedColor = AppColors.primaryDeep,
   });
@@ -1262,6 +1787,7 @@ class _ReelActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool selected;
+  final ClipViewerMetrics metrics;
   final VoidCallback onPressed;
   final Color selectedColor;
 
@@ -1270,12 +1796,13 @@ class _ReelActionButton extends StatelessWidget {
     final iconColor = selected ? selectedColor : Colors.white;
     final backgroundColor = selected
         ? Colors.white.withValues(alpha: 0.94)
-        : Colors.black.withValues(alpha: 0.38);
+        : Colors.black.withValues(alpha: 0.30);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 9),
+      padding: EdgeInsets.zero,
       child: SizedBox(
-        width: 76,
+        key: const ValueKey('clip-action-button'),
+        width: metrics.actionRailWidth,
         child: Tooltip(
           message: label,
           child: InkWell(
@@ -1285,23 +1812,27 @@ class _ReelActionButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: metrics.actionButtonSize,
+                  height: metrics.actionButtonSize,
                   decoration: BoxDecoration(
                     color: backgroundColor,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.22),
+                      color: Colors.white.withValues(alpha: 0.16),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.22),
-                        blurRadius: 14,
-                        offset: const Offset(0, 7),
+                        color: Colors.black.withValues(alpha: 0.20),
+                        blurRadius: 11,
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
-                  child: Icon(icon, color: iconColor, size: 25),
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: metrics.actionIconSize,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -1311,9 +1842,10 @@ class _ReelActionButton extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    fontSize: metrics.actionLabelFontSize,
                     height: 1.05,
+                    letterSpacing: 0,
                     shadows: [
                       Shadow(
                         color: Colors.black.withValues(alpha: 0.65),

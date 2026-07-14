@@ -84,7 +84,13 @@ void main() {
       expect(clip.petName?.trim(), isNotEmpty, reason: clip.id);
       expect(clip.tags, isNotEmpty, reason: clip.id);
       expect(clip.demoVideoKey, clip.id, reason: clip.id);
-      expect(clip.sourceLabel, 'Comunidad inicial', reason: clip.id);
+      expect(
+        clip.sourceLabel,
+        clip.sourceType == 'officialMascotify'
+            ? 'Mascotify oficial'
+            : 'Comunidad inicial',
+        reason: clip.id,
+      );
       expect(clip.source, 'seeded_demo', reason: clip.id);
       expect(clip.seededAt, ClipsMockData.seededAt, reason: clip.id);
       expect(clip.isStarterContent, isTrue, reason: clip.id);
@@ -92,12 +98,14 @@ void main() {
     }
   });
 
-  test('cada clip demo tiene autor demo valido', () {
+  test('cada clip de comunidad demo tiene autor demo valido', () {
     final creatorIds = ClipsMockData.demoCreators
         .map((creator) => creator.id)
         .toSet();
 
-    for (final clip in ClipsMockData.clips) {
+    for (final clip in ClipsMockData.clips.where(
+      (clip) => clip.sourceType != 'officialMascotify',
+    )) {
       expect(clip.authorId, isNotNull, reason: clip.id);
       expect(creatorIds, contains(clip.authorId), reason: clip.id);
       expect(clip.authorDisplayName?.trim(), isNotEmpty, reason: clip.id);
@@ -174,7 +182,7 @@ void main() {
         .whereType<String>()
         .toSet();
 
-    expect(videoPaths.length, inInclusiveRange(8, 12));
+    expect(videoPaths.length, greaterThanOrEqualTo(18));
 
     for (final videoPath in videoPaths) {
       final file = File(videoPath);
@@ -190,6 +198,49 @@ void main() {
       expect(clip.isDemoContent, isTrue, reason: clip.id);
       expect(clip.isStarterContent, isTrue, reason: clip.id);
       expect(clip.availableForAllUsers, isTrue, reason: clip.id);
+    }
+  });
+
+  test('existen videos oficiales Mascotify como starter content', () {
+    final officialClips = ClipsMockData.clips
+        .where((clip) => clip.sourceType == 'officialMascotify')
+        .toList();
+
+    expect(officialClips, hasLength(10));
+    expect(ClipsMockData.clips.take(10).toList(), officialClips);
+
+    for (final clip in officialClips) {
+      expect(clip.authorId, isNull, reason: clip.id);
+      expect(clip.authorDisplayName, 'Mascotify', reason: clip.id);
+      expect(clip.authorUsername, 'mascotify_oficial', reason: clip.id);
+      expect(clip.sourceLabel, 'Mascotify oficial', reason: clip.id);
+      expect(clip.contentOriginLabel, 'Contenido oficial', reason: clip.id);
+      expect(clip.isStarterContent, isTrue, reason: clip.id);
+      expect(clip.availableForAllUsers, isTrue, reason: clip.id);
+      expect(clip.hasPlayableVideo, isTrue, reason: clip.id);
+      expect(clip.videoSourceType, 'asset', reason: clip.id);
+      expect(clip.videoAssetPath, startsWith('assets/videos/clips/mascotify_'));
+      expect(clip.videoAssetPath, endsWith('.mp4'));
+    }
+  });
+
+  test('todos los videos oficiales Mascotify existen y son livianos', () {
+    final officialClips = ClipsMockData.clips.where(
+      (clip) => clip.sourceType == 'officialMascotify',
+    );
+
+    for (final clip in officialClips) {
+      final videoPath = clip.videoAssetPath;
+      expect(videoPath, isNotNull, reason: clip.id);
+      final file = File(videoPath!);
+      expect(file.existsSync(), isTrue, reason: videoPath);
+      expect(file.lengthSync(), greaterThan(0), reason: videoPath);
+      expect(file.lengthSync(), lessThan(1024 * 1024), reason: videoPath);
+      final header = file.openSync()..setPositionSync(4);
+      final brand = String.fromCharCodes(header.readSync(4));
+      header.closeSync();
+      expect(brand, 'ftyp', reason: videoPath);
+      expect(videoPath, isNot(contains('demo_')), reason: clip.id);
     }
   });
 
@@ -228,7 +279,9 @@ void main() {
 
   test('el feed inicial mezcla autores', () {
     String? previousAuthorId;
-    for (final clip in ClipsMockData.clips) {
+    for (final clip in ClipsMockData.clips.where(
+      (clip) => clip.authorId != null,
+    )) {
       expect(clip.authorId, isNot(previousAuthorId), reason: clip.id);
       previousAuthorId = clip.authorId;
     }
@@ -281,7 +334,7 @@ void main() {
     }
   });
 
-  testWidgets('la pantalla de Clips sigue mostrando clips demo separados', (
+  testWidgets('la pantalla de Clips abre primero contenido oficial', (
     tester,
   ) async {
     setDesktopViewport(tester);
@@ -291,7 +344,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(ClipsMockData.clips.first.title), findsOneWidget);
-    expect(find.text('Comunidad inicial'), findsWidgets);
+    expect(find.text('Mascotify oficial'), findsWidgets);
+    expect(find.text('Contenido oficial'), findsWidgets);
+    expect(find.text('Video local'), findsNothing);
   });
 
   testWidgets('el visor permite avanzar por clips demo separados', (

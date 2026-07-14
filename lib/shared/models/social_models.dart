@@ -26,6 +26,8 @@ class ExploreClip {
     this.tags = const <String>[],
     this.source = 'seeded_demo',
     this.sourceLabel,
+    this.sourceType = 'seededDemo',
+    this.contentOriginLabel,
     this.isStarterContent = false,
     this.availableForAllUsers = false,
     this.isDemoContent = true,
@@ -58,6 +60,8 @@ class ExploreClip {
   final List<String> tags;
   final String source;
   final String? sourceLabel;
+  final String sourceType;
+  final String? contentOriginLabel;
   final bool isStarterContent;
   final bool availableForAllUsers;
   final bool isDemoContent;
@@ -98,6 +102,8 @@ class ExploreClip {
     List<String>? tags,
     String? source,
     String? sourceLabel,
+    String? sourceType,
+    String? contentOriginLabel,
     bool? isStarterContent,
     bool? availableForAllUsers,
     bool? isDemoContent,
@@ -130,6 +136,8 @@ class ExploreClip {
       tags: tags ?? this.tags,
       source: source ?? this.source,
       sourceLabel: sourceLabel ?? this.sourceLabel,
+      sourceType: sourceType ?? this.sourceType,
+      contentOriginLabel: contentOriginLabel ?? this.contentOriginLabel,
       isStarterContent: isStarterContent ?? this.isStarterContent,
       availableForAllUsers: availableForAllUsers ?? this.availableForAllUsers,
       isDemoContent: isDemoContent ?? this.isDemoContent,
@@ -165,6 +173,8 @@ class ExploreClip {
       'tags': tags,
       'source': source,
       'sourceLabel': sourceLabel,
+      'sourceType': sourceType,
+      'contentOriginLabel': contentOriginLabel,
       'isStarterContent': isStarterContent,
       'availableForAllUsers': availableForAllUsers,
       'isDemoContent': isDemoContent,
@@ -208,6 +218,8 @@ class ExploreClip {
           const <String>[],
       source: json['source'] as String? ?? 'seeded_demo',
       sourceLabel: json['sourceLabel'] as String?,
+      sourceType: json['sourceType'] as String? ?? 'seededDemo',
+      contentOriginLabel: json['contentOriginLabel'] as String?,
       isStarterContent: json['isStarterContent'] as bool? ?? false,
       availableForAllUsers: json['availableForAllUsers'] as bool? ?? false,
       isDemoContent: json['isDemoContent'] as bool? ?? true,

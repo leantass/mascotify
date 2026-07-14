@@ -1,6 +1,7 @@
 # Miscellaneous
 *.class
 *.log
+*.zip
 *.pyc
 *.swp
 .DS_Store
@@ -32,6 +33,7 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+/dist/
 
 # Node backend
 /backend/node_modules/
@@ -49,5 +51,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 key.properties
+/android/key.properties
+/android/app/upload-keystore.jks
 *.jks
 *.keystore
+mascotify_private_release_keys/
+mascotify_functional_builds/

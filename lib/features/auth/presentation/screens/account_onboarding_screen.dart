@@ -4,6 +4,7 @@ import '../../../../shared/data/app_data_source.dart';
 import '../../../../shared/models/account_identity_models.dart';
 import '../../../../shared/widgets/responsive_page_body.dart';
 import '../../../../theme/app_colors.dart';
+import '../../../explore/presentation/screens/professionals_screen.dart';
 import '../auth_session_controller.dart';
 
 class AccountOnboardingScreen extends StatelessWidget {
@@ -131,7 +132,7 @@ class AccountOnboardingScreen extends StatelessWidget {
               account.professionalProfile != null) ...[
             SizedBox(height: isDense ? 6 : 16),
             Text(
-              'Servicios contemplados',
+              'Preview beta',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             SizedBox(height: isDense ? 6 : 10),
@@ -221,6 +222,14 @@ class AccountOnboardingScreen extends StatelessWidget {
         onPressed: auth.isBusy
             ? null
             : () async {
+                if (experience == AccountExperience.professional) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const ProfessionalsScreen(),
+                    ),
+                  );
+                  return;
+                }
                 await auth.completeOnboarding();
               },
         child: Text(auth.isBusy ? 'Guardando...' : track.ctaLabel),

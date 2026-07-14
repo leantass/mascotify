@@ -24,14 +24,14 @@ Preparar una version interna estable para testers de Mascotify en Android y web/
 
 ## Artefactos generados
 
-- APK Android debug: `C:\Users\Pablo Bruzzone\Desktop\Proyecto\mascotify_tester_builds\android\mascotify-android-tester-debug.apk`
-- ZIP web localhost: `C:\Users\Pablo Bruzzone\Desktop\Proyecto\mascotify_tester_builds\web\mascotify-web-tester-localhost.zip`
-- Instrucciones externas para testers: `C:\Users\Pablo Bruzzone\Desktop\Proyecto\mascotify_tester_builds\LEER-ANTES-DE-PROBAR.txt`
+- APK Android debug: carpeta local de salida `mascotify_functional_builds\android\`.
+- Paquete web localhost: carpeta local de salida `mascotify_functional_builds\web\`.
+- Instrucciones externas para testers: carpeta local de salida `mascotify_functional_builds\`.
 
 Copias historicas:
 
-- Android: `C:\Users\Pablo Bruzzone\Desktop\Proyecto\mascotify_tester_builds\android\archive\`
-- Web: `C:\Users\Pablo Bruzzone\Desktop\Proyecto\mascotify_tester_builds\web\archive\`
+- Android: archivo historico local fuera del repo.
+- Web: archivo historico local fuera del repo.
 
 ## Validaciones locales
 

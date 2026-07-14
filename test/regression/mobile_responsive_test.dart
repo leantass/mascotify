@@ -121,34 +121,36 @@ void main() {
     _expectNoLayoutException(tester);
   });
 
-  testWidgets('mobile professional onboarding reaches workspace at 412x915', (
-    tester,
-  ) async {
-    _setMobileViewport(tester, const Size(412, 915));
-    final session = await buildPersistentTestAppSession();
+  testWidgets(
+    'mobile professional registration stays family-first at 412x915',
+    (tester) async {
+      _setMobileViewport(tester, const Size(412, 915));
+      final session = await buildPersistentTestAppSession();
 
-    await session.controller.register(
-      ownerName: 'Profesional Mobile QA',
-      email: 'mobile-onboarding-professional@mascotify.local',
-      city: 'Cordoba',
-      password: 'password123',
-      experience: AccountExperience.professional,
-    );
+      await session.controller.register(
+        ownerName: 'Profesional Mobile QA',
+        email: 'mobile-onboarding-professional@mascotify.local',
+        city: 'Cordoba',
+        password: 'password123',
+        experience: AccountExperience.professional,
+      );
 
-    await tester.pumpWidget(session.buildApp());
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(session.buildApp());
+      await tester.pumpAndSettle();
 
-    expect(find.textContaining('Onboarding inicial'), findsWidgets);
-    await _tapVisibleText(tester, 'Continuar como profesional');
-    expect(find.text('Modo profesional'), findsWidgets);
-    expect(find.text('Servicios'), findsWidgets);
+      expect(find.textContaining('Onboarding inicial'), findsWidgets);
+      await _tapVisibleText(tester, 'Continuar como familia');
+      expect(find.text('Modo familia'), findsWidgets);
+      expect(find.text('Modo profesional'), findsNothing);
+      expect(find.text('Servicios'), findsNothing);
 
-    await _openMainTab(tester, 'Actividad');
-    expect(find.text('Feed general'), findsOneWidget);
-    await _openMainTab(tester, 'Perfil');
-    expect(find.text('Cuenta base'), findsOneWidget);
-    _expectNoLayoutException(tester);
-  });
+      await _openMainTab(tester, 'Actividad');
+      expect(find.text('Feed general'), findsOneWidget);
+      await _openMainTab(tester, 'Perfil');
+      expect(find.text('Cuenta base'), findsOneWidget);
+      _expectNoLayoutException(tester);
+    },
+  );
 
   testWidgets(
     'mobile direct screens keep empty and populated states readable',

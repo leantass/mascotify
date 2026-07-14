@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import '../../features/home/presentation/screens/activity_feed_screen.dart';
 import '../../features/explore/presentation/screens/explore_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/matching/presentation/screens/matching_screen.dart';
 import '../../features/pets/presentation/screens/pets_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/professional/presentation/screens/professional_dashboard_screen.dart';
-import '../../features/professional/presentation/screens/professional_workspace_screen.dart';
 import '../../shared/models/account_identity_models.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_theme.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({
@@ -41,6 +42,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             label: 'Mascotas',
           ),
           _NavigationItem(
+            screen: MatchingScreen(),
+            icon: Icons.favorite_border_rounded,
+            selectedIcon: Icons.favorite_rounded,
+            label: 'Matching',
+          ),
+          _NavigationItem(
             screen: ExploreScreen(),
             icon: Icons.explore_outlined,
             selectedIcon: Icons.explore,
@@ -64,13 +71,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             screen: ProfessionalDashboardScreen(),
             icon: Icons.home_outlined,
             selectedIcon: Icons.home_rounded,
-            label: 'Inicio',
-          ),
-          _NavigationItem(
-            screen: ProfessionalWorkspaceScreen(),
-            icon: Icons.storefront_outlined,
-            selectedIcon: Icons.storefront_rounded,
-            label: 'Servicios',
+            label: 'Beta',
           ),
           _NavigationItem(
             screen: ExploreScreen(),
@@ -148,10 +149,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       bottomNavigationBar: useRailNavigation
           ? null
           : NavigationBar(
+              height: screenWidth < 430 ? 66 : null,
               selectedIndex: _currentIndex,
-              labelBehavior: screenWidth < 380
-                  ? NavigationDestinationLabelBehavior.onlyShowSelected
-                  : NavigationDestinationLabelBehavior.alwaysShow,
+              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
               onDestinationSelected: (index) {
                 setState(() {
                   _currentIndex = index;
@@ -181,17 +181,28 @@ class _RailHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final roleLabel = experience == AccountExperience.family
         ? 'Modo familia'
-        : 'Modo profesional';
+        : 'Beta profesional';
+    final isDark = mascotifyIsDark(context);
+    final cardColor = mascotifySurfaceAlt(context);
+    final borderColor = mascotifyBorder(context);
+    final iconBackground = isDark
+        ? mascotifySurfaceTint(context)
+        : AppColors.dark;
+    final iconColor = isDark
+        ? Theme.of(context).colorScheme.primary
+        : Colors.white;
+    final subtitleColor = mascotifySecondaryText(context);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
       child: isExtended
           ? Container(
+              key: const ValueKey('main-nav-rail-identity-card'),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               decoration: BoxDecoration(
-                color: AppColors.surfaceAlt,
+                color: cardColor,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: borderColor),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -200,10 +211,11 @@ class _RailHeader extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppColors.dark,
+                      color: iconBackground,
                       borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: borderColor),
                     ),
-                    child: const Icon(Icons.pets_rounded, color: Colors.white),
+                    child: Icon(Icons.pets_rounded, color: iconColor),
                   ),
                   const SizedBox(width: 12),
                   Flexible(
@@ -218,7 +230,7 @@ class _RailHeader extends StatelessWidget {
                         Text(
                           roleLabel,
                           style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: AppColors.textSecondary),
+                              ?.copyWith(color: subtitleColor),
                         ),
                       ],
                     ),
@@ -230,10 +242,11 @@ class _RailHeader extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.dark,
+                color: iconBackground,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderColor),
               ),
-              child: const Icon(Icons.pets_rounded, color: Colors.white),
+              child: Icon(Icons.pets_rounded, color: iconColor),
             ),
     );
   }

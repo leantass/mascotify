@@ -316,7 +316,8 @@ void main() {
     await _tapText(tester, 'Clips');
 
     expect(find.byType(PageView), findsOneWidget);
-    expect(find.text('El gato que se adueno del sillon'), findsOneWidget);
+    expect(find.text('QR seguro para tu mascota'), findsOneWidget);
+    expect(find.text('Mascotify oficial'), findsWidgets);
     _expectNoLayoutException(tester);
   });
 }

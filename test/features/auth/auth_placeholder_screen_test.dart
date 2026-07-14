@@ -25,7 +25,7 @@ void main() {
     expect(find.byType(TextField), findsNWidgets(2));
     expect(find.text('Ingresar'), findsOneWidget);
     expect(find.text('Demo familiar'), findsOneWidget);
-    expect(find.text('Demo profesional'), findsOneWidget);
+    expect(find.text('Preview profesional beta'), findsOneWidget);
     expect(find.text('Google'), findsOneWidget);
   });
 }

@@ -9,41 +9,33 @@ class AccountIdentityMockData {
     city: 'Buenos Aires',
     memberSince: 'Enero 2026',
     baseSummary:
-        'Una cuenta base pensada para centralizar identidad, mascotas, seguridad y futuras expansiones de uso dentro del ecosistema.',
+        'Una cuenta base para cuidar mascotas, QR seguro, actividad y preferencias familiares.',
     linkedProfilesSummary:
-        'Hoy usa Mascotify como familia, pero la estructura ya admite sumar un perfil profesional o de negocio sin rehacer la cuenta.',
-    availableExperiences: [
-      AccountExperience.family,
-      AccountExperience.professional,
-    ],
+        'Mascotify esta disponible hoy para familias y tutores. Profesionales queda como beta visible para mas adelante.',
+    availableExperiences: [AccountExperience.family],
     familyProfile: FamilyAccountProfile(
       householdName: 'Familia Rojas',
       petsSummaryLabel: '3 mascotas dentro del hogar',
       primaryGoal:
           'Cuidar identidad, seguridad QR, matching social y seguimiento cotidiano de las mascotas.',
       nextSetupStep:
-          'Completar más datos de cuenta y dejar preparado un posible segundo perfil dentro de la misma base.',
+          'Completar datos de mascotas y revisar ayuda si hace falta.',
       capabilities: [
-        'Gestión de mascotas',
+        'Gestion de mascotas',
         'Seguridad QR',
         'Social y matching',
         'Notificaciones y seguimiento',
       ],
     ),
     professionalProfile: ProfessionalAccountProfile(
-      businessName: 'Perfil profesional futuro',
-      category: 'Disponible para activar',
-      operationLabel: 'Sin publicar todavía',
+      businessName: 'Profesionales pet beta',
+      category: 'Beta / proximamente',
+      operationLabel: 'Preview sin operacion real',
       primaryGoal:
-          'La misma cuenta podría sumar una capa profesional para ofrecer servicios sin duplicar identidad.',
-      nextSetupStep:
-          'Activar un perfil profesional cuando haga falta ofrecer servicios o gestionar presencia comercial.',
-      services: ['Veterinaria', 'Comportamiento', 'Guardería', 'Peluquería'],
-      capabilities: [
-        'Servicios dentro de la app',
-        'Presencia profesional',
-        'Contenido y confianza',
-      ],
+          'Mostrar la vision futura sin activar agenda, reservas, pagos ni contacto real.',
+      nextSetupStep: 'Ver la preview beta cuando quieras conocer la vision.',
+      services: ['Veterinaria', 'Paseo', 'Cuidado', 'Peluqueria'],
+      capabilities: ['Preview beta', 'Servicios futuros', 'Contacto mediado'],
     ),
   );
 
@@ -55,49 +47,48 @@ class AccountIdentityMockData {
     city: 'Buenos Aires',
     memberSince: 'Febrero 2026',
     baseSummary:
-        'Una cuenta base diseñada para sostener identidad profesional, servicios, visibilidad y futuras variantes de negocio dentro de Mascotify.',
+        'Cuenta demo para mostrar la preview beta de profesionales pet sin activar operaciones reales.',
     linkedProfilesSummary:
-        'La cuenta puede convivir con más de un perfil a futuro: profesional independiente, negocio, equipo o incluso una capa familiar.',
+        'La experiencia principal disponible hoy sigue siendo familias y tutores.',
     availableExperiences: [
-      AccountExperience.professional,
       AccountExperience.family,
+      AccountExperience.professional,
     ],
     familyProfile: FamilyAccountProfile(
-      householdName: 'Uso personal disponible',
+      householdName: 'Uso familiar demo',
       petsSummaryLabel: 'Base preparada para mascotas propias',
       primaryGoal:
-          'La misma cuenta podría tener un uso familiar sin mezclarlo con la identidad profesional.',
-      nextSetupStep:
-          'Activar una capa familiar si en el futuro necesitara gestionar mascotas personales.',
+          'Usar Mascotify como tutor mientras la capa profesional permanece en beta.',
+      nextSetupStep: 'Recorrer la experiencia familiar activa.',
       capabilities: [
         'Cuenta unificada',
-        'Perfiles separados por uso',
-        'Escalabilidad futura',
+        'Perfil familia activo',
+        'Preview profesional bloqueada',
       ],
     ),
     professionalProfile: ProfessionalAccountProfile(
-      businessName: 'Clínica Preventiva Paula Mendes',
+      businessName: 'Clinica Preventiva Paula Mendes',
       category: 'Veterinaria preventiva',
-      operationLabel: 'Atiende presencial y asesoría breve',
+      operationLabel: 'Beta sin agenda real',
       primaryGoal:
-          'Ofrecer servicios con una presencia clara, confiable y lista para crecer dentro del ecosistema.',
+          'Mostrar una vision futura para servicios pet sin pedir datos profesionales reales.',
       nextSetupStep:
-          'Terminar onboarding profesional, definir servicios visibles y preparar una ficha pública de negocio.',
+          'Agenda, reservas, contacto seguro y servicios reales estaran disponibles mas adelante.',
       services: [
         'Veterinaria',
-        'Nutrición',
+        'Nutricion',
         'Comportamiento',
         'Tienda de alimentos',
-        'Guardería',
+        'Guarderia',
         'Paseo',
         'Crematorio',
         'Cementerio',
       ],
       capabilities: [
-        'Servicios y agenda futura',
-        'Perfil comercial',
-        'Contenido experto',
-        'Confianza y reputación',
+        'Beta read-only',
+        'Sin pagos',
+        'Sin reservas reales',
+        'Contacto futuro mediado',
       ],
     ),
   );
@@ -105,97 +96,80 @@ class AccountIdentityMockData {
   static const List<ExperienceOption> experienceOptions = [
     ExperienceOption(
       experience: AccountExperience.family,
-      title: 'Familia o dueño de mascota',
-      subtitle: 'Para cuidar, organizar y seguir la vida de tus mascotas.',
+      title: 'Familia o tutor',
+      subtitle: 'Para cuidar, organizar y disfrutar tus mascotas.',
       description:
-          'Pensado para identidad, QR, seguridad, matching social y una cuenta que pueda crecer sin perder claridad.',
+          'Pensado para identidad, QR, salud, recordatorios, matching social y actividad diaria.',
       ctaLabel: 'Entrar como familia',
       accentColorHex: 0xFFDDF6F6,
       highlights: ['Mascotas y hogar', 'Seguridad QR', 'Conexiones sociales'],
       futureHint:
-          'Más adelante podrías sumar una capa profesional sin cambiar de cuenta base.',
+          'Mas adelante podras conocer herramientas beta para profesionales pet.',
     ),
     ExperienceOption(
       experience: AccountExperience.professional,
-      title: 'Profesional, negocio o prestador',
-      subtitle:
-          'Para ofrecer servicios y construir presencia dentro de Mascotify.',
+      title: 'Profesionales pet beta',
+      subtitle: 'Estamos preparando herramientas para servicios pet.',
       description:
-          'Preparado para veterinarios, alimentos, crematorio, cementerio, comportamiento, peluquería, paseo, guardería y otros servicios futuros.',
-      ctaLabel: 'Entrar como profesional',
+          'Preview futura para veterinarias, paseadores, cuidadores, peluqueria y otros servicios. La experiencia activa hoy es para familias.',
+      ctaLabel: 'Ver preview beta',
       accentColorHex: 0xFFFFE1EA,
-      highlights: [
-        'Servicios dentro de la app',
-        'Presencia comercial',
-        'Perfil escalable',
-      ],
+      highlights: ['Beta', 'Sin agenda real', 'Sin pagos ni reservas'],
       futureHint:
-          'La arquitectura queda lista para sumar más roles o perfiles por cuenta.',
+          'Agenda, reservas, contacto y servicios reales llegaran mas adelante.',
     ),
   ];
 
   static const OnboardingTrack familyTrack = OnboardingTrack(
     experience: AccountExperience.family,
     title: 'Onboarding inicial para familias',
-    subtitle:
-        'Una entrada orientada a mascotas, seguridad, organización y vida diaria.',
+    subtitle: 'Entrada simple para cuidar mascotas y usar Mascotify hoy.',
     architectureNote:
-        'La cuenta base queda separada del perfil de uso para que después puedas sumar más capas sin rehacer la identidad.',
+        'La cuenta queda enfocada en mascotas, seguridad, salud, actividad y conexiones sociales.',
     ctaLabel: 'Continuar como familia',
     steps: [
       OnboardingStepPreview(
         title: 'Crear la cuenta base',
-        description:
-            'Definir identidad principal, email, ciudad y base administrativa de Mascotify.',
+        description: 'Definir nombre, email y ciudad para empezar.',
       ),
       OnboardingStepPreview(
         title: 'Activar el perfil familia',
-        description:
-            'Entrar con un uso centrado en mascotas, QR, seguridad y seguimiento cotidiano.',
+        description: 'Entrar con una experiencia centrada en tus mascotas.',
       ),
       OnboardingStepPreview(
-        title: 'Preparar expansión futura',
-        description:
-            'Dejar lista la cuenta para sumar nuevos perfiles o usos dentro del mismo ecosistema.',
+        title: 'Sumar la primera mascota',
+        description: 'Completar perfil, QR, salud y datos importantes.',
       ),
     ],
-    supportingHighlights: [
-      'Mascotas y hogar',
-      'Identidad y QR',
-      'Base escalable',
-    ],
+    supportingHighlights: ['Mascotas y hogar', 'Identidad y QR', 'Uso simple'],
   );
 
   static const OnboardingTrack professionalTrack = OnboardingTrack(
     experience: AccountExperience.professional,
-    title: 'Onboarding inicial para profesionales y negocios',
+    title: 'Profesionales pet beta',
     subtitle:
-        'Una entrada orientada a servicios, presencia, confianza y crecimiento dentro del ecosistema.',
+        'Preview beta para conocer la vision futura sin activar un modo profesional real.',
     architectureNote:
-        'La cuenta base queda lista para separar negocio, servicios y futuras variantes de perfil sin mezclar todo en un solo actor rígido.',
-    ctaLabel: 'Continuar como profesional',
+        'La primera salida prioriza familias y tutores. Profesionales queda visible como beta bloqueada.',
+    ctaLabel: 'Ver preview beta',
     steps: [
       OnboardingStepPreview(
-        title: 'Crear la cuenta base',
+        title: 'Preview beta',
         description:
-            'Definir identidad principal, email, ciudad y administración general de la cuenta.',
+            'Muestra una idea visual de herramientas futuras para servicios pet.',
       ),
       OnboardingStepPreview(
-        title: 'Activar el perfil profesional',
+        title: 'Sin datos reales',
         description:
-            'Configurar negocio, especialidad, servicios y tono de presencia dentro de Mascotify.',
+            'No se piden matriculas, telefonos, emails profesionales ni datos sensibles.',
       ),
       OnboardingStepPreview(
-        title: 'Preparar publicación futura',
+        title: 'Funciones futuras',
         description:
-            'Dejar lista la estructura para ofrecer servicios, mostrar expertise y crecer sin rehacer la base.',
+            'Agenda, reservas, contacto y servicios reales quedan para mas adelante.',
       ),
     ],
-    supportingHighlights: [
-      'Servicios',
-      'Presencia comercial',
-      'Escalabilidad multirol',
-    ],
+    supportingHighlights: ['Beta', 'Preview read-only', 'Family-first'],
   );
 
   static MascotifyAccount accountFor(AccountExperience experience) {

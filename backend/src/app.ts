@@ -18,8 +18,9 @@ export function createApp(): Express {
   const socialClipsRouter = createSocialClipsRouter();
 
   app.disable('x-powered-by');
+  app.use(configureSecurityHeaders);
   app.use(configureCors(env.corsOrigins));
-  app.use(express.json());
+  app.use(express.json({ limit: '256kb' }));
 
   app.use('/health', healthRouter);
   app.use('/api/v1/health', healthRouter);
@@ -37,6 +38,22 @@ export function createApp(): Express {
   });
 
   return app;
+}
+
+function configureSecurityHeaders(
+  _request: Request,
+  response: Response,
+  next: NextFunction
+) {
+  response.header('X-Content-Type-Options', 'nosniff');
+  response.header('Referrer-Policy', 'no-referrer');
+  response.header('X-Frame-Options', 'DENY');
+  response.header(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=()'
+  );
+  response.header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
+  next();
 }
 
 function configureCors(allowedOrigins: string[]) {

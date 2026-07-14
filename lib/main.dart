@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/app.dart';
 import 'core/localization/app_locale_controller.dart';
+import 'core/theme/app_theme_controller.dart';
 import 'features/auth/data/local_auth_repository.dart';
 import 'features/auth/presentation/auth_session_controller.dart';
 import 'shared/data/app_data_source.dart';
@@ -13,6 +14,7 @@ Future<void> main() async {
 
   final preferences = await SharedPreferences.getInstance();
   final localeController = AppLocaleController(preferences: preferences);
+  final themeController = AppThemeController(preferences: preferences);
   final repository = LocalAuthRepository(preferences);
   final sessionController = AuthSessionController(repository: repository);
   // AppData depends on the auth controller because every persisted slice is
@@ -31,6 +33,7 @@ Future<void> main() async {
     MascotifyApp(
       sessionController: sessionController,
       localeController: localeController,
+      themeController: themeController,
     ),
   );
 }
