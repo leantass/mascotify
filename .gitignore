@@ -57,3 +57,8 @@ key.properties
 *.keystore
 mascotify_private_release_keys/
 mascotify_functional_builds/
+
+# Mascotify web guide app local artifacts
+web-guia-app-cpanel-upload/
+web-guia-app-cpanel-upload.zip
+web-guia-app/storage/logs/*.log

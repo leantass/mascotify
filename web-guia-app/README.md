@@ -29,6 +29,33 @@ Abrir:
 - `http://localhost:8088/legal`
 - `http://localhost:8088/#usar-mascotify`
 
+## Abrir web local automaticamente
+
+Comando:
+
+```bat
+tooling\open_web_after_task.bat
+```
+
+Requisitos:
+
+- PHP 8.1 o superior instalado o disponible en PATH.
+- Google Chrome instalado.
+
+URL local:
+
+- `http://localhost:8088/`
+
+El script busca PHP en PATH, XAMPP, Laragon, `C:\php` y `C:\tools\php`. Si PHP existe, levanta o reutiliza el servidor local en el puerto `8088`, abre Google Chrome explicitamente y agrega cache busting con `?cb=...`.
+
+Si PHP no esta instalado:
+
+- Instalar PHP 8.1, 8.2 o superior.
+- Agregar PHP al PATH.
+- Volver a ejecutar `tooling\open_web_after_task.bat`.
+
+El script no abre Edge ni el navegador predeterminado si Chrome no se encuentra.
+
 ## Subir a cPanel
 
 Subir solamente:
@@ -75,3 +102,23 @@ Reemplazar en `config/config.php` antes de publicar:
 - `MICROSOFT_STORE_URL = [URL_MICROSOFT_STORE_MASCOTIFY]`
 
 Mientras una URL sea placeholder, su card se muestra como `Disponible proximamente` y el boton no navega.
+
+## Regla fija para Codex
+
+Al finalizar cualquier tarea visual o funcional sobre `web-guia-app`, Codex debe ejecutar:
+
+```bat
+web-guia-app\tooling\open_web_after_task.bat
+```
+
+Y debe reportar:
+
+- URL abierta.
+- Navegador usado.
+- Si PHP esta disponible.
+- Si la web abrio correctamente.
+- Si uso cache busting.
+- Si no se abrio Edge.
+- Si quedo algun error.
+
+No aceptar como terminado un cambio visual si no se abrio la web o si no se explico claramente el bloqueo.
