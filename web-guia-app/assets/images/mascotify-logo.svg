@@ -1,0 +1,11 @@
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Mascotify</title>
+  <desc id="desc">Logo de Mascotify con una huella dentro de un escudo suave.</desc>
+  <rect width="160" height="160" rx="36" fill="#123C3A"/>
+  <path d="M80 24C102 24 120 35 129 53V82C129 110 109 130 80 139C51 130 31 110 31 82V53C40 35 58 24 80 24Z" fill="#F7C948"/>
+  <path d="M57 81C49 81 43 74 43 66C43 58 49 51 57 51C65 51 71 58 71 66C71 74 65 81 57 81Z" fill="#123C3A"/>
+  <path d="M103 81C95 81 89 74 89 66C89 58 95 51 103 51C111 51 117 58 117 66C117 74 111 81 103 81Z" fill="#123C3A"/>
+  <path d="M80 74C91 74 100 85 100 99C100 112 91 119 80 119C69 119 60 112 60 99C60 85 69 74 80 74Z" fill="#123C3A"/>
+  <path d="M62 39C67 39 71 44 71 50C71 56 67 61 62 61C57 61 53 56 53 50C53 44 57 39 62 39Z" fill="#123C3A"/>
+  <path d="M98 39C103 39 107 44 107 50C107 56 103 61 98 61C93 61 89 56 89 50C89 44 93 39 98 39Z" fill="#123C3A"/>
+</svg>

@@ -1,0 +1,15 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Mascotify Guia oficial</title>
+  <desc id="desc">Imagen social de Mascotify para soporte y documentos legales.</desc>
+  <rect width="1200" height="630" fill="#F5F1E8"/>
+  <rect x="80" y="70" width="1040" height="490" rx="32" fill="#123C3A"/>
+  <circle cx="912" cy="192" r="92" fill="#F7C948"/>
+  <circle cx="982" cy="414" r="54" fill="#69B6A3"/>
+  <rect x="146" y="146" width="148" height="148" rx="34" fill="#F7C948"/>
+  <path d="M220 174C247 174 268 188 279 210V238C279 272 255 296 220 306C185 296 161 272 161 238V210C172 188 193 174 220 174Z" fill="#123C3A"/>
+  <circle cx="198" cy="226" r="13" fill="#F7C948"/>
+  <circle cx="242" cy="226" r="13" fill="#F7C948"/>
+  <path d="M220 238C235 238 246 252 246 268C246 283 235 291 220 291C205 291 194 283 194 268C194 252 205 238 220 238Z" fill="#F7C948"/>
+  <text x="146" y="388" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="82" font-weight="700">Mascotify</text>
+  <text x="150" y="454" fill="#DDEBE6" font-family="Arial, Helvetica, sans-serif" font-size="34">Guia oficial, soporte y documentos legales</text>
+</svg>
