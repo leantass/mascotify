@@ -14,7 +14,7 @@ declare(strict_types=1);
     <div class="container footer-grid">
         <div class="footer-intro">
             <a class="footer-brand" href="<?= e(url('/')); ?>">
-                <img src="<?= e(asset('images/mascotify-logo.svg')); ?>" alt="" width="44" height="44">
+                <img src="<?= e(asset('images/mascotify-app-icon.png')); ?>" alt="" width="44" height="44">
                 <span>Mascotify</span>
             </a>
             <p>Una experiencia calida y moderna para cuidar, conectar y proteger a quienes comparten la vida con mascotas.</p>

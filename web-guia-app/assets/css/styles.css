@@ -15,8 +15,8 @@
   --brand-2: #ff7a6b;
   --accent: #7ad7ff;
   --accent-2: #c5a7ff;
-  --dark-panel: #211735;
-  --dark-panel-2: #362051;
+  --dark-panel: #fff4f8;
+  --dark-panel-2: #eef9ff;
   --shadow: 0 26px 70px rgba(34, 24, 51, 0.16);
   --shadow-soft: 0 16px 40px rgba(34, 24, 51, 0.1);
   --header-bg: rgba(255, 247, 251, 0.78);
@@ -245,6 +245,9 @@ p {
 .brand img,
 .footer-brand img {
   border-radius: var(--radius);
+  object-fit: contain;
+  background: #050914;
+  padding: 3px;
   box-shadow: 0 12px 28px rgba(255, 92, 138, 0.22);
 }
 
@@ -254,6 +257,16 @@ p {
   color: var(--text-strong);
   font-size: 1.08rem;
   line-height: 1.08;
+}
+
+.brand img {
+  width: 46px;
+  height: 46px;
+}
+
+.footer-brand img {
+  width: 44px;
+  height: 44px;
 }
 
 .brand small {
@@ -577,7 +590,7 @@ p {
   gap: 14px;
   margin-top: 22px;
   border-radius: var(--radius);
-  background: linear-gradient(135deg, var(--dark-panel), var(--dark-panel-2));
+  background: linear-gradient(135deg, #3a1d59, #211735);
   padding: 18px;
   color: white;
 }
@@ -876,17 +889,17 @@ p {
 }
 
 .trust-section {
-  color: white;
+  color: var(--text);
   background:
-    linear-gradient(135deg, rgba(255, 92, 138, 0.16), transparent 34%),
-    linear-gradient(225deg, rgba(122, 215, 255, 0.14), transparent 34%),
-    var(--dark-panel);
+    linear-gradient(135deg, rgba(255, 92, 138, 0.12), transparent 34%),
+    linear-gradient(225deg, rgba(122, 215, 255, 0.16), transparent 34%),
+    linear-gradient(180deg, #fff8fb, #f4fbff);
 }
 
 .trust-section h2,
 .trust-section h3,
 .trust-section strong {
-  color: white;
+  color: var(--text-strong);
 }
 
 .trust-section .eyebrow {
@@ -896,7 +909,7 @@ p {
 .trust-section .section-heading p,
 .trust-section .animated-panel p,
 .trust-card-large p {
-  color: #d9d2e8;
+  color: var(--muted);
 }
 
 .trust-shell {
@@ -911,11 +924,11 @@ p {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
-    linear-gradient(135deg, rgba(255, 92, 138, 0.26), rgba(122, 215, 255, 0.12));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 245, 249, 0.86)),
+    linear-gradient(135deg, rgba(255, 92, 138, 0.18), rgba(122, 215, 255, 0.14));
   padding: 34px;
   box-shadow: var(--shadow);
 }
@@ -927,8 +940,8 @@ p {
   gap: 16px;
   margin-top: 26px;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.74);
+  border-color: var(--line);
 }
 
 .qr-visual {
@@ -938,13 +951,13 @@ p {
   width: 82px;
   height: 82px;
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(35, 24, 51, 0.08);
   padding: 9px;
 }
 
 .qr-visual span {
   border-radius: 3px;
-  background: white;
+  background: var(--text-strong);
 }
 
 .qr-visual span:nth-child(2n) {
@@ -962,8 +975,8 @@ p {
 }
 
 .trust-panels .animated-panel {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.82);
+  border-color: var(--line);
 }
 
 .animated-panel {
@@ -992,8 +1005,8 @@ p {
 
 .trust-section .panel-kicker,
 .trust-section .platform-badge {
-  background: rgba(122, 215, 255, 0.14);
-  color: var(--accent);
+  background: rgba(122, 215, 255, 0.22);
+  color: var(--text-strong);
 }
 
 .platform-shell {
@@ -1150,17 +1163,17 @@ p {
   position: relative;
   overflow: hidden;
   background:
-    linear-gradient(135deg, rgba(255, 92, 138, 0.16), transparent 32%),
-    linear-gradient(220deg, rgba(122, 215, 255, 0.12), transparent 34%),
-    var(--dark-panel);
-  color: white;
+    linear-gradient(135deg, rgba(255, 92, 138, 0.12), transparent 32%),
+    linear-gradient(220deg, rgba(122, 215, 255, 0.14), transparent 34%),
+    #fff8fb;
+  color: var(--text);
   padding: 70px 0 28px;
 }
 
 .site-footer h2,
 .site-footer strong,
 .footer-brand span {
-  color: white;
+  color: var(--text-strong);
 }
 
 .footer-hero {
@@ -1169,9 +1182,9 @@ p {
   align-items: center;
   gap: 24px;
   margin-bottom: 56px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.82);
   padding: 30px;
 }
 
@@ -1189,7 +1202,7 @@ p {
 .footer-intro p,
 .footer-grid a,
 .footer-bottom {
-  color: #ded7ed;
+  color: var(--muted);
 }
 
 .footer-intro p {
@@ -1210,7 +1223,7 @@ p {
 
 .footer-grid a:hover,
 .footer-bottom a:hover {
-  color: white;
+  color: var(--text-strong);
 }
 
 .footer-bottom {
@@ -1219,7 +1232,89 @@ p {
   gap: 18px;
   margin-top: 46px;
   padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-top: 1px solid var(--line);
+}
+
+[data-theme="dark"] .trust-section {
+  color: white;
+  background:
+    linear-gradient(135deg, rgba(255, 92, 138, 0.16), transparent 34%),
+    linear-gradient(225deg, rgba(122, 215, 255, 0.14), transparent 34%),
+    var(--dark-panel);
+}
+
+[data-theme="dark"] .trust-section h2,
+[data-theme="dark"] .trust-section h3,
+[data-theme="dark"] .trust-section strong,
+[data-theme="dark"] .site-footer h2,
+[data-theme="dark"] .site-footer strong,
+[data-theme="dark"] .footer-brand span {
+  color: white;
+}
+
+[data-theme="dark"] .trust-section .section-heading p,
+[data-theme="dark"] .trust-section .animated-panel p,
+[data-theme="dark"] .trust-card-large p {
+  color: #d9d2e8;
+}
+
+[data-theme="dark"] .trust-card-large {
+  border-color: rgba(255, 255, 255, 0.16);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+    linear-gradient(135deg, rgba(255, 92, 138, 0.26), rgba(122, 215, 255, 0.12));
+}
+
+[data-theme="dark"] .premium-qr {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+[data-theme="dark"] .qr-visual {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="dark"] .qr-visual span {
+  background: white;
+}
+
+[data-theme="dark"] .trust-panels .animated-panel {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="dark"] .trust-section .panel-kicker,
+[data-theme="dark"] .trust-section .platform-badge {
+  background: rgba(122, 215, 255, 0.14);
+  color: var(--accent);
+}
+
+[data-theme="dark"] .site-footer {
+  background:
+    linear-gradient(135deg, rgba(255, 92, 138, 0.16), transparent 32%),
+    linear-gradient(220deg, rgba(122, 215, 255, 0.12), transparent 34%),
+    var(--dark-panel);
+  color: white;
+}
+
+[data-theme="dark"] .footer-hero {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+[data-theme="dark"] .footer-intro p,
+[data-theme="dark"] .footer-grid a,
+[data-theme="dark"] .footer-bottom {
+  color: #ded7ed;
+}
+
+[data-theme="dark"] .footer-grid a:hover,
+[data-theme="dark"] .footer-bottom a:hover {
+  color: white;
+}
+
+[data-theme="dark"] .footer-bottom {
+  border-top-color: rgba(255, 255, 255, 0.14);
 }
 
 .reveal {

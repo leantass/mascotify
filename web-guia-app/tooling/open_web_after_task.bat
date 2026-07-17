@@ -6,6 +6,7 @@ set "PORT=8088"
 set "HOST=localhost"
 set "PHP_EXE="
 set "CHROME_EXE="
+set "OPENED_CHROME=0"
 
 cd /d "%WEB_DIR%" || (
     echo No se pudo entrar a %WEB_DIR%.
@@ -86,7 +87,10 @@ if errorlevel 1 (
 set "URL=http://%HOST%:%PORT%/?cb=%RANDOM%"
 echo Abriendo Chrome:
 echo !URL!
-start "Mascotify Web Guia App Chrome" "!CHROME_EXE!" "!URL!"
+if "!OPENED_CHROME!"=="0" (
+    set "OPENED_CHROME=1"
+    start "Mascotify Web Guia App Chrome" "!CHROME_EXE!" "!URL!"
+)
 echo.
 echo URL abierta: !URL!
 echo Navegador usado: Chrome

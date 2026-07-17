@@ -16,7 +16,7 @@ declare(strict_types=1);
     <meta property="og:title" content="<?= e($page['ogTitle']); ?>">
     <meta property="og:description" content="<?= e($page['ogDescription']); ?>">
     <meta property="og:image" content="<?= e($page['ogImage']); ?>">
-    <link rel="icon" href="<?= e(asset('images/mascotify-logo.svg')); ?>" type="image/svg+xml">
+    <link rel="icon" href="<?= e(asset('images/mascotify-app-icon.png')); ?>" type="image/png">
     <script>
         (function () {
             try {
