@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 ?>
 <footer class="site-footer">
-    <div class="footer-glow" aria-hidden="true"></div>
+    <div class="container footer-hero reveal">
+        <div>
+            <p class="eyebrow">Mascotify</p>
+            <h2>Cuidar, conectar y proteger, tambien desde la web.</h2>
+        </div>
+        <a class="button button-primary" href="<?= e(url('/#usar-mascotify')); ?>">Ir a plataformas</a>
+    </div>
     <div class="container footer-grid">
         <div class="footer-intro">
             <a class="footer-brand" href="<?= e(url('/')); ?>">

@@ -62,3 +62,4 @@ mascotify_functional_builds/
 web-guia-app-cpanel-upload/
 web-guia-app-cpanel-upload.zip
 web-guia-app/storage/logs/*.log
+web-guia-app/storage/visual-checks/

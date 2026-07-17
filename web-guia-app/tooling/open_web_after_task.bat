@@ -77,8 +77,8 @@ if not defined CHROME_EXE (
 netstat -ano | findstr /r /c:":%PORT% .*LISTENING" >nul 2>nul
 if errorlevel 1 (
     echo Iniciando servidor local en http://%HOST%:%PORT%/
-    start "Mascotify Web Guia App Server" /D "%WEB_DIR%" cmd /k ""!PHP_EXE!" -S %HOST%:%PORT%"
-    timeout /t 3 /nobreak >nul
+    start "Mascotify Web Guia App Server" /D "%WEB_DIR%" "!PHP_EXE!" -S %HOST%:%PORT%
+    ping 127.0.0.1 -n 4 >nul
 ) else (
     echo El puerto %PORT% ya esta escuchando. Se reutiliza el servidor local activo.
 )

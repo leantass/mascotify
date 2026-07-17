@@ -15,7 +15,13 @@ declare(strict_types=1);
 
         <?php include APP_ROOT . '/includes/layout/navigation.php'; ?>
 
-        <a class="header-cta" href="<?= e(url('/#usar-mascotify')); ?>">Ir a la app</a>
+        <div class="header-actions">
+            <button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema" aria-pressed="false">
+                <span class="theme-toggle-icon" aria-hidden="true"></span>
+                <span data-theme-label>Claro</span>
+            </button>
+            <a class="header-cta" href="<?= e(url('/#usar-mascotify')); ?>">Ir a la app</a>
+        </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation">
             <span></span>
             <span></span>

@@ -7,7 +7,10 @@ $disabled = is_placeholder_url($href);
 
 ?>
 <article class="platform-card reveal" data-tilt-card>
-    <span class="platform-badge"><?= e($badge ?? 'APP'); ?></span>
+    <div class="platform-card-top">
+        <span class="platform-badge"><?= e($badge ?? 'APP'); ?></span>
+        <span class="platform-dot" aria-hidden="true"></span>
+    </div>
     <h3><?= e($title ?? ''); ?></h3>
     <p><?= e($text ?? ''); ?></p>
     <div class="platform-action">
