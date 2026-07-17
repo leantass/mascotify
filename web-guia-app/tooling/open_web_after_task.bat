@@ -16,6 +16,10 @@ echo Mascotify Web Guia App
 echo Carpeta: %WEB_DIR%
 echo.
 
+for /f "usebackq delims=" %%P in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "[System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User')" 2^>nul`) do (
+    set "PATH=%%P;%PATH%"
+)
+
 for /f "delims=" %%P in ('where php 2^>nul') do (
     if not defined PHP_EXE set "PHP_EXE=%%P"
 )
@@ -30,6 +34,12 @@ if not defined PHP_EXE (
 
 if not defined PHP_EXE if exist "C:\php\php.exe" set "PHP_EXE=C:\php\php.exe"
 if not defined PHP_EXE if exist "C:\tools\php\php.exe" set "PHP_EXE=C:\tools\php\php.exe"
+
+if not defined PHP_EXE (
+    for /d %%D in ("%LOCALAPPDATA%\Microsoft\WinGet\Packages\PHP.PHP.*") do (
+        if exist "%%~fD\php.exe" if not defined PHP_EXE set "PHP_EXE=%%~fD\php.exe"
+    )
+)
 
 if not defined PHP_EXE (
     echo PHP no esta disponible.
