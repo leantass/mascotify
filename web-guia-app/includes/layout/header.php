@@ -6,7 +6,7 @@ declare(strict_types=1);
 <header class="site-header" data-site-header>
     <div class="container header-shell">
         <a class="brand" href="<?= e(url('/')); ?>" aria-label="Ir al inicio de Mascotify">
-            <img src="<?= e(asset('images/mascotify-header-logo.png')); ?>" alt="" width="54" height="54">
+            <img src="<?= e(asset('images/mascotify-app-icon.png')); ?>" alt="" width="54" height="54">
             <span>
                 <strong>Mascotify</strong>
                 <small>Cuidar. Conectar. Proteger.</small>
