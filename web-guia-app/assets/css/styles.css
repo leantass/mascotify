@@ -246,8 +246,6 @@ p {
 .footer-brand img {
   border-radius: var(--radius);
   object-fit: contain;
-  background: #050914;
-  padding: 3px;
   box-shadow: 0 12px 28px rgba(255, 92, 138, 0.22);
 }
 
@@ -260,13 +258,13 @@ p {
 }
 
 .brand img {
-  width: 46px;
-  height: 46px;
+  width: 54px;
+  height: 54px;
 }
 
 .footer-brand img {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
 }
 
 .brand small {
