@@ -4,25 +4,27 @@ declare(strict_types=1);
 
 ?>
 <section class="page-hero">
-    <div class="container narrow">
-        <p class="eyebrow">Ayuda</p>
-        <h1>Soporte de Mascotify</h1>
-        <p>Estamos para ayudarte con acceso, cuenta, datos de mascotas, funcionamiento de la app y consultas legales.</p>
+    <div class="container narrow reveal is-visible">
+        <p class="eyebrow">Soporte</p>
+        <h1>Centro de ayuda Mascotify</h1>
+        <p>Canales y recomendaciones para resolver consultas sobre cuenta, seguridad, datos y funcionamiento.</p>
     </div>
 </section>
 
-<section class="section">
-    <div class="container split">
-        <div class="content-flow">
-            <h2>Contacto</h2>
-            <p>Para recibir ayuda, envia un correo a <a href="<?= e(support_mailto()); ?>"><?= e(SUPPORT_EMAIL); ?></a> con una descripcion clara del problema.</p>
-            <p>Incluye el correo de tu cuenta, modelo de dispositivo, version de la app si la conoces y capturas cuando ayuden a entender el caso.</p>
-            <a class="button primary" href="<?= e(support_mailto()); ?>">Enviar consulta</a>
+<section class="section support-page">
+    <div class="container support-grid">
+        <div class="content-flow reveal">
+            <div class="notice"><strong>Aviso</strong><p>Este texto es una base preliminar y debe ser revisado antes de publicacion definitiva.</p></div>
+            <h2>Como pedir ayuda</h2>
+            <p>Describe el problema, indica el correo asociado a tu cuenta, dispositivo, version de la app si la conoces y agrega capturas si ayudan a entender el caso.</p>
+            <a class="button button-primary <?= is_placeholder_url(SUPPORT_EMAIL) ? 'disabled' : ''; ?>" href="<?= e(support_mailto()); ?>" <?= is_placeholder_url(SUPPORT_EMAIL) ? 'aria-disabled="true" data-disabled-link' : ''; ?>>Contactar soporte</a>
         </div>
-        <div class="support-list" aria-label="Temas de soporte">
-            <div><strong>Acceso</strong><span>Inicio de sesion, correo y recuperacion.</span></div>
-            <div><strong>Datos</strong><span>Perfiles, mascotas y contenido guardado.</span></div>
-            <div><strong>Legal</strong><span>Privacidad, terminos y eliminacion.</span></div>
+        <div class="support-cards">
+            <?php
+            include_component('animated-panel', ['kicker' => 'Cuenta', 'title' => 'Acceso y perfil', 'text' => 'Consultas de inicio de sesion, datos personales y configuracion.']);
+            include_component('animated-panel', ['kicker' => 'Mascotas', 'title' => 'Perfiles y QR', 'text' => 'Ayuda con datos de mascotas, QR seguro y visibilidad.']);
+            include_component('animated-panel', ['kicker' => 'Legal', 'title' => 'Privacidad y baja', 'text' => 'Orientacion sobre privacidad, terminos y eliminacion de cuenta.']);
+            ?>
         </div>
     </div>
 </section>

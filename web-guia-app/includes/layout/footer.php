@@ -4,29 +4,36 @@ declare(strict_types=1);
 
 ?>
 <footer class="site-footer">
+    <div class="footer-glow" aria-hidden="true"></div>
     <div class="container footer-grid">
-        <div>
-            <a class="footer-brand" href="<?= e(page_url('index.php')); ?>">
-                <img src="<?= e(asset('images/mascotify-logo.svg')); ?>" alt="" width="34" height="34">
+        <div class="footer-intro">
+            <a class="footer-brand" href="<?= e(url('/')); ?>">
+                <img src="<?= e(asset('images/mascotify-logo.svg')); ?>" alt="" width="44" height="44">
                 <span>Mascotify</span>
             </a>
-            <p>Centro oficial de informacion, soporte y documentos legales de la app Mascotify.</p>
+            <p>Una experiencia calida y moderna para cuidar, conectar y proteger a quienes comparten la vida con mascotas.</p>
         </div>
         <div>
-            <h2>App</h2>
-            <a href="<?= e(page_url('index.php')); ?>">Guia de uso</a>
-            <a href="<?= e(page_url('soporte.php')); ?>">Soporte</a>
-            <a href="<?= e(page_url('eliminacion-de-cuenta.php')); ?>">Eliminar cuenta</a>
+            <h2>Explorar</h2>
+            <a href="<?= e(url('/#funciones')); ?>">Funciones</a>
+            <a href="<?= e(url('/#seguridad')); ?>">Seguridad</a>
+            <a href="<?= e(url('/#usar-mascotify')); ?>">Plataformas</a>
         </div>
         <div>
             <h2>Legal</h2>
-            <a href="<?= e(page_url('privacidad.php')); ?>">Privacidad</a>
-            <a href="<?= e(page_url('terminos.php')); ?>">Terminos</a>
-            <a href="<?= e(page_url('legal.php')); ?>">Centro legal</a>
+            <a href="<?= e(url('/privacidad')); ?>">Politica de privacidad</a>
+            <a href="<?= e(url('/terminos')); ?>">Terminos y condiciones</a>
+            <a href="<?= e(url('/eliminacion-de-cuenta')); ?>">Eliminacion de cuenta</a>
+        </div>
+        <div>
+            <h2>Soporte</h2>
+            <a href="<?= e(url('/soporte')); ?>">Centro de ayuda</a>
+            <a href="<?= e(support_mailto()); ?>" <?= is_placeholder_url(SUPPORT_EMAIL) ? 'aria-disabled="true"' : ''; ?>><?= e(SUPPORT_EMAIL); ?></a>
+            <a href="<?= e(url('/legal')); ?>">Centro legal</a>
         </div>
     </div>
     <div class="container footer-bottom">
         <span>&copy; <?= date('Y'); ?> Mascotify.</span>
-        <a href="<?= e(support_mailto()); ?>"><?= e(SUPPORT_EMAIL); ?></a>
+        <span>Base publica preliminar para revision antes de publicacion definitiva.</span>
     </div>
 </footer>

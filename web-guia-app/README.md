@@ -1,38 +1,77 @@
 # Mascotify Web Guia App
 
-Web PHP independiente para informacion publica de Mascotify, soporte, privacidad, terminos, eliminacion de cuenta y centro legal.
+Landing publica PHP de Mascotify, independiente de la app Flutter y ubicada dentro del repo principal en `web-guia-app/`.
 
 ## Estructura
 
-- `config/`: configuracion y bootstrap de la app.
-- `includes/core/`: helpers y SEO.
-- `includes/layout/`: layout compartido.
-- `includes/components/`: componentes reutilizables.
-- `includes/views/`: contenido de cada pagina.
-- `assets/`: estilos, JavaScript e imagenes.
+- `config/`: configuracion, placeholders y bootstrap.
+- `includes/core/`: helpers, URLs, SEO y renderizado de vistas.
+- `includes/layout/`: head, header, navegacion, main y footer.
+- `includes/components/`: cards de funciones, plataformas, legales y paneles animados.
+- `includes/views/`: home y paginas legales/soporte.
+- `assets/`: CSS, JavaScript, imagenes SVG propias e iconos.
 
-## Validacion local
+## Correr local
 
-```powershell
-php -l index.php
-php -l privacidad.php
-php -l terminos.php
-php -l eliminacion-de-cuenta.php
-php -l soporte.php
-php -l legal.php
-php -l config\config.php
-php -l config\bootstrap.php
-php -l includes\core\functions.php
-php -l includes\core\seo.php
-php -l includes\layout\head.php
-php -l includes\layout\main.php
-php -l includes\layout\header.php
-php -l includes\layout\footer.php
-php -l includes\layout\navigation.php
-```
-
-## Servidor local
+Desde `C:\Users\PC\Desktop\Proyecto\mascotify\web-guia-app`:
 
 ```powershell
 php -S localhost:8088
 ```
+
+Abrir:
+
+- `http://localhost:8088/`
+- `http://localhost:8088/privacidad`
+- `http://localhost:8088/terminos`
+- `http://localhost:8088/eliminacion-de-cuenta`
+- `http://localhost:8088/soporte`
+- `http://localhost:8088/legal`
+- `http://localhost:8088/#usar-mascotify`
+
+## Subir a cPanel
+
+Subir solamente:
+
+- `assets/`
+- `config/`
+- `includes/`
+- `index.php`
+- `privacidad.php`
+- `terminos.php`
+- `eliminacion-de-cuenta.php`
+- `soporte.php`
+- `legal.php`
+- `.htaccess`
+
+No subir:
+
+- `README.md`
+- ZIPs locales
+- carpetas temporales
+- archivos de la app Flutter
+- `.env` o secretos
+- `web-guia-app-cpanel-upload/` como carpeta contenedora
+
+El ZIP de subida debe contener directamente `index.php`, `assets/`, `config/` e `includes/`, sin una carpeta `web-guia-app` adentro.
+
+## URLs legales esperadas
+
+- `/privacidad`
+- `/terminos`
+- `/eliminacion-de-cuenta`
+- `/soporte`
+- `/legal`
+
+## Placeholders pendientes
+
+Reemplazar en `config/config.php` antes de publicar:
+
+- `SITE_BASE_URL = [DOMINIO_MASCOTIFY]`
+- `SUPPORT_EMAIL = [EMAIL_SOPORTE_MASCOTIFY]`
+- `APP_WEB_URL = [URL_APP_WEB_MASCOTIFY]`
+- `GOOGLE_PLAY_URL = [URL_GOOGLE_PLAY_MASCOTIFY]`
+- `APP_STORE_URL = [URL_APP_STORE_MASCOTIFY]`
+- `MICROSOFT_STORE_URL = [URL_MICROSOFT_STORE_MASCOTIFY]`
+
+Mientras una URL sea placeholder, su card se muestra como `Disponible proximamente` y el boton no navega.

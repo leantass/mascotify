@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 ?>
 <section class="page-hero">
-    <div class="container narrow">
+    <div class="container narrow reveal is-visible">
         <p class="eyebrow">Privacidad</p>
         <h1>Politica de privacidad</h1>
-        <p>Esta politica explica que informacion puede tratar Mascotify para operar la app, brindar soporte y mantener una experiencia confiable.</p>
+        <p>Base preliminar sobre el tratamiento de datos en Mascotify.</p>
     </div>
 </section>
 
-<section class="section">
-    <div class="container narrow content-flow">
-        <h2>Informacion que puede recopilarse</h2>
-        <p>Mascotify puede solicitar datos de cuenta, datos basicos de mascotas, configuraciones de uso, mensajes enviados a soporte e informacion tecnica necesaria para diagnosticar errores.</p>
-
-        <h2>Uso de la informacion</h2>
-        <p>La informacion se utiliza para prestar el servicio, organizar los perfiles de mascotas, responder consultas, mejorar la estabilidad de la app y cumplir obligaciones legales aplicables.</p>
-
-        <h2>Conservacion y eliminacion</h2>
-        <p>Los datos se conservan durante el tiempo necesario para operar la cuenta. El usuario puede solicitar la eliminacion de su cuenta desde la pagina de eliminacion de cuenta o escribiendo a soporte.</p>
-
+<section class="section legal-page">
+    <div class="container narrow content-flow reveal">
+        <div class="notice"><strong>Aviso</strong><p>Este texto es una base preliminar y debe ser revisado antes de publicacion definitiva.</p></div>
+        <h2>Informacion que puede tratarse</h2>
+        <p>Mascotify puede tratar datos de cuenta, perfiles de mascotas, preferencias, registros tecnicos, consultas de soporte y contenido que el usuario cargue en la app.</p>
+        <h2>Finalidad</h2>
+        <p>La informacion se usa para operar la app, guardar perfiles, facilitar funciones de seguridad, mejorar estabilidad, responder soporte y cumplir obligaciones aplicables.</p>
+        <h2>QR y contacto</h2>
+        <p>Las funciones de identificacion estan pensadas para evitar la exposicion innecesaria de direccion exacta, telefono o email publico.</p>
+        <h2>Conservacion</h2>
+        <p>Los datos se conservan mientras la cuenta este activa o durante el tiempo necesario para soporte, seguridad, cumplimiento legal o resolucion de incidencias.</p>
         <h2>Contacto</h2>
-        <p>Para consultas de privacidad, escribe a <a href="<?= e(support_mailto('Consulta de privacidad')); ?>"><?= e(SUPPORT_EMAIL); ?></a>.</p>
+        <p>Para consultas de privacidad, usa el canal de soporte informado por Mascotify. Placeholder actual: <?= e(SUPPORT_EMAIL); ?>.</p>
     </div>
 </section>

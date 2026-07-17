@@ -1,15 +1,18 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">Mascotify Guia oficial</title>
-  <desc id="desc">Imagen social de Mascotify para soporte y documentos legales.</desc>
-  <rect width="1200" height="630" fill="#F5F1E8"/>
-  <rect x="80" y="70" width="1040" height="490" rx="32" fill="#123C3A"/>
-  <circle cx="912" cy="192" r="92" fill="#F7C948"/>
-  <circle cx="982" cy="414" r="54" fill="#69B6A3"/>
-  <rect x="146" y="146" width="148" height="148" rx="34" fill="#F7C948"/>
-  <path d="M220 174C247 174 268 188 279 210V238C279 272 255 296 220 306C185 296 161 272 161 238V210C172 188 193 174 220 174Z" fill="#123C3A"/>
-  <circle cx="198" cy="226" r="13" fill="#F7C948"/>
-  <circle cx="242" cy="226" r="13" fill="#F7C948"/>
-  <path d="M220 238C235 238 246 252 246 268C246 283 235 291 220 291C205 291 194 283 194 268C194 252 205 238 220 238Z" fill="#F7C948"/>
-  <text x="146" y="388" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="82" font-weight="700">Mascotify</text>
-  <text x="150" y="454" fill="#DDEBE6" font-family="Arial, Helvetica, sans-serif" font-size="34">Guia oficial, soporte y documentos legales</text>
+  <title id="title">Mascotify</title>
+  <desc id="desc">Imagen social de Mascotify para cuidar, conectar y proteger mascotas.</desc>
+  <rect width="1200" height="630" fill="#FFF7FB"/>
+  <path d="M94 102C158 54 278 52 350 112C422 172 394 260 462 304C530 348 640 304 710 358C780 412 744 516 650 552C556 588 402 560 290 520C178 480 44 412 48 292C52 172 30 150 94 102Z" fill="#FFD7E4"/>
+  <path d="M836 76C934 38 1050 98 1094 192C1138 286 1108 424 1006 482C904 540 774 500 726 404C678 308 738 114 836 76Z" fill="#DFF6FF"/>
+  <rect x="98" y="86" width="1004" height="458" rx="34" fill="#231942"/>
+  <rect x="145" y="142" width="124" height="124" rx="30" fill="#FF5C8A"/>
+  <path d="M207 163C224 163 238 174 243 190V210C243 230 227 244 207 250C187 244 171 230 171 210V190C176 174 190 163 207 163Z" fill="#FFFFFF"/>
+  <path d="M207 184C212 176 224 178 224 189C224 201 207 210 207 210C207 210 190 201 190 189C190 178 202 176 207 184Z" fill="#FF5C8A"/>
+  <text x="144" y="371" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="84" font-weight="700">Mascotify</text>
+  <text x="149" y="436" fill="#F2EAFB" font-family="Arial, Helvetica, sans-serif" font-size="34">Cuidar, conectar y proteger mascotas</text>
+  <rect x="815" y="164" width="202" height="284" rx="34" fill="#FFFFFF"/>
+  <rect x="842" y="196" width="148" height="92" rx="16" fill="#FF5C8A"/>
+  <rect x="842" y="310" width="66" height="66" rx="16" fill="#71D8FF"/>
+  <rect x="924" y="310" width="66" height="66" rx="16" fill="#C6A8FF"/>
+  <rect x="842" y="397" width="148" height="20" rx="10" fill="#EEE8F8"/>
 </svg>

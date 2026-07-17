@@ -10,7 +10,7 @@ declare(strict_types=1);
     <a class="skip-link" href="#contenido">Saltar al contenido</a>
     <?php include APP_ROOT . '/includes/layout/header.php'; ?>
     <main id="contenido" class="site-main">
-        <?php include APP_ROOT . '/includes/views/' . $contentView; ?>
+        <?php renderPage($contentView); ?>
     </main>
     <?php include APP_ROOT . '/includes/layout/footer.php'; ?>
     <script src="<?= e(asset('js/main.js')); ?>" defer></script>

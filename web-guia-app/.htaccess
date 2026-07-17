@@ -1,11 +1,40 @@
 DirectoryIndex index.php
 Options -Indexes
 
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteRule ^(?:config|includes)(?:/|$) - [F,L]
+    RewriteRule ^storage(?:/|$) - [F,L]
+    RewriteRule ^.*(?:\.env|composer\.(?:json|lock)|package(?:-lock)?\.json)$ - [F,L]
+
+    RewriteRule ^privacidad/?$ privacidad.php [L,QSA]
+    RewriteRule ^terminos/?$ terminos.php [L,QSA]
+    RewriteRule ^eliminacion-de-cuenta/?$ eliminacion-de-cuenta.php [L,QSA]
+    RewriteRule ^soporte/?$ soporte.php [L,QSA]
+    RewriteRule ^legal/?$ legal.php [L,QSA]
+</IfModule>
+
 <IfModule mod_headers.c>
+    Header set X-Frame-Options "SAMEORIGIN"
     Header set X-Content-Type-Options "nosniff"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 </IfModule>
 
 <IfModule mod_mime.c>
     AddType image/svg+xml .svg
+    AddType text/css .css
+    AddType application/javascript .js
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript image/svg+xml
 </IfModule>
