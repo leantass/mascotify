@@ -244,8 +244,12 @@ p {
 
 .brand img,
 .footer-brand img {
+  display: block;
+  flex: 0 0 auto;
+  aspect-ratio: 1 / 1;
   border-radius: var(--radius);
   object-fit: contain;
+  image-rendering: auto;
   box-shadow: 0 12px 28px rgba(255, 92, 138, 0.22);
 }
 

@@ -16,7 +16,10 @@ declare(strict_types=1);
     <meta property="og:title" content="<?= e($page['ogTitle']); ?>">
     <meta property="og:description" content="<?= e($page['ogDescription']); ?>">
     <meta property="og:image" content="<?= e($page['ogImage']); ?>">
-    <link rel="icon" href="<?= e(asset('images/mascotify-app-icon.png')); ?>" type="image/png">
+    <link rel="icon" href="<?= e(asset('images/favicon.ico')); ?>" sizes="any">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?= e(asset('images/favicon-16x16.png')); ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= e(asset('images/favicon-32x32.png')); ?>">
+    <link rel="apple-touch-icon" href="<?= e(asset('images/apple-touch-icon.png')); ?>">
     <script>
         (function () {
             try {

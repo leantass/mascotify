@@ -11,7 +11,7 @@ const APP_WEB_URL = '[URL_APP_WEB_MASCOTIFY]';
 const GOOGLE_PLAY_URL = '[URL_GOOGLE_PLAY_MASCOTIFY]';
 const APP_STORE_URL = '[URL_APP_STORE_MASCOTIFY]';
 const MICROSOFT_STORE_URL = '[URL_MICROSOFT_STORE_MASCOTIFY]';
-const ASSETS_VERSION = '20260717-logo-exact-light-single-2';
+const ASSETS_VERSION = '20260717-logo-favicon-quality';
 
 return [
     'site' => [
